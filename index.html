@@ -81,6 +81,67 @@
       height: 100%;
     }
 
+    /* ── WHO'S THAT preview ── */
+    .wt-preview {
+      background: linear-gradient(135deg, #fce4ec 0%, #ede7f6 100%);
+      gap: 10px;
+      padding: 14px 16px;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .wt-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .wt-char-card {
+      background: white;
+      border-radius: 16px;
+      padding: 8px 12px;
+      box-shadow: 0 4px 14px rgba(156,77,204,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wt-char-card img {
+      height: 72px;
+      object-fit: contain;
+      filter: brightness(0);
+    }
+
+    .wt-question {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3rem;
+      color: rgba(206,147,216,0.7);
+      line-height: 1;
+    }
+
+    .wt-pills {
+      display: flex;
+      gap: 7px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .wt-pill {
+      background: white;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.82rem;
+      color: #6a1b9a;
+      box-shadow: 0 2px 8px rgba(156,77,204,0.12);
+    }
+
+    .wt-pill.highlight {
+      background: linear-gradient(135deg, #f06292, #ce93d8);
+      color: white;
+    }
+
     /* ── CARD BODY ── */
     .card-body {
       padding: 22px 24px 26px;
@@ -248,40 +309,19 @@
 
     <!-- ── WHO'S THAT, AYA? ── -->
     <a class="game-card" href="./ayas-whos-that/">
-      <div class="card-image">
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg3)"/>
-          <!-- large silhouette card center -->
-          <rect x="95" y="16" width="130" height="148" rx="20" fill="white" opacity="0.9" filter="drop-shadow(0 4px 12px rgba(156,77,204,0.15))"/>
-          <!-- Bing silhouette scaled up -->
-          <g transform="translate(128, 22) scale(0.65)">
-            <ellipse cx="50" cy="90" rx="26" ry="32" fill="#2d1b3d"/>
-            <circle cx="50" cy="55" r="20" fill="#2d1b3d"/>
-            <ellipse cx="37" cy="27" rx="7" ry="19" fill="#2d1b3d" transform="rotate(-8,37,27)"/>
-            <ellipse cx="63" cy="27" rx="7" ry="19" fill="#2d1b3d" transform="rotate(8,63,27)"/>
-            <ellipse cx="40" cy="121" rx="9" ry="7" fill="#2d1b3d"/>
-            <ellipse cx="60" cy="121" rx="9" ry="7" fill="#2d1b3d"/>
-            <ellipse cx="22" cy="85" rx="6" ry="11" fill="#2d1b3d" transform="rotate(-15,22,85)"/>
-            <ellipse cx="78" cy="85" rx="6" ry="11" fill="#2d1b3d" transform="rotate(15,78,85)"/>
-          </g>
-          <!-- big question mark -->
-          <text x="160" y="108" font-size="42" text-anchor="middle" fill="rgba(206,147,216,0.55)" font-family="Fredoka One, cursive" font-weight="bold">?</text>
-          <!-- small option pills -->
-          <rect x="12" y="68" width="68" height="26" rx="13" fill="white" opacity="0.85"/>
-          <text x="46" y="86" font-size="11" text-anchor="middle" fill="#6a1b9a" font-family="Fredoka One, cursive">Bing</text>
-          <rect x="240" y="68" width="68" height="26" rx="13" fill="white" opacity="0.85"/>
-          <text x="274" y="86" font-size="11" text-anchor="middle" fill="#6a1b9a" font-family="Fredoka One, cursive">Flop</text>
-          <rect x="12" y="106" width="68" height="26" rx="13" fill="white" opacity="0.85"/>
-          <text x="46" y="124" font-size="11" text-anchor="middle" fill="#6a1b9a" font-family="Fredoka One, cursive">Sula</text>
-          <rect x="240" y="106" width="68" height="26" rx="13" fill="white" opacity="0.85"/>
-          <text x="274" y="124" font-size="11" text-anchor="middle" fill="#6a1b9a" font-family="Fredoka One, cursive">Pando</text>
-        </svg>
+      <div class="card-image wt-preview">
+        <div class="wt-top">
+          <div class="wt-char-card">
+            <img src="./ayas-whos-that/images/bing.png" alt="mystery character" />
+          </div>
+          <div class="wt-question">?</div>
+        </div>
+        <div class="wt-pills">
+          <span class="wt-pill highlight">Bing</span>
+          <span class="wt-pill">Flop</span>
+          <span class="wt-pill">Sula</span>
+          <span class="wt-pill">Pando</span>
+        </div>
       </div>
       <div class="card-body">
         <div class="card-title">🐰 Who's That, Aya?</div>

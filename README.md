@@ -8,7 +8,8 @@ All games are single-file HTML — just open in any browser, no installation nee
 | Game | Description |
 |------|-------------|
 | [🃏 Flip & Matching](./ayas-flip-matching/) | Flip cards and match pairs of fruits & animals. Choose from 2×2 up to 6×6 grid. |
-| [⭕ Tic-Tac-Toe](./ayas-tictactoe/) | Classic 2-player Tic-Tac-Toe with 🌸 vs ⭐. Tracks scores across rounds. |
+| [⭕ Tic-Tac-Toe](./ayas-tictactoe/) | Classic 2-player Tic-Tac-Toe with 🐱 vs 🐰. Tracks scores across rounds. |
+| [🐰 Who's That, Aya?](./ayas-whos-that/) | Guess the Bing character from their shadow before the 5-second timer runs out! |
 
 ## 🎨 Design
 

@@ -429,24 +429,24 @@
 
     <div class="preview-board">
       <div class="preview-cell"></div>
-      <div class="preview-cell">🌸</div>
+      <div class="preview-cell">🐱</div>
       <div class="preview-cell"></div>
-      <div class="preview-cell">⭐</div>
-      <div class="preview-cell">🌸</div>
-      <div class="preview-cell">⭐</div>
+      <div class="preview-cell">🐰</div>
+      <div class="preview-cell">🐱</div>
+      <div class="preview-cell">🐰</div>
       <div class="preview-cell"></div>
-      <div class="preview-cell">⭐</div>
+      <div class="preview-cell">🐰</div>
       <div class="preview-cell"></div>
     </div>
 
     <div class="section-label">Player Names</div>
     <div class="name-inputs">
       <div class="player-input-wrap">
-        <label class="player-label p1">🌸 Player 1</label>
+        <label class="player-label p1">🐱 Player 1</label>
         <input class="player-input" id="name1" type="text" placeholder="Aya" maxlength="12" />
       </div>
       <div class="player-input-wrap">
-        <label class="player-label p2">⭐ Player 2</label>
+        <label class="player-label p2">🐰 Player 2</label>
         <input class="player-input" id="name2" type="text" placeholder="Friend" maxlength="12" />
       </div>
     </div>
@@ -457,26 +457,26 @@
   <!-- GAME SCREEN -->
   <div id="game-screen">
     <div class="game-header">
-      <div class="game-title-small">🌸 Tic-Tac-Toe</div>
+      <div class="game-title-small">🐱 Tic-Tac-Toe</div>
       <button class="restart-btn" id="restart-btn">↩ Restart</button>
     </div>
 
     <div class="scoreboard">
       <div class="score-card active-p1" id="score-p1">
-        <div class="score-symbol">🌸</div>
+        <div class="score-symbol">🐱</div>
         <div class="score-name" id="label-p1">Player 1</div>
         <div class="score-val" id="val-p1">0</div>
       </div>
       <div class="vs-badge">VS</div>
       <div class="score-card" id="score-p2">
-        <div class="score-symbol">⭐</div>
+        <div class="score-symbol">🐰</div>
         <div class="score-name" id="label-p2">Player 2</div>
         <div class="score-val" id="val-p2">0</div>
       </div>
     </div>
 
     <div class="status-bar">
-      <span class="status-text p1-turn" id="status">🌸 Player 1's turn</span>
+      <span class="status-text p1-turn" id="status">🐱 Player 1's turn</span>
     </div>
 
     <div id="board"></div>
@@ -597,7 +597,7 @@
 
       board[i] = currentPlayer;
       const cell = e.currentTarget;
-      cell.textContent = currentPlayer === 1 ? '🌸' : '⭐';
+      cell.textContent = currentPlayer === 1 ? '🐱' : '🐰';
       cell.classList.add('taken', currentPlayer === 1 ? 'p1' : 'p2', 'pop');
       soundPlace();
 
@@ -639,7 +639,7 @@
       const cells = document.getElementById('board').children;
       line.forEach(i => cells[i].classList.add('winning'));
       const st = document.getElementById('status');
-      const sym = currentPlayer === 1 ? '🌸' : '⭐';
+      const sym = currentPlayer === 1 ? '🐱' : '🐰';
       st.textContent = `${sym} ${names[currentPlayer - 1]} wins!`;
       st.className = 'status-text winner';
     }
@@ -651,7 +651,7 @@
         document.getElementById('win-title').textContent = "It's a Draw!";
         document.getElementById('win-sub').textContent = 'Great game, both of you! 💖';
       } else {
-        const sym = currentPlayer === 1 ? '🌸' : '⭐';
+        const sym = currentPlayer === 1 ? '🐱' : '🐰';
         document.getElementById('win-emoji').textContent = sym;
         document.getElementById('win-title').textContent = `${names[currentPlayer - 1]} wins!`;
         document.getElementById('win-sub').textContent = 'Incredible! You\'re amazing! 🌟';
@@ -662,7 +662,7 @@
 
     function updateStatus() {
       const st = document.getElementById('status');
-      const sym = currentPlayer === 1 ? '🌸' : '⭐';
+      const sym = currentPlayer === 1 ? '🐱' : '🐰';
       st.textContent = `${sym} ${names[currentPlayer - 1]}'s turn`;
       st.className = `status-text ${currentPlayer === 1 ? 'p1-turn' : 'p2-turn'}`;
     }
@@ -678,7 +678,7 @@
     }
 
     function launchConfetti() {
-      const emojis = ['🌸','⭐','🎀','✨','🌟','💖','🎊'];
+      const emojis = ['🐱','🐰','🎀','✨','🌟','💖','🎊'];
       for (let i = 0; i < 22; i++) {
         setTimeout(() => {
           const el = document.createElement('div');

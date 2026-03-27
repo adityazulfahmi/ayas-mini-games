@@ -212,6 +212,11 @@
       height: 100%;
       object-fit: contain;
       filter: brightness(0);
+      transition: filter 0.4s ease;
+    }
+
+    .silhouette-wrap.revealed img {
+      filter: brightness(1);
     }
 
     /* ── COUNTDOWN BAR ── */
@@ -621,6 +626,7 @@
       bar.style.width = computed;
 
       disableOptions();
+      document.getElementById('silhouette-wrap').classList.add('revealed');
 
       if (chosen === correct) {
         btn.classList.add('correct');
@@ -640,6 +646,7 @@
       if (answered) return;
       answered = true;
       disableOptions();
+      document.getElementById('silhouette-wrap').classList.add('revealed');
       highlightCorrect(correct);
       soundTimeout();
       setTimeout(nextQuestion, 950);

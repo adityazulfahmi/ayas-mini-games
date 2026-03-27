@@ -838,7 +838,8 @@
     // ── HELPERS ──
     function show(id) {
       const el = document.getElementById(id);
-      el.style.display = 'flex';
+      // title-screen is a block div; game/results screens are flex containers
+      el.style.display = id === 'title-screen' ? 'block' : 'flex';
     }
 
     function hide(id) {

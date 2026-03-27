@@ -233,7 +233,7 @@
       width: 100%;
       border-radius: 10px;
       background: linear-gradient(90deg, #ef5350 0%, #f06292 40%, #ce93d8 100%);
-      transition: width 5s linear;
+      transition: width 10s linear;
       transform-origin: left;
     }
 
@@ -601,12 +601,12 @@
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          bar.style.transition = 'width 5s linear';
+          bar.style.transition = 'width 10s linear';
           bar.style.width = '0%';
         });
       });
 
-      countdownTimer = setTimeout(() => onTimeout(char.name), 5000);
+      countdownTimer = setTimeout(() => onTimeout(char.name), 10000);
     }
 
     function buildOptions(correct) {

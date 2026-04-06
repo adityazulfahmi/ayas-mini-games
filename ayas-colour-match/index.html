@@ -201,6 +201,18 @@
       box-shadow:
         0 4px 16px rgba(0,0,0,0.15),
         0 0 0 3px rgba(206,147,216,0.35);
+      touch-action: manipulation;
+    }
+
+    /* ── COMPACT LAYOUT FOR SMALL PHONES ── */
+    @media (max-height: 680px) {
+      .question-area { margin-bottom: 16px; }
+      .colour-prompt { margin-bottom: 12px; font-size: 0.95rem; }
+      .colour-blob   { width: 110px; height: 110px; }
+      .answers-grid  { gap: 10px; }
+      .answer-btn    { height: 68px; border-radius: 14px; }
+      .streak-badge  { margin-bottom: 8px; }
+      .progress-bar  { margin-bottom: 12px; }
     }
 
     .answer-btn:hover:not(:disabled) {
@@ -482,7 +494,7 @@
       { name: 'Lemon',     hex: '#fff176' },
     ];
 
-    const GAME_DURATION = 60;
+    const GAME_DURATION = 30;
 
     let score = 0;
     let streak = 0;
@@ -583,6 +595,24 @@
       }
     }
 
+    // ── TAP HANDLER (ignores drags, works on both touch and mouse) ──
+    function addTapHandler(el, handler) {
+      let startX, startY;
+      el.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        const dx = Math.abs(e.changedTouches[0].clientX - startX);
+        const dy = Math.abs(e.changedTouches[0].clientY - startY);
+        if (dx < 12 && dy < 12) {
+          e.preventDefault(); // stops the delayed mouse click from also firing
+          handler();
+        }
+      });
+      el.addEventListener('click', handler); // desktop fallback
+    }
+
     // ── QUESTION ──
     function nextQuestion() {
       answering = false;
@@ -604,7 +634,7 @@
         btn.className = 'answer-btn';
         btn.style.background = colour.hex;
         btn.dataset.name = colour.name;
-        btn.addEventListener('click', () => onAnswer(btn, colour));
+        addTapHandler(btn, () => onAnswer(btn, colour));
         grid.appendChild(btn);
       });
     }
@@ -662,11 +692,11 @@
 
       const s = score;
       let emoji, title, subtitle;
-      if (s >= 120) {
+      if (s >= 60) {
         emoji = '🏆'; title = 'Colour Champion!'; subtitle = 'Aya knows ALL the colours! 🌈✨';
-      } else if (s >= 80) {
-        emoji = '🌟'; title = 'Brilliant, Aya!'; subtitle = 'You\'re a colour superstar! 🎨';
       } else if (s >= 40) {
+        emoji = '🌟'; title = 'Brilliant, Aya!'; subtitle = 'You\'re a colour superstar! 🎨';
+      } else if (s >= 20) {
         emoji = '🎀'; title = 'Well done, Aya!'; subtitle = 'Great colour matching! 💖';
       } else {
         emoji = '🌸'; title = 'Nice try, Aya!'; subtitle = 'Let\'s play again and learn more! 🌺';
@@ -678,7 +708,7 @@
       document.getElementById('final-score').textContent = s;
       document.getElementById('end-overlay').classList.add('show');
 
-      if (s >= 80) launchConfetti();
+      if (s >= 40) launchConfetti();
     }
 
     // ── UTILS ──

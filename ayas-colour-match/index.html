@@ -193,9 +193,9 @@
     }
 
     .answer-btn {
-      aspect-ratio: 1;
+      height: 86px;
       border: 5px solid white;
-      border-radius: 50%;
+      border-radius: 18px;
       cursor: pointer;
       transition: transform 0.18s ease, box-shadow 0.18s ease;
       box-shadow:
@@ -204,7 +204,7 @@
     }
 
     .answer-btn:hover:not(:disabled) {
-      transform: translateY(-4px) scale(1.06);
+      transform: translateY(-4px) scale(1.04);
       box-shadow:
         0 8px 24px rgba(0,0,0,0.2),
         0 0 0 4px rgba(240,98,146,0.5);
@@ -214,7 +214,7 @@
       box-shadow:
         0 0 0 5px var(--match-glow),
         0 6px 24px rgba(128,203,196,0.55);
-      transform: scale(1.1);
+      transform: scale(1.06);
     }
 
     .answer-btn.wrong {
@@ -304,15 +304,20 @@
       margin-bottom: 24px;
     }
 
+    .end-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
     .play-again-btn {
-      width: 100%;
       padding: 14px;
       border: none;
       border-radius: 18px;
       background: linear-gradient(135deg, #f06292, #ce93d8);
       color: white;
       font-family: 'Fredoka One', cursive;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       cursor: pointer;
       box-shadow: 0 4px 18px rgba(240, 98, 146, 0.4);
       transition: all 0.2s ease;
@@ -322,6 +327,23 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(240, 98, 146, 0.5);
     }
+
+    .btn-home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      border: 2px solid #ce93d8;
+      border-radius: 18px;
+      background: white;
+      color: var(--text-main);
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-home:hover { background: #ede7f6; }
 
     /* ── ANIMATIONS ── */
     @keyframes fadeIn {
@@ -418,7 +440,10 @@
       <div class="end-subtitle" id="end-subtitle">You're a colour superstar! 🌟</div>
       <div class="score-display" id="final-score">0</div>
       <span class="score-label">points</span>
-      <button class="play-again-btn" id="play-again-btn">Play Again 🌸</button>
+      <div class="end-actions">
+        <button class="play-again-btn" id="play-again-btn">Play Again 🌸</button>
+        <a class="btn-home" href="../">🏠 All Games</a>
+      </div>
     </div>
   </div>
 
@@ -565,7 +590,7 @@
       const correctIdx = Math.floor(Math.random() * COLORS.length);
       currentCorrect = COLORS[correctIdx];
 
-      const distractors = shuffle(COLORS.filter((_, i) => i !== correctIdx)).slice(0, 3);
+      const distractors = shuffle(COLORS.filter(c => c.hex !== currentCorrect.hex)).slice(0, 3);
       const options = shuffle([currentCorrect, ...distractors]);
 
       const blob = document.getElementById('colour-blob');

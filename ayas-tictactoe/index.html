@@ -395,6 +395,23 @@
 
     .btn-menu:hover { background: #ede7f6; }
 
+    .btn-home {
+      display: block;
+      margin-top: 10px;
+      padding: 12px;
+      border: 2px solid #ce93d8;
+      border-radius: 16px;
+      background: white;
+      color: var(--text-main);
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.05rem;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-home:hover { background: #ede7f6; }
+
     /* ── ANIMATIONS ── */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(12px); }
@@ -490,8 +507,9 @@
       <div class="win-sub" id="win-sub">Amazing move! 🌟</div>
       <div class="win-actions">
         <button class="btn-again" id="play-again-btn">Play Again</button>
-        <button class="btn-menu" id="menu-btn">Menu</button>
+        <button class="btn-menu" id="menu-btn">Game Menu</button>
       </div>
+      <a class="btn-home" href="../">🏠 All Games</a>
     </div>
   </div>
 

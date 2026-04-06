@@ -384,6 +384,23 @@
 
     .btn-menu-res:hover { background: #ede7f6; }
 
+    .btn-home {
+      display: block;
+      margin-top: 10px;
+      padding: 12px;
+      border: 2px solid #ce93d8;
+      border-radius: 16px;
+      background: white;
+      color: var(--text-main);
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.05rem;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-home:hover { background: #ede7f6; }
+
     /* ── ANIMATIONS ── */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(12px); }
@@ -460,8 +477,9 @@
       <div class="stars-row" id="stars-row"></div>
       <div class="result-actions">
         <button class="btn-again" id="play-again-btn">Play Again</button>
-        <button class="btn-menu-res" id="menu-res-btn">Menu</button>
+        <button class="btn-menu-res" id="menu-res-btn">Game Menu</button>
       </div>
+      <a class="btn-home" href="../">🏠 All Games</a>
     </div>
   </div>
 

@@ -365,15 +365,20 @@
       margin-bottom: 4px;
     }
 
+    .win-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
     .play-again-btn {
-      width: 100%;
       padding: 14px;
       border: none;
       border-radius: 18px;
       background: linear-gradient(135deg, #f06292, #ce93d8);
       color: white;
       font-family: 'Fredoka One', cursive;
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       cursor: pointer;
       box-shadow: 0 4px 18px rgba(240, 98, 146, 0.4);
       transition: all 0.2s ease;
@@ -383,6 +388,23 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(240, 98, 146, 0.5);
     }
+
+    .btn-home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      border: 2px solid #ce93d8;
+      border-radius: 18px;
+      background: white;
+      color: var(--text-main);
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-home:hover { background: #ede7f6; }
 
     /* ── ANIMATIONS ── */
     @keyframes fadeIn {
@@ -481,7 +503,10 @@
         <span class="win-time-label">Your time</span>
         <span id="win-time-display">0:00</span>
       </div>
-      <button class="play-again-btn" id="play-again-btn">Play Again 🌸</button>
+      <div class="win-actions">
+        <button class="play-again-btn" id="play-again-btn">Play Again 🌸</button>
+        <a class="btn-home" href="../">🏠 All Games</a>
+      </div>
     </div>
   </div>
 

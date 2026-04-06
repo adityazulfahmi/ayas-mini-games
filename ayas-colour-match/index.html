@@ -188,41 +188,39 @@
     .answers-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 16px;
       width: 100%;
     }
 
     .answer-btn {
-      padding: 18px 10px;
-      border: 2.5px solid #ce93d8;
-      border-radius: 16px;
-      background: white;
-      color: var(--text-main);
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.15rem;
+      aspect-ratio: 1;
+      border: 5px solid white;
+      border-radius: 50%;
       cursor: pointer;
-      transition: all 0.18s ease;
-      box-shadow: 0 2px 10px rgba(206,147,216,0.18);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow:
+        0 4px 16px rgba(0,0,0,0.15),
+        0 0 0 3px rgba(206,147,216,0.35);
     }
 
     .answer-btn:hover:not(:disabled) {
-      border-color: var(--btn-primary);
-      background: #fce4ec;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(240, 98, 146, 0.3);
+      transform: translateY(-4px) scale(1.06);
+      box-shadow:
+        0 8px 24px rgba(0,0,0,0.2),
+        0 0 0 4px rgba(240,98,146,0.5);
     }
 
     .answer-btn.correct {
-      background: var(--match-bg);
-      border-color: var(--match-glow);
-      color: #00695c;
-      box-shadow: 0 0 0 3px var(--match-glow), 0 4px 16px rgba(128,203,196,0.35);
+      box-shadow:
+        0 0 0 5px var(--match-glow),
+        0 6px 24px rgba(128,203,196,0.55);
+      transform: scale(1.1);
     }
 
     .answer-btn.wrong {
-      background: #fce4ec;
-      border-color: #f06292;
-      color: #c62828;
+      box-shadow:
+        0 0 0 5px #f06292,
+        0 4px 20px rgba(240,98,146,0.4);
       animation: shake 0.38s ease;
     }
 
@@ -405,7 +403,7 @@
     <div class="streak-badge" id="streak-badge"></div>
 
     <div class="question-area">
-      <div class="colour-prompt">What colour is this? 👇</div>
+      <div class="colour-prompt">Find the matching colour! 👇</div>
       <div class="colour-blob" id="colour-blob"></div>
     </div>
 
@@ -579,7 +577,8 @@
       options.forEach(colour => {
         const btn = document.createElement('button');
         btn.className = 'answer-btn';
-        btn.textContent = colour.name;
+        btn.style.background = colour.hex;
+        btn.dataset.name = colour.name;
         btn.addEventListener('click', () => onAnswer(btn, colour));
         grid.appendChild(btn);
       });
@@ -622,7 +621,7 @@
         document.getElementById('streak-badge').classList.remove('glow');
 
         allBtns.forEach(b => {
-          if (b.textContent === currentCorrect.name) b.classList.add('correct');
+          if (b.dataset.name === currentCorrect.name) b.classList.add('correct');
         });
 
         setTimeout(nextQuestion, 1100);

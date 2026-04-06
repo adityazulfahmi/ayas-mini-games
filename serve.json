@@ -5,6 +5,7 @@
     { "source": "/ayas-tictactoe",     "destination": "/ayas-tictactoe/index.html"     },
     { "source": "/ayas-whos-that",     "destination": "/ayas-whos-that/index.html"     },
     { "source": "/ayas-colour-match",  "destination": "/ayas-colour-match/index.html"  },
-    { "source": "/ayas-colour-hunt",   "destination": "/ayas-colour-hunt/index.html"   }
+    { "source": "/ayas-colour-hunt",    "destination": "/ayas-colour-hunt/index.html"    },
+    { "source": "/ayas-odd-one-out",   "destination": "/ayas-odd-one-out/index.html"   }
   ]
 }

@@ -1,0 +1,8 @@
+{
+  "name": "ayas-mini-games",
+  "private": true,
+  "scripts": {
+    "start": "python3 server.py",
+    "serve": "python3 server.py"
+  }
+}

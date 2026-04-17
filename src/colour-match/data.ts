@@ -1,0 +1,36 @@
+export interface Colour { name: string; hex: string; phex: number; }
+
+export const COLORS: Colour[] = [
+  { name: 'Red',       hex: '#f44336', phex: 0xf44336 },
+  { name: 'Orange',    hex: '#ff9800', phex: 0xff9800 },
+  { name: 'Yellow',    hex: '#ffeb3b', phex: 0xffeb3b },
+  { name: 'Green',     hex: '#4caf50', phex: 0x4caf50 },
+  { name: 'Blue',      hex: '#2196f3', phex: 0x2196f3 },
+  { name: 'Purple',    hex: '#9c27b0', phex: 0x9c27b0 },
+  { name: 'Pink',      hex: '#f06292', phex: 0xf06292 },
+  { name: 'Brown',     hex: '#795548', phex: 0x795548 },
+  { name: 'Grey',      hex: '#9e9e9e', phex: 0x9e9e9e },
+  { name: 'Teal',      hex: '#009688', phex: 0x009688 },
+  { name: 'Lime',      hex: '#8bc34a', phex: 0x8bc34a },
+  { name: 'Cyan',      hex: '#00bcd4', phex: 0x00bcd4 },
+  { name: 'Indigo',    hex: '#3f51b5', phex: 0x3f51b5 },
+  { name: 'Violet',    hex: '#673ab7', phex: 0x673ab7 },
+  { name: 'Coral',     hex: '#ff7043', phex: 0xff7043 },
+  { name: 'Mint',      hex: '#80cbc4', phex: 0x80cbc4 },
+  { name: 'Lavender',  hex: '#ce93d8', phex: 0xce93d8 },
+  { name: 'Gold',      hex: '#ffc107', phex: 0xffc107 },
+  { name: 'Crimson',   hex: '#c62828', phex: 0xc62828 },
+  { name: 'Turquoise', hex: '#26c6da', phex: 0x26c6da },
+  { name: 'Magenta',   hex: '#e91e63', phex: 0xe91e63 },
+  { name: 'Olive',     hex: '#9ccc65', phex: 0x9ccc65 },
+  { name: 'Salmon',    hex: '#ef9a9a', phex: 0xef9a9a },
+  { name: 'Sky Blue',  hex: '#4fc3f7', phex: 0x4fc3f7 },
+  { name: 'Rose',      hex: '#f48fb1', phex: 0xf48fb1 },
+  { name: 'Forest',    hex: '#388e3c', phex: 0x388e3c },
+  { name: 'Navy',      hex: '#1565c0', phex: 0x1565c0 },
+  { name: 'Peach',     hex: '#ffab91', phex: 0xffab91 },
+  { name: 'Lilac',     hex: '#b39ddb', phex: 0xb39ddb },
+  { name: 'Lemon',     hex: '#fff176', phex: 0xfff176 },
+];
+
+export const CONFETTI_EMOJIS = ['🌸','⭐','🎀','✨','🌟','💖','🎊','🌺','🎨','🌈'];

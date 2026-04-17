@@ -1,8 +1,18 @@
 {
   "name": "ayas-mini-games",
   "private": true,
+  "version": "2.0.0",
   "scripts": {
-    "start": "python3 server.py",
-    "serve": "python3 server.py"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.87.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.41.0",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.7"
   }
 }

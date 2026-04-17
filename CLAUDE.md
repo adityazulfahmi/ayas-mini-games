@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Always Do First
+- **Invoke the `frontend-design` skill** before writing any frontend code, every session, no exceptions.
+
+## Screenshot workflow
+
+Use this whenever you need to visually verify frontend changes — layout, spacing, colors, responsive breakpoints — before reporting a task as done. Typecheck and unit tests don't catch visual regressions; screenshots do.
+
+- **Tool:** `puppeteer` (dev dependency). The capture script is `screenshot.mjs` at the project root — use it as-is, do not reinvent it.
+- **Dev server must be running** first (`npm run dev`), default at `http://localhost:5173/`.
+- **Capture:**
+  ```
+  node screenshot.mjs <url>                # saves temporary screenshots/screenshot-N.png
+  node screenshot.mjs <url> <label>        # saves temporary screenshots/screenshot-N-<label>.png
+  ```
+  `N` auto-increments — files are never overwritten, so you can keep before/after pairs.
+- **Review:** read the PNG with the Read tool. Claude sees the image directly and can critique it.
+- **What to check each pass:** spacing / padding, font size / weight / line-height, exact hex colors, alignment, border-radius, shadows, image sizing, and (for this repo) mobile width at 420px — the target canvas width for most games.
+- **Clean up:** `temporary screenshots/` is gitignored; don't commit its contents.
+
 ## What this repo is
 
 A collection of small browser games built for Aya, with a calming pastel baby girl theme. All games are single-file HTML (HTML + CSS + JS, no build step, no dependencies).

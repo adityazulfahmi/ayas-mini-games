@@ -321,8 +321,8 @@ export class GameScene extends Phaser.Scene {
   private buildEndOverlay(): void {
     this.endOverlay = createEndPopup(this, W, H, {
       onPlayAgain: () => this.scene.restart({ difficulty: this.difficulty }),
-      onHome: () => this.scene.start('TitleScene'),
-      homeLabel: '🏠 Menu',
+      onHome:      () => this.scene.start('TitleScene'),
+      onAllGames:  () => { window.location.href = '../'; },
     });
   }
 

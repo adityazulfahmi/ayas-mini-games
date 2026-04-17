@@ -64,6 +64,16 @@ All games share the same visual language — do not deviate from it:
 
 All audio uses Web Audio API only — no external audio files. Each game creates tones programmatically via `OscillatorNode` + `GainNode`. The pattern is: create `AudioContext` lazily on first user interaction, play short envelope tones (linearRampToValueAtTime → exponentialRampToValueAtTime).
 
+## End-of-game popup
+
+Every game's finished screen uses the shared `createEndPopup` (`src/shared/endPopup.ts`) with the same three-button row — do not add, remove, or reorder the buttons per game. All three callbacks are required:
+
+- **Again** (`onPlayAgain`) — primary pink button. Replays the round with the **same config** (difficulty, grid size, mode, etc.) — do not drop the player back at the title to re-pick.
+- **🏠 Home** (`onHome`) — back to the game's own title/landing scene.
+- **🎮 Games** (`onAllGames`) — `window.location.href = '../'` back to the root game picker.
+
+Default labels are "Again", "🏠 Home", "🎮 Games"; override only if the game needs different wording (`playAgainLabel`, `homeLabel`, `allGamesLabel`). Keep labels short so all three fit the 90px button width.
+
 ## Adding a new game
 
 1. Create `ayas-<gamename>/index.html` as a self-contained single file

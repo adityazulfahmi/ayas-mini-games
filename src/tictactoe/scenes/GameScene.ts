@@ -47,6 +47,11 @@ export class GameScene extends Phaser.Scene {
     this.currentPlayer = 1;
     this.scores = [0, 0];
     this.gameOver = false;
+    // Phaser reuses the scene instance, so .push()-populated fields must be
+    // cleared here — otherwise a Menu → GameScene round-trip leaves stale
+    // destroyed Graphics/Text in the arrays and later setText crashes.
+    this.cellBgs = [];
+    this.cellTxts = [];
 
     this.buildHeader();
     this.buildScoreboard();
@@ -54,11 +59,8 @@ export class GameScene extends Phaser.Scene {
     this.buildBoard();
     this.endOverlay = createEndPopup(this, W, H, {
       onPlayAgain: () => { this.endOverlay.hide(); this.newGame(); },
-      onMenu:      () => this.scene.start('TitleScene'),
-      onHome:      () => { window.location.href = '../'; },
-      playAgainLabel: 'Again',
-      menuLabel: 'Menu',
-      homeLabel: '🏠 Home',
+      onHome:      () => this.scene.start('TitleScene'),
+      onAllGames:  () => { window.location.href = '../'; },
     });
   }
 

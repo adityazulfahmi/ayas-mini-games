@@ -10,13 +10,22 @@ export interface EndPopupData {
   highlight?: boolean;
 }
 
+/**
+ * End-of-game popup offers three navigation options that map to the three
+ * places a player might want to go after a round:
+ *   - Again     → replay the current round with the same config
+ *   - Home      → back to this game's title/landing scene
+ *   - All Games → back to the root landing page that lists every game
+ * All three are required so every game's end screen looks and behaves
+ * the same way.
+ */
 export interface EndPopupOptions {
   onPlayAgain: () => void;
   onHome: () => void;
-  onMenu?: () => void;
+  onAllGames: () => void;
   playAgainLabel?: string;
   homeLabel?: string;
-  menuLabel?: string;
+  allGamesLabel?: string;
 }
 
 export interface EndPopup {
@@ -92,13 +101,12 @@ export function createEndPopup(
     fontFamily: F.body, fontSize: '10px', color: T.sub, fontStyle: 'bold',
   }).setOrigin(0.5);
 
-  // Buttons: Play Again + (optional Menu) + Home
-  const hasMenu = Boolean(opts.onMenu);
+  // Three-button row: Again · Home · All Games
   const btnY = Y_BUTTONS;
-  const btnW = hasMenu ? 88 : 132;
+  const btnW = 90;
   const btnH = 48;
-  const btnGap = hasMenu ? 8 : 10;
-  const totalBtnW = hasMenu ? btnW * 3 + btnGap * 2 : btnW * 2 + btnGap;
+  const btnGap = 6;
+  const totalBtnW = btnW * 3 + btnGap * 2;
   const firstBtnCx = -totalBtnW / 2 + btnW / 2;
 
   const againBtn = makePrimaryButton(
@@ -106,25 +114,23 @@ export function createEndPopup(
     firstBtnCx,
     btnY,
     btnW, btnH,
-    opts.playAgainLabel ?? 'Play Again',
+    opts.playAgainLabel ?? 'Again',
   );
-
-  const menuBtn = hasMenu
-    ? makeOutlineButton(
-      scene,
-      firstBtnCx + (btnW + btnGap),
-      btnY,
-      btnW, btnH,
-      opts.menuLabel ?? 'Menu',
-    )
-    : null;
 
   const homeBtn = makeOutlineButton(
     scene,
-    firstBtnCx + (hasMenu ? (btnW + btnGap) * 2 : btnW + btnGap),
+    firstBtnCx + (btnW + btnGap),
     btnY,
     btnW, btnH,
     opts.homeLabel ?? '🏠 Home',
+  );
+
+  const allGamesBtn = makeOutlineButton(
+    scene,
+    firstBtnCx + (btnW + btnGap) * 2,
+    btnY,
+    btnW, btnH,
+    opts.allGamesLabel ?? '🎮 Games',
   );
 
   // Footer signature line
@@ -138,16 +144,16 @@ export function createEndPopup(
     scorePill, scoreValueTxt, scoreLabelTxt,
     ...stars,
     againBtn.container,
-    ...(menuBtn ? [menuBtn.container] : []),
     homeBtn.container,
+    allGamesBtn.container,
     footer,
   ];
   const overlay = scene.add.container(sceneW / 2, sceneH / 2, parts);
   overlay.setVisible(false).setDepth(100);
 
   againBtn.zone.on('pointerdown', opts.onPlayAgain);
-  menuBtn?.zone.on('pointerdown', opts.onMenu!);
   homeBtn.zone.on('pointerdown', opts.onHome);
+  allGamesBtn.zone.on('pointerdown', opts.onAllGames);
 
   function show(data: EndPopupData): void {
     emojiTxt.setText(data.emoji);
@@ -228,7 +234,7 @@ function makePrimaryButton(
   bg.fillStyle(C.pink, 1);
   bg.fillRoundedRect(-w / 2, -h / 2, w, h, 18);
   const txt = scene.add.text(0, 0, label, {
-    fontFamily: F.head, fontSize: '16px', color: T.white,
+    fontFamily: F.head, fontSize: '15px', color: T.white,
   }).setOrigin(0.5);
   const zone = scene.add.zone(0, 0, w, h).setInteractive({ cursor: 'pointer' });
   const container = scene.add.container(x, y, [bg, txt, zone]);
@@ -249,7 +255,7 @@ function makeOutlineButton(
   bg.fillRoundedRect(-w / 2, -h / 2, w, h, 18);
   bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 18);
   const txt = scene.add.text(0, 0, label, {
-    fontFamily: F.head, fontSize: '15px', color: T.main,
+    fontFamily: F.head, fontSize: '14px', color: T.main,
   }).setOrigin(0.5);
   const zone = scene.add.zone(0, 0, w, h).setInteractive({ cursor: 'pointer' });
   const container = scene.add.container(x, y, [bg, txt, zone]);

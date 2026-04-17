@@ -16,7 +16,7 @@ Live at [adityazulfahmi.github.io/ayas-mini-games](https://adityazulfahmi.github
 | [🤔 Odd One Out](./ayas-odd-one-out/) | Three things belong together — one doesn't. Easy shows the category (animals, fruits, vehicles…); Hard hides it. 30 seconds. |
 | [🔍 Colour Hunt](./ayas-colour-hunt/) | A colour pops up — find the emoji that wears it. 30 seconds, 8 colour families, streak bonuses. |
 | [🔗 Connect the Match](./ayas-connect-match/) | Tap a friend on the left and its pair on the right to draw a match line. Rounds of 3 pairs refill automatically for 30 seconds of matching. |
-| [🔊 Who Makes This Sound?](./ayas-who-makes-sound/) | Tap the speaker to hear an animal sound, then tap the right animal from four big choices. 10 rounds, 12 animals, toddler-easy. |
+| [🔊 Who Makes This Sound?](./ayas-who-makes-sound/) | Tap the speaker to hear an animal sound, then tap the right animal from four big choices. 5 rounds, 10 animals, toddler-easy. |
 
 ## 🎨 Design
 

@@ -255,6 +255,8 @@ export class GameScene extends Phaser.Scene {
       card.isLocked = false;
       card.bg.scale = 1; card.txt.scale = 1;
       card.bg.x = card.cx; card.txt.x = card.cx;
+      // Reset alpha — the previous round's celebrate() dimmed the non-winners
+      card.bg.alpha = 1; card.txt.alpha = 1;
       this.paintCard(card, 'idle');
       card.zone.setInteractive({ cursor: 'pointer' });
     });
@@ -267,8 +269,13 @@ export class GameScene extends Phaser.Scene {
 
   private playCue(): void {
     if (!this.currentAnimal) return;
-    this.rippleSpeaker();
-    speak(this.currentAnimal.utter);
+    playAnimalSound(this.currentAnimal);
+    // Ripples every 260ms for the clip's duration so the speaker visibly
+    // says "I'm playing right now"
+    const total = this.currentAnimal.clipMs;
+    for (let t = 0; t < total; t += 260) {
+      this.time.delayedCall(t, () => this.rippleSpeaker());
+    }
   }
 
   private onAnswer(i: number): void {
@@ -298,27 +305,36 @@ export class GameScene extends Phaser.Scene {
   }
 
   private celebrate(card: AnimalCard): void {
-    // Bounce the correct card and emit a tiny confetti sparkle above it
+    // Bounce the correct card and dim everything else so the winner is the
+    // clear focus during the short celebration window.
     this.tweens.add({
       targets: [card.bg, card.txt],
       scale: { from: 1, to: 1.14 },
       yoyo: true, duration: 200, ease: 'Sine.Out',
     });
-    this.spawnSparkles(card.cx, card.cy - CARD_SIZE / 2);
+    this.cards.forEach(c => {
+      if (c === card) return;
+      this.tweens.add({ targets: [c.bg, c.txt], alpha: 0.35, duration: 180 });
+    });
+    this.spawnSparkles(card.cx, card.cy);
   }
 
   private spawnSparkles(cx: number, cy: number): void {
     const emojis = ['✨', '⭐', '🌟', '💖'];
-    for (let i = 0; i < 5; i++) {
+    // Sparkles bloom outward from the card's center so the effect obviously
+    // belongs to the correct card, not the one above it.
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI * 2 * i) / 6 + Math.random() * 0.4;
+      const dist = 70 + Math.random() * 30;
       const e = this.add.text(cx, cy, emojis[i % emojis.length], {
-        fontFamily: F.body, fontSize: '24px',
-      }).setOrigin(0.5);
+        fontFamily: F.body, fontSize: '26px',
+      }).setOrigin(0.5).setDepth(5);
       this.tweens.add({
         targets: e,
-        y: cy - 60 - Math.random() * 30,
-        x: cx + (Math.random() - 0.5) * 80,
+        x: cx + Math.cos(angle) * dist,
+        y: cy + Math.sin(angle) * dist,
         alpha: 0,
-        duration: 700,
+        duration: 720,
         ease: 'Sine.Out',
         onComplete: () => e.destroy(),
       });
@@ -367,11 +383,49 @@ function tierFor(score: number, total: number): { emoji: string; title: string; 
 }
 
 /**
- * Speak the given text via the browser's Web Speech API. Falls back to a
- * short synth tone when speech is unavailable (older browsers, privacy
- * extensions) so the player always gets audible feedback on a tap.
+ * Play the animal's real-world recording if the browser can decode it,
+ * otherwise fall back to speech-synth saying the cue text, and if that's
+ * unavailable too, a single soft tone so the player always gets feedback.
+ *
+ * The Audio element is cached per animal so the second playback starts
+ * instantly; `audio.currentTime = 0` restarts it even while a previous
+ * playback is still in flight.
  */
-function speak(text: string): void {
+const audioCache = new Map<string, HTMLAudioElement>();
+let activeAudio: HTMLAudioElement | null = null;
+let activeTimeout: number | null = null;
+
+function playAnimalSound(animal: Animal): void {
+  // Cut any in-flight playback from the previous cue
+  if (activeAudio) { activeAudio.pause(); activeAudio.currentTime = 0; activeAudio = null; }
+  if (activeTimeout !== null) { window.clearTimeout(activeTimeout); activeTimeout = null; }
+
+  const canPlay = typeof Audio !== 'undefined'
+    && !!document.createElement('audio').canPlayType('audio/ogg; codecs="vorbis"');
+  if (!canPlay) { speakFallback(animal.fallback); return; }
+
+  let a = audioCache.get(animal.src);
+  if (!a) {
+    a = new Audio(animal.src);
+    a.preload = 'auto';
+    audioCache.set(animal.src, a);
+  }
+  a.currentTime = 0;
+  const p = a.play();
+  // play() returns a Promise on all modern browsers — treat a rejection as
+  // a "can't actually play" signal and fall back to speech.
+  if (p && typeof p.catch === 'function') p.catch(() => speakFallback(animal.fallback));
+  activeAudio = a;
+  activeTimeout = window.setTimeout(() => {
+    if (activeAudio === a) {
+      a!.pause();
+      a!.currentTime = 0;
+      activeAudio = null;
+    }
+  }, animal.clipMs);
+}
+
+function speakFallback(text: string): void {
   try {
     const synth = window.speechSynthesis;
     if (!synth || typeof SpeechSynthesisUtterance === 'undefined') {

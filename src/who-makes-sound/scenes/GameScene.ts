@@ -5,24 +5,26 @@ import { C, T, F } from '@shared/theme';
 import { sounds, playTone } from '@shared/audio';
 import { shuffle } from '@shared/utils';
 import { ANIMALS, CONFETTI_EMOJIS, OPTIONS_PER_ROUND, TOTAL_ROUNDS, type Animal } from '../data';
+import { drawSpeaker } from './speaker';
 
 const W = 420, H = 780;
 
 const SPEAKER_CX = W / 2;
-const SPEAKER_CY = 220;
-const SPEAKER_R  = 86;
+const SPEAKER_CY = 232;
+const SPEAKER_R  = 78;
 
 const CARD_SIZE   = 148;
 const CARD_RADIUS = 24;
-const EMOJI_SIZE  = 84;
+const EMOJI_SIZE  = 80;
 const CARD_CX_L   = 126;
 const CARD_CX_R   = W - 126;
-const CARD_ROW_Y  = [438, 608];
+const CARD_ROW_Y  = [452, 614];
 
 interface AnimalCard {
   animal: Animal;
   cx: number;
   cy: number;
+  shadow: Phaser.GameObjects.Graphics;
   bg: Phaser.GameObjects.Graphics;
   txt: Phaser.GameObjects.Text;
   zone: Phaser.GameObjects.Zone;
@@ -38,10 +40,11 @@ export class GameScene extends Phaser.Scene {
   private cards: AnimalCard[] = [];
 
   private speakerBg!: Phaser.GameObjects.Graphics;
-  private speakerIcon!: Phaser.GameObjects.Text;
+  private speakerIcon!: Phaser.GameObjects.Graphics;
   private speakerCaption!: Phaser.GameObjects.Text;
   private speakerRipple!: Phaser.GameObjects.Graphics;
   private speakerPulse?: Phaser.Tweens.Tween;
+  private replayHint!: Phaser.GameObjects.Container;
   private scoreTxt!: Phaser.GameObjects.Text;
   private progressDots: Phaser.GameObjects.Graphics[] = [];
 
@@ -72,22 +75,24 @@ export class GameScene extends Phaser.Scene {
   // ─── Header (title + score + progress dots) ────────────────────────────
 
   private buildHeader(): void {
-    this.add.text(24, 34, '🔊 Who Makes?', {
-      fontFamily: F.head, fontSize: '18px', color: T.main,
+    // Drop the awkward "Who Makes?" — complete the thought with a short
+    // active-voice title so the header reads as a finished phrase.
+    this.add.text(22, 34, '🎧 Guess the Sound', {
+      fontFamily: F.head, fontSize: '17px', color: T.main,
     }).setOrigin(0, 0.5);
 
-    this.pill(W - 76, 34, 120, 34);
-    this.scoreTxt = this.add.text(W - 76, 34, `⭐ 0/${TOTAL_ROUNDS}`, {
+    this.pill(W - 70, 34, 108, 34);
+    this.scoreTxt = this.add.text(W - 70, 34, `⭐ 0/${TOTAL_ROUNDS}`, {
       fontFamily: F.head, fontSize: '15px', color: T.main,
     }).setOrigin(0.5);
 
     const n = TOTAL_ROUNDS;
-    const dotGap = 8;
-    const dotSize = 10;
+    const dotGap = 10;
+    const dotSize = 12;
     const totalW = n * dotSize + (n - 1) * dotGap;
     const startX = W / 2 - totalW / 2 + dotSize / 2;
     this.progressDots = Array.from({ length: n }, (_, i) =>
-      this.add.graphics().setPosition(startX + i * (dotSize + dotGap), 72),
+      this.add.graphics().setPosition(startX + i * (dotSize + dotGap), 76),
     );
     this.renderDots();
   }
@@ -96,21 +101,24 @@ export class GameScene extends Phaser.Scene {
     const g = this.add.graphics();
     g.fillStyle(C.white, 1);
     g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
-    g.lineStyle(1.5, C.lavender, 0.35);
+    g.lineStyle(1.5, C.lavender, 0.4);
     g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
   }
 
   private renderDots(): void {
+    // Active dot uses pink (brand accent) so it clearly separates from the
+    // lavender "not yet" dots — the previous lavender-on-lavender combo was
+    // almost invisible from a glance.
     this.progressDots.forEach((g, i) => {
       g.clear();
       if (i < this.roundIndex) {
         g.fillStyle(C.pink, 1);
         g.fillCircle(0, 0, 5);
       } else if (i === this.roundIndex) {
-        g.fillStyle(C.lavender, 0.35);
-        g.fillCircle(0, 0, 9);
-        g.fillStyle(C.lavender, 1);
-        g.fillCircle(0, 0, 5);
+        g.fillStyle(C.pink, 0.22);
+        g.fillCircle(0, 0, 11);
+        g.fillStyle(C.pink, 1);
+        g.fillCircle(0, 0, 6);
       } else {
         g.fillStyle(0xe1bee7, 1);
         g.fillCircle(0, 0, 5);
@@ -126,19 +134,23 @@ export class GameScene extends Phaser.Scene {
     this.speakerBg = this.add.graphics();
     this.drawSpeakerBg();
 
-    this.speakerIcon = this.add.text(SPEAKER_CX, SPEAKER_CY, '🔊', {
-      fontFamily: F.body, fontSize: '84px',
+    // Drawn speaker glyph (scale 0.85 of the 1x) so it sits nicely inside
+    // the 78px bubble.
+    this.speakerIcon = drawSpeaker(this, SPEAKER_CX, SPEAKER_CY, 0.9);
+
+    this.speakerCaption = this.add.text(SPEAKER_CX, SPEAKER_CY + SPEAKER_R + 26, 'Tap to listen', {
+      fontFamily: F.head, fontSize: '17px', color: T.main,
     }).setOrigin(0.5);
 
-    this.speakerCaption = this.add.text(SPEAKER_CX, SPEAKER_CY + SPEAKER_R + 28, 'Tap to hear! 🎧', {
-      fontFamily: F.head, fontSize: '18px', color: T.main,
-    }).setOrigin(0.5);
+    // Small "tap again to replay" hint sits under the caption — the speaker
+    // is tappable every round, not just on first load, and kids need a cue.
+    this.replayHint = this.buildReplayHint(SPEAKER_CX, SPEAKER_CY + SPEAKER_R + 48);
 
     const zone = this.add.zone(SPEAKER_CX, SPEAKER_CY, SPEAKER_R * 2, SPEAKER_R * 2)
       .setInteractive({ cursor: 'pointer' });
     zone.on('pointerdown', () => this.playCue());
 
-    // A gentle pulse so the button reads as "alive" — toddlers notice motion
+    // A gentle pulse so the button reads as "alive"
     this.speakerPulse = this.tweens.add({
       targets: [this.speakerBg, this.speakerIcon],
       scale: { from: 1, to: 1.06 },
@@ -146,12 +158,28 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private buildReplayHint(cx: number, cy: number): Phaser.GameObjects.Container {
+    const w = 148, h = 24;
+    const bg = this.add.graphics();
+    bg.fillStyle(C.white, 0.75);
+    bg.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2);
+    bg.lineStyle(1.5, C.lavender, 0.55);
+    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2);
+    const txt = this.add.text(0, 0, '↻  tap again to replay', {
+      fontFamily: F.body, fontSize: '12px', color: T.sub, fontStyle: 'bold',
+    }).setOrigin(0.5);
+    return this.add.container(cx, cy, [bg, txt]);
+  }
+
   private drawSpeakerBg(): void {
     const g = this.speakerBg;
     g.clear();
-    // Outer soft halo
-    g.fillStyle(C.lavender, 0.22);
-    g.fillCircle(SPEAKER_CX, SPEAKER_CY, SPEAKER_R + 14);
+    // Outer soft halo — lighter outer and a slightly tighter inner ring give
+    // the bubble a layered, glowing look.
+    g.fillStyle(C.lavender, 0.16);
+    g.fillCircle(SPEAKER_CX, SPEAKER_CY, SPEAKER_R + 22);
+    g.fillStyle(C.lavender, 0.32);
+    g.fillCircle(SPEAKER_CX, SPEAKER_CY, SPEAKER_R + 10);
     // Main circle
     g.fillStyle(C.pink, 1);
     g.fillCircle(SPEAKER_CX, SPEAKER_CY, SPEAKER_R);
@@ -161,11 +189,10 @@ export class GameScene extends Phaser.Scene {
 
   private rippleSpeaker(): void {
     const g = this.speakerRipple;
-    g.clear();
     const state = { r: SPEAKER_R, alpha: 0.6 };
     this.tweens.add({
       targets: state,
-      r: SPEAKER_R + 38,
+      r: SPEAKER_R + 30,
       alpha: 0,
       duration: 700,
       ease: 'Sine.Out',
@@ -190,6 +217,12 @@ export class GameScene extends Phaser.Scene {
 
     for (let i = 0; i < OPTIONS_PER_ROUND; i++) {
       const { cx, cy } = positions[i];
+      // Soft drop shadow under each card — gives the grid a physical,
+      // lifted feel instead of looking like flat outlined tiles.
+      const shadow = this.add.graphics().setPosition(cx, cy + 6);
+      shadow.fillStyle(C.shadow, 0.14);
+      shadow.fillRoundedRect(-CARD_SIZE / 2, -CARD_SIZE / 2, CARD_SIZE, CARD_SIZE, CARD_RADIUS);
+
       const bg = this.add.graphics().setPosition(cx, cy);
       const txt = this.add.text(cx, cy, '', {
         fontFamily: F.body, fontSize: `${EMOJI_SIZE}px`,
@@ -198,7 +231,7 @@ export class GameScene extends Phaser.Scene {
         .setInteractive({ cursor: 'pointer' });
 
       const card: AnimalCard = {
-        animal: ANIMALS[0], cx, cy, bg, txt, zone, isLocked: false,
+        animal: ANIMALS[0], cx, cy, shadow, bg, txt, zone, isLocked: false,
       };
       this.paintCard(card, 'idle');
 
@@ -218,11 +251,11 @@ export class GameScene extends Phaser.Scene {
     switch (state) {
       case 'idle':
         bg.fillStyle(C.white, 1);
-        bg.lineStyle(3, C.lavender, 1);
+        bg.lineStyle(3, C.lavender, 0.9);
         break;
       case 'hover':
         bg.fillStyle(C.cream, 1);
-        bg.lineStyle(3, C.pink, 0.8);
+        bg.lineStyle(3, C.pink, 0.85);
         break;
       case 'correct':
         bg.fillStyle(C.mintBg, 1);
@@ -257,13 +290,12 @@ export class GameScene extends Phaser.Scene {
       card.bg.x = card.cx; card.txt.x = card.cx;
       // Reset alpha — the previous round's celebrate() dimmed the non-winners
       card.bg.alpha = 1; card.txt.alpha = 1;
+      card.shadow.alpha = 1;
       this.paintCard(card, 'idle');
       card.zone.setInteractive({ cursor: 'pointer' });
     });
 
-    // Auto-play the cue shortly after the round appears; a single 250ms pause
-    // lets the card fade-in finish and stops the speech from colliding with
-    // the previous round's celebration chime.
+    // Auto-play the cue shortly after the round appears.
     this.time.delayedCall(260, () => this.playCue());
   }
 
@@ -293,8 +325,7 @@ export class GameScene extends Phaser.Scene {
       sounds.match();
       this.time.delayedCall(950, () => this.nextRound());
     } else {
-      // Wrong — soft red flash + shake, then reset this card. Toddler keeps
-      // trying on the same round until they get it, so we don't advance.
+      // Wrong — soft red flash + shake, then reset this card.
       this.paintCard(card, 'wrong');
       this.shake(card);
       sounds.wrong();
@@ -314,7 +345,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.cards.forEach(c => {
       if (c === card) return;
-      this.tweens.add({ targets: [c.bg, c.txt], alpha: 0.35, duration: 180 });
+      this.tweens.add({ targets: [c.bg, c.txt, c.shadow], alpha: 0.35, duration: 180 });
     });
     this.spawnSparkles(card.cx, card.cy);
   }
@@ -362,6 +393,7 @@ export class GameScene extends Phaser.Scene {
   private endGame(): void {
     this.speakerPulse?.stop();
     this.cards.forEach(c => c.zone.disableInteractive());
+    this.replayHint.setVisible(false);
     sounds.end();
     if (this.score >= Math.ceil(TOTAL_ROUNDS * 0.6)) launchConfetti(this, CONFETTI_EMOJIS);
 
@@ -386,10 +418,6 @@ function tierFor(score: number, total: number): { emoji: string; title: string; 
  * Play the animal's real-world recording if the browser can decode it,
  * otherwise fall back to speech-synth saying the cue text, and if that's
  * unavailable too, a single soft tone so the player always gets feedback.
- *
- * The Audio element is cached per animal so the second playback starts
- * instantly; `audio.currentTime = 0` restarts it even while a previous
- * playback is still in flight.
  */
 const audioCache = new Map<string, HTMLAudioElement>();
 let activeAudio: HTMLAudioElement | null = null;
@@ -412,8 +440,6 @@ function playAnimalSound(animal: Animal): void {
   }
   a.currentTime = 0;
   const p = a.play();
-  // play() returns a Promise on all modern browsers — treat a rejection as
-  // a "can't actually play" signal and fall back to speech.
   if (p && typeof p.catch === 'function') p.catch(() => speakFallback(animal.fallback));
   activeAudio = a;
   activeTimeout = window.setTimeout(() => {

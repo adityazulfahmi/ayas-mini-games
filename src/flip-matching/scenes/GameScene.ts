@@ -7,8 +7,12 @@ import { shuffle, formatTime } from '@shared/utils';
 import { POOL, CONFETTI_EMOJIS, type GridSize } from '../data';
 
 const W = 480, H = 820;
-const HEADER_H = 80;
+const HEADER_TOP = 10;
+const HEADER_H = 64;
+const STATS_H = 46;
+const PROGRESS_H = 8;
 const PAD = 14;
+const GRID_TOP_GAP = 12;
 
 interface CardState {
   id: number;
@@ -34,6 +38,10 @@ export class GameScene extends Phaser.Scene {
   private timerEvent!: Phaser.Time.TimerEvent;
   private timerTxt!: Phaser.GameObjects.Text;
   private matchTxt!: Phaser.GameObjects.Text;
+  private progressFill!: Phaser.GameObjects.Graphics;
+  private progressBarW = 0;
+  private progressBarX = 0;
+  private progressBarY = 0;
   private endOverlay!: ReturnType<typeof createEndPopup>;
 
   constructor() { super('GameScene'); }
@@ -60,47 +68,76 @@ export class GameScene extends Phaser.Scene {
   }
 
   private buildHeader(): void {
+    // Main header panel
+    const headerY = HEADER_TOP;
     const bg = this.add.graphics();
     bg.fillStyle(C.white, 1);
-    bg.fillRoundedRect(10, 10, W - 20, HEADER_H - 10, 18);
+    bg.fillRoundedRect(PAD, headerY, W - PAD * 2, HEADER_H, 18);
 
-    this.add.text(PAD + 24, 35, '🌸 Aya\'s Match', {
+    // Title
+    this.add.text(PAD + 18, headerY + HEADER_H / 2, '🌸 Aya\'s Match', {
       fontFamily: F.head, fontSize: '22px', color: T.main,
     }).setOrigin(0, 0.5);
 
-    this.timerTxt = this.add.text(W / 2, 35, '⏱ 0:00', {
-      fontFamily: F.head, fontSize: '22px', color: T.main,
-    }).setOrigin(0.5);
-
-    // Restart button
+    // Restart button — icon-only circle on the right
+    const restartCx = W - PAD - 22;
+    const restartCy = headerY + HEADER_H / 2;
     const restartBg = this.add.graphics();
     restartBg.lineStyle(2, C.pink, 1);
-    restartBg.fillStyle(C.white, 1);
-    restartBg.fillRoundedRect(-50, -18, 100, 36, 12);
-    restartBg.strokeRoundedRect(-50, -18, 100, 36, 12);
-    const restartTxt = this.add.text(0, 0, '↩ Restart', {
-      fontFamily: F.head, fontSize: '16px', color: T.main,
+    restartBg.fillStyle(C.bg1, 1);
+    restartBg.fillCircle(restartCx, restartCy, 18);
+    restartBg.strokeCircle(restartCx, restartCy, 18);
+    this.add.text(restartCx, restartCy, '↻', {
+      fontFamily: F.head, fontSize: '22px', color: T.main,
     }).setOrigin(0.5);
-    const restartBtn = this.add.container(W - 70, 35, [restartBg, restartTxt]);
-    restartBtn.setSize(100, 36).setInteractive({ cursor: 'pointer' });
-    restartBtn.on('pointerdown', () => this.scene.restart({ size: { cols: this.cols, rows: this.rows } }));
+    const restartZone = this.add.zone(restartCx, restartCy, 40, 40).setInteractive({ cursor: 'pointer' });
+    restartZone.on('pointerdown', () => this.scene.restart({ size: { cols: this.cols, rows: this.rows } }));
 
-    this.matchTxt = this.add.text(W - PAD, HEADER_H + 2, `0 / ${this.totalPairs} pairs`, {
-      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
-    }).setOrigin(1, 0);
+    // Stats pill row: timer · pair counter
+    const statsY = headerY + HEADER_H + 8;
+    const statsPill = this.add.graphics();
+    statsPill.fillStyle(C.white, 0.7);
+    statsPill.fillRoundedRect(PAD, statsY, W - PAD * 2, STATS_H, 14);
+
+    this.timerTxt = this.add.text(PAD + 20, statsY + STATS_H / 2, '⏱ 0:00', {
+      fontFamily: F.head, fontSize: '20px', color: T.main,
+    }).setOrigin(0, 0.5);
+
+    this.matchTxt = this.add.text(W - PAD - 20, statsY + STATS_H / 2, `0 / ${this.totalPairs} pairs`, {
+      fontFamily: F.head, fontSize: '18px', color: T.sub,
+    }).setOrigin(1, 0.5);
+
+    // Progress bar beneath the stats pill
+    const progressY = statsY + STATS_H + 6;
+    this.progressBarX = PAD + 4;
+    this.progressBarY = progressY;
+    this.progressBarW = W - PAD * 2 - 8;
+    const progressTrack = this.add.graphics();
+    progressTrack.fillStyle(C.lavender, 0.35);
+    progressTrack.fillRoundedRect(this.progressBarX, progressY, this.progressBarW, PROGRESS_H, PROGRESS_H / 2);
+
+    this.progressFill = this.add.graphics();
+    this.drawProgress(0);
+  }
+
+  private drawProgress(frac: number): void {
+    this.progressFill.clear();
+    const w = Math.max(0, Math.min(1, frac)) * this.progressBarW;
+    if (w < 2) return;
+    this.progressFill.fillStyle(C.pink, 1);
+    this.progressFill.fillRoundedRect(this.progressBarX, this.progressBarY, w, PROGRESS_H, PROGRESS_H / 2);
   }
 
   private buildGrid(): void {
-    const gridTop = HEADER_H + 22;
+    const gridTop = HEADER_TOP + HEADER_H + 8 + STATS_H + 6 + PROGRESS_H + GRID_TOP_GAP;
     const gridW = W - PAD * 2;
     const gridH = H - gridTop - PAD;
     const cellW = (gridW - (this.cols - 1) * 10) / this.cols;
     const cellH = (gridH - (this.rows - 1) * 10) / this.rows;
     const cell = Math.min(cellW, cellH);
     const actualGridW = cell * this.cols + 10 * (this.cols - 1);
-    const actualGridH = cell * this.rows + 10 * (this.rows - 1);
     const offX = PAD + (gridW - actualGridW) / 2;
-    const offY = gridTop + (gridH - actualGridH) / 2;
+    const offY = gridTop; // anchor to top, not centered
 
     const count = this.totalPairs;
     const symbols = shuffle([...POOL]).slice(0, count);
@@ -214,6 +251,7 @@ export class GameScene extends Phaser.Scene {
         });
         this.matchedCount++;
         this.matchTxt.setText(`${this.matchedCount} / ${this.totalPairs} pairs`);
+        this.drawProgress(this.matchedCount / this.totalPairs);
         this.flipped = [];
         this.locked = false;
         if (this.matchedCount === this.totalPairs) this.time.delayedCall(400, () => this.onWin());

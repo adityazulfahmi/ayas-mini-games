@@ -1,202 +1,314 @@
 import Phaser from 'phaser';
-import { drawBg, statBox, launchConfetti } from '@shared/phaserUtils';
+import { drawBg, launchConfetti } from '@shared/phaserUtils';
 import { createEndPopup } from '@shared/endPopup';
 import { C, T, F, GAME_DURATION } from '@shared/theme';
 import { sounds } from '@shared/audio';
 import { shuffle } from '@shared/utils';
-import { COLORS, CONFETTI_EMOJIS, type Colour } from '../data';
+import {
+  EASY_PALETTE, HARD_RAMP, CONFETTI_EMOJIS,
+  type Difficulty,
+} from '../data';
+import { randomTarget, perturb, hsvToHex, type HSV } from '../hsv';
 
 const W = 420, H = 780;
-const BTN_W = 182, BTN_H = 86;
-const LEFT_X = 107, RIGHT_X = 313;
-const ROW1_Y = 550, ROW2_Y = 650;
+
+// Question card
+const CARD    = { x: 24, y: 92,  w: W - 48, h: 250, r: 28 };
+const SWATCH  = { w: 280, h: 128, r: 22, y: CARD.y + 98 };
+const CAPTION = { y: CARD.y + 196 };
+
+// Answer grid (2×2)
+const GRID_TOP = CARD.y + CARD.h + 44;          // y=386
+const TILE     = { w: (W - 24 * 2 - 16) / 2, h: 128, r: 22 };
+const GAP      = 16;
+
+// Streak line
+const STREAK_Y = CARD.y + CARD.h + 16;
+
+const TIERS = { gold: 60, silver: 40, bronze: 20 };
+
+interface Tile {
+  bg: Phaser.GameObjects.Graphics;
+  zone: Phaser.GameObjects.Zone;
+  hex: number;
+}
 
 export class GameScene extends Phaser.Scene {
+  private difficulty: Difficulty = 'easy';
   private score = 0;
   private streak = 0;
   private timeLeft = GAME_DURATION;
   private answering = false;
-  private currentCorrect!: Colour;
+  private targetHex = 0xffffff;
+  private hardStreak = 0;                 // only counts in hard mode
+  private lastEasyIdx = -1;
 
-  private timerEvent!: Phaser.Time.TimerEvent;
-  private timerTxt!: Phaser.GameObjects.Text;
   private scoreTxt!: Phaser.GameObjects.Text;
+  private timerTxt!: Phaser.GameObjects.Text;
   private progressFill!: Phaser.GameObjects.Graphics;
   private streakTxt!: Phaser.GameObjects.Text;
-  private blob!: Phaser.GameObjects.Arc;
-  private answerBgs: Phaser.GameObjects.Graphics[] = [];
-  private answerColors: Colour[] = [];
-  private hitZones: Phaser.GameObjects.Zone[] = [];
+  private targetSwatch!: Phaser.GameObjects.Graphics;
+  private tiles: Tile[] = [];
   private endOverlay!: ReturnType<typeof createEndPopup>;
+  private timerEvent!: Phaser.Time.TimerEvent;
 
   constructor() { super('GameScene'); }
 
+  init(data: { difficulty?: Difficulty }): void {
+    this.difficulty = data?.difficulty ?? 'easy';
+  }
+
   create(): void {
     drawBg(this);
-    this.score = 0; this.streak = 0;
-    this.timeLeft = GAME_DURATION; this.answering = false;
+    this.score = 0;
+    this.streak = 0;
+    this.hardStreak = 0;
+    this.timeLeft = GAME_DURATION;
+    this.answering = false;
+    this.lastEasyIdx = -1;
 
     this.buildHeader();
-    this.buildProgressBar();
-    this.buildQuestion();
+    this.buildQuestionCard();
+    this.buildStreakLine();
     this.buildAnswerGrid();
     this.buildEndOverlay();
 
     this.timerEvent = this.time.addEvent({
-      delay: 1000,
-      callback: this.tick,
-      callbackScope: this,
+      delay: 1000, callback: this.tick, callbackScope: this,
       repeat: GAME_DURATION - 1,
     });
 
     this.nextQuestion();
   }
 
+  // ─── Header ─────────────────────────────────────────────────────────────
+
   private buildHeader(): void {
-    this.add.text(W / 2, 28, '🎨 Colour Match', {
-      fontFamily: F.head, fontSize: '22px', color: T.main,
+    const modeDot = this.difficulty === 'hard' ? '🔥' : '🌱';
+    this.add.text(24, 34, `🎨 Colour Match ${modeDot}`, {
+      fontFamily: F.head, fontSize: '18px', color: T.main,
+    }).setOrigin(0, 0.5);
+
+    this.pill(W - 178, 34, 88, 34);
+    this.scoreTxt = this.add.text(W - 178, 34, '⭐ 0', {
+      fontFamily: F.head, fontSize: '16px', color: T.main,
     }).setOrigin(0.5);
 
-    const timer = statBox(this, W - 70, 28, `⏱ ${GAME_DURATION}s`);
-    this.timerTxt = timer.txt;
-    const score = statBox(this, W - 195, 28, '⭐ 0');
-    this.scoreTxt = score.txt;
-  }
+    this.pill(W - 74, 34, 100, 34);
+    this.timerTxt = this.add.text(W - 74, 34, `⏱ ${GAME_DURATION}s`, {
+      fontFamily: F.head, fontSize: '16px', color: T.main,
+    }).setOrigin(0.5);
 
-  private buildProgressBar(): void {
+    // progress bar
     const track = this.add.graphics();
     track.fillStyle(0xce93d8, 0.25);
-    track.fillRoundedRect(10, 50, W - 20, 8, 4);
+    track.fillRoundedRect(24, 62, W - 48, 6, 3);
     this.progressFill = this.add.graphics();
     this.drawProgress(1);
+  }
 
-    this.streakTxt = this.add.text(W / 2, 74, '', {
-      fontFamily: F.head, fontSize: '17px', color: T.sub,
-    }).setOrigin(0.5);
+  private pill(cx: number, cy: number, w: number, h: number): void {
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff, 1);
+    g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
+    g.lineStyle(1.5, C.lavender, 0.35);
+    g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
   }
 
   private drawProgress(ratio: number): void {
     this.progressFill.clear();
     this.progressFill.fillStyle(C.pink, 1);
-    this.progressFill.fillRoundedRect(10, 50, Math.max(0, (W - 20) * ratio), 8, 4);
+    this.progressFill.fillRoundedRect(24, 62, Math.max(0, (W - 48) * ratio), 6, 3);
   }
 
-  private buildQuestion(): void {
-    this.add.text(W / 2, 110, 'Find the matching colour! 👇', {
-      fontFamily: F.head, fontSize: '18px', color: T.sub,
+  // ─── Question card ─────────────────────────────────────────────────────
+
+  private buildQuestionCard(): void {
+    const card = this.add.graphics();
+    card.fillStyle(C.white, 1);
+    card.fillRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, CARD.r);
+
+    this.add.text(W / 2, CARD.y + 28, 'MATCH THIS COLOUR', {
+      fontFamily: F.body, fontSize: '12px', color: T.sub,
+      fontStyle: 'bold', letterSpacing: 1.5,
     }).setOrigin(0.5);
 
-    const ring2 = this.add.graphics();
-    ring2.lineStyle(10, 0xce93d8, 0.3);
-    ring2.strokeCircle(W / 2, 230, 82);
-    const ring = this.add.graphics();
-    ring.lineStyle(7, C.white, 1);
-    ring.strokeCircle(W / 2, 230, 75);
-    this.blob = this.add.arc(W / 2, 230, 74, 0, 360, false, C.pink, 1);
+    this.targetSwatch = this.add.graphics();
+
+    this.add.text(W / 2, CAPTION.y, 'Tap the matching swatch below', {
+      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
+    }).setOrigin(0.5);
   }
+
+  private drawTarget(hex: number): void {
+    this.targetSwatch.clear();
+    this.targetSwatch.fillStyle(hex, 1);
+    this.targetSwatch.fillRoundedRect(W / 2 - SWATCH.w / 2, SWATCH.y - SWATCH.h / 2, SWATCH.w, SWATCH.h, SWATCH.r);
+    this.targetSwatch.lineStyle(3, 0xffffff, 0.7);
+    this.targetSwatch.strokeRoundedRect(W / 2 - SWATCH.w / 2, SWATCH.y - SWATCH.h / 2, SWATCH.w, SWATCH.h, SWATCH.r);
+  }
+
+  // ─── Streak ribbon ─────────────────────────────────────────────────────
+
+  private buildStreakLine(): void {
+    this.streakTxt = this.add.text(W / 2, STREAK_Y, '', {
+      fontFamily: F.head, fontSize: '14px', color: T.sub,
+    }).setOrigin(0.5);
+  }
+
+  // ─── Answer grid ───────────────────────────────────────────────────────
 
   private buildAnswerGrid(): void {
-    const positions = [
-      { x: LEFT_X,  y: ROW1_Y },
-      { x: RIGHT_X, y: ROW1_Y },
-      { x: LEFT_X,  y: ROW2_Y },
-      { x: RIGHT_X, y: ROW2_Y },
-    ];
+    this.tiles = [0, 1, 2, 3].map(i => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const cx = 24 + col * (TILE.w + GAP) + TILE.w / 2;
+      const cy = GRID_TOP + row * (TILE.h + GAP) + TILE.h / 2;
 
-    this.answerBgs = positions.map(pos => {
-      const g = this.add.graphics();
-      g.setPosition(pos.x, pos.y);
-      this.drawSwatchBg(g, C.white, false, false);
-      return g;
-    });
+      const bg = this.add.graphics().setPosition(cx, cy);
+      this.drawTile(bg, 0xffffff, 'idle');
 
-    this.hitZones = positions.map((pos, i) => {
-      const zone = this.add.zone(pos.x, pos.y, BTN_W, BTN_H).setInteractive({ cursor: 'pointer' });
+      const zone = this.add.zone(cx, cy, TILE.w, TILE.h).setInteractive({ cursor: 'pointer' });
       zone.on('pointerdown', () => this.onAnswer(i));
       zone.on('pointerover', () => {
-        if (!this.answering) {
-          this.answerBgs[i].clear();
-          this.answerBgs[i].lineStyle(4, C.pink, 0.5);
-          this.answerBgs[i].fillStyle(this.answerColors[i]?.phex ?? C.pink, 1);
-          this.answerBgs[i].fillRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, 18);
-          this.answerBgs[i].strokeRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, 18);
-        }
+        if (!this.answering) this.drawTile(bg, this.tiles[i].hex, 'hover');
       });
       zone.on('pointerout', () => {
-        if (!this.answering && this.answerColors[i]) {
-          this.drawSwatchBg(this.answerBgs[i], this.answerColors[i].phex, false, false);
-        }
+        if (!this.answering) this.drawTile(bg, this.tiles[i].hex, 'idle');
       });
-      return zone;
+
+      return { bg, zone, hex: 0xffffff };
     });
   }
 
-  private drawSwatchBg(g: Phaser.GameObjects.Graphics, fill: number, correct: boolean, wrong: boolean): void {
+  private drawTile(
+    g: Phaser.GameObjects.Graphics,
+    fill: number,
+    state: 'idle' | 'hover' | 'correct' | 'wrong',
+  ): void {
     g.clear();
-    if (correct) {
-      g.lineStyle(5, C.mint, 1);
-    } else if (wrong) {
-      g.lineStyle(5, C.pink, 1);
-    } else {
-      g.lineStyle(5, C.white, 1);
+    const w = TILE.w, h = TILE.h, r = TILE.r;
+    // frame
+    let border = 0xffffff;
+    let borderAlpha = 0.9;
+    let shadow = false;
+    switch (state) {
+      case 'hover':   border = 0xf06292; borderAlpha = 1; break;
+      case 'correct': border = 0x66bb6a; borderAlpha = 1; shadow = true; break;
+      case 'wrong':   border = 0xef5350; borderAlpha = 1; break;
+    }
+    if (shadow) {
+      g.fillStyle(0x66bb6a, 0.18);
+      g.fillRoundedRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8, r + 4);
     }
     g.fillStyle(fill, 1);
-    g.fillRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, 18);
-    g.strokeRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, 18);
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
+    g.lineStyle(4, border, borderAlpha);
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
   }
+
+  // ─── Round logic ───────────────────────────────────────────────────────
 
   private nextQuestion(): void {
     this.answering = false;
 
-    const correctIdx = Math.floor(Math.random() * COLORS.length);
-    this.currentCorrect = COLORS[correctIdx];
+    const options = this.difficulty === 'hard'
+      ? this.generateHardOptions()
+      : this.generateEasyOptions();
 
-    const distractors = shuffle(COLORS.filter(c => c.phex !== this.currentCorrect.phex)).slice(0, 3);
-    const options = shuffle([this.currentCorrect, ...distractors]);
+    this.targetHex = options.correct;
+    this.drawTarget(this.targetHex);
 
-    this.blob.setFillStyle(this.currentCorrect.phex);
-
-    this.answerColors = options;
-    this.answerBgs.forEach((bg, i) => {
-      bg.setData('name', options[i].name);
-      this.drawSwatchBg(bg, options[i].phex, false, false);
+    const ordered = shuffle([options.correct, ...options.distractors]);
+    this.tiles.forEach((t, i) => {
+      t.hex = ordered[i];
+      this.drawTile(t.bg, t.hex, 'idle');
+      t.zone.setInteractive({ cursor: 'pointer' });
     });
+  }
+
+  private generateEasyOptions(): { correct: number; distractors: number[] } {
+    // Pick a correct colour that isn't the same as last round, then 3 distractors
+    // from the remaining anchor palette.
+    let idx: number;
+    do { idx = Math.floor(Math.random() * EASY_PALETTE.length); }
+    while (idx === this.lastEasyIdx && EASY_PALETTE.length > 1);
+    this.lastEasyIdx = idx;
+
+    const correct = EASY_PALETTE[idx];
+    const rest = EASY_PALETTE.filter((_, i) => i !== idx);
+    const distractors = shuffle(rest).slice(0, 3);
+    return { correct, distractors };
+  }
+
+  private generateHardOptions(): { correct: number; distractors: number[] } {
+    const target: HSV = randomTarget();
+    const range = this.currentHardRange();
+    const distractors = [perturb(target, range), perturb(target, range), perturb(target, range)];
+    return {
+      correct: hsvToHex(target),
+      distractors: distractors.map(hsvToHex),
+    };
+  }
+
+  /** Shrink wiggle-room by `hardStreak * perStep`, floored. */
+  private currentHardRange(): { h: number; s: number; v: number } {
+    const step = this.hardStreak;
+    return {
+      h: Math.max(HARD_RAMP.floor.h, HARD_RAMP.initial.h - step * HARD_RAMP.perStep.h),
+      s: Math.max(HARD_RAMP.floor.s, HARD_RAMP.initial.s - step * HARD_RAMP.perStep.s),
+      v: Math.max(HARD_RAMP.floor.v, HARD_RAMP.initial.v - step * HARD_RAMP.perStep.v),
+    };
   }
 
   private onAnswer(idx: number): void {
     if (this.answering) return;
     this.answering = true;
 
-    const chosen = this.answerColors[idx];
-    const isCorrect = chosen.name === this.currentCorrect.name;
+    const tile = this.tiles[idx];
+    const isCorrect = tile.hex === this.targetHex;
+    this.tiles.forEach(t => t.zone.disableInteractive());
 
     if (isCorrect) {
-      this.drawSwatchBg(this.answerBgs[idx], chosen.phex, true, false);
+      this.drawTile(tile.bg, tile.hex, 'correct');
+      this.tweens.add({
+        targets: tile.bg, scale: { from: 1, to: 1.06 },
+        yoyo: true, duration: 180, ease: 'Sine.InOut',
+      });
       this.streak++;
+      if (this.difficulty === 'hard') this.hardStreak++;
       this.score += this.streak >= 3 ? 15 : 10;
       this.scoreTxt.setText(`⭐ ${this.score}`);
-      this.tweens.add({ targets: this.blob, scaleX: 1.1, scaleY: 1.1, yoyo: true, duration: 150 });
 
       if (this.streak >= 3) {
         sounds.streak();
-        this.streakTxt.setText(`🔥 ${this.streak} in a row! +15`).setColor('#f06292');
+        this.streakTxt.setText(`🔥 ${this.streak} in a row!  +15`).setColor('#f06292');
+      } else if (this.streak === 2) {
+        sounds.correct();
+        this.streakTxt.setText('✨ One more for a streak!').setColor(T.sub);
       } else {
         sounds.correct();
-        this.streakTxt.setText(this.streak === 2 ? '✨ One more for a streak!' : '').setColor(T.sub);
+        this.streakTxt.setText('').setColor(T.sub);
       }
-      this.time.delayedCall(850, () => this.nextQuestion());
+
+      this.time.delayedCall(700, () => this.nextQuestion());
     } else {
-      this.drawSwatchBg(this.answerBgs[idx], chosen.phex, false, true);
+      this.drawTile(tile.bg, tile.hex, 'wrong');
       this.streak = 0;
+      if (this.difficulty === 'hard') this.hardStreak = 0;   // reset ramp
       sounds.wrong();
       this.streakTxt.setText('').setColor(T.sub);
-      this.answerColors.forEach((c, i) => {
-        if (c.name === this.currentCorrect.name) this.drawSwatchBg(this.answerBgs[i], c.phex, true, false);
+
+      // Highlight the correct tile
+      this.tiles.forEach(t => {
+        if (t.hex === this.targetHex) this.drawTile(t.bg, t.hex, 'correct');
       });
-      this.tweens.add({ targets: this.answerBgs[idx], x: this.answerBgs[idx].x - 7, yoyo: true, repeat: 2, duration: 60 });
-      this.time.delayedCall(1100, () => this.nextQuestion());
+      this.tweens.add({ targets: tile.bg, x: tile.bg.x - 6, yoyo: true, repeat: 3, duration: 55 });
+
+      this.time.delayedCall(1000, () => this.nextQuestion());
     }
   }
+
+  // ─── Timer / end ───────────────────────────────────────────────────────
 
   private tick(): void {
     this.timeLeft--;
@@ -208,27 +320,29 @@ export class GameScene extends Phaser.Scene {
 
   private buildEndOverlay(): void {
     this.endOverlay = createEndPopup(this, W, H, {
-      onPlayAgain: () => this.scene.restart(),
-      onHome: () => { window.location.href = '../'; },
+      onPlayAgain: () => this.scene.restart({ difficulty: this.difficulty }),
+      onHome: () => this.scene.start('TitleScene'),
+      homeLabel: '🏠 Menu',
     });
   }
 
   private endGame(): void {
     this.timerEvent.remove();
+    this.tiles.forEach(t => t.zone.disableInteractive());
     sounds.end();
 
     const s = this.score;
     let emoji: string, title: string, subtitle: string, stars: number;
-    if (s >= 60)      { emoji = '🏆'; title = 'Colour Champion!';  subtitle = 'Aya knows ALL the colours! 🌈✨';        stars = 3; }
-    else if (s >= 40) { emoji = '🌟'; title = 'Brilliant, Aya!';   subtitle = "You're a colour superstar! 🎨";          stars = 3; }
-    else if (s >= 20) { emoji = '🎀'; title = 'Well done, Aya!';   subtitle = 'Great colour matching! 💖';              stars = 2; }
-    else              { emoji = '🌸'; title = 'Nice try, Aya!';    subtitle = "Let's play again and learn more! 🌺";    stars = 1; }
+    if (s >= TIERS.gold)        { emoji = '🏆'; title = 'Colour Master!';    subtitle = 'Aya sees every shade! 🌈✨';         stars = 3; }
+    else if (s >= TIERS.silver) { emoji = '🌟'; title = 'Brilliant, Aya!';   subtitle = "You're a colour superstar! 🎨";      stars = 3; }
+    else if (s >= TIERS.bronze) { emoji = '🎀'; title = 'Well done, Aya!';   subtitle = 'Great matching! 💖';                 stars = 2; }
+    else                        { emoji = '🌸'; title = 'Nice try, Aya!';    subtitle = "Let's match more colours! 🌺";       stars = 1; }
 
     this.endOverlay.show({
       emoji, title, subtitle,
-      score: { value: s, label: 'Points' },
+      score: { value: s, label: `Points · ${this.difficulty}` },
       stars: { earned: stars },
     });
-    if (s >= 40) launchConfetti(this, CONFETTI_EMOJIS);
+    if (s >= TIERS.silver) launchConfetti(this, CONFETTI_EMOJIS);
   }
 }

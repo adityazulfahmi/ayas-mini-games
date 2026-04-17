@@ -1,16 +1,29 @@
 import Phaser from 'phaser';
-import { drawBg, statBox, launchConfetti } from '@shared/phaserUtils';
+import { drawBg, launchConfetti } from '@shared/phaserUtils';
 import { createEndPopup } from '@shared/endPopup';
 import { C, T, F, GAME_DURATION } from '@shared/theme';
 import { sounds } from '@shared/audio';
 import { shuffle, randomOtherIdx } from '@shared/utils';
-import { CATEGORIES, CONFETTI_EMOJIS } from '../data';
+import { CATEGORIES, CONFETTI_EMOJIS, type Difficulty } from '../data';
 
-const W = 420, H = 740;
-const CELL = 168, GAP = 14;
-const GRID_CX = W / 2, GRID_CY = 480;
+const W = 420, H = 780;
+const TIERS = { gold: 60, silver: 40, bronze: 20 };
+
+// Grid layout per difficulty
+const LAYOUT = {
+  easy: { rows: 2, cols: 2, cell: 164, gap: 14, emoji: '64px', top: 300 },
+  hard: { rows: 3, cols: 3, cell: 106, gap: 10, emoji: '44px', top: 300 },
+} as const;
+
+interface Cell {
+  bg: Phaser.GameObjects.Graphics;
+  txt: Phaser.GameObjects.Text;
+  zone: Phaser.GameObjects.Zone;
+  emoji: string;
+}
 
 export class GameScene extends Phaser.Scene {
+  private difficulty: Difficulty = 'easy';
   private score = 0;
   private streak = 0;
   private timeLeft = GAME_DURATION;
@@ -18,177 +31,295 @@ export class GameScene extends Phaser.Scene {
   private lastGroupIdx = -1;
   private correctEmoji = '';
 
-  private timerEvent!: Phaser.Time.TimerEvent;
-  private timerTxt!: Phaser.GameObjects.Text;
   private scoreTxt!: Phaser.GameObjects.Text;
+  private timerTxt!: Phaser.GameObjects.Text;
   private progressFill!: Phaser.GameObjects.Graphics;
   private streakTxt!: Phaser.GameObjects.Text;
-  private cellBgs: Phaser.GameObjects.Graphics[] = [];
-  private cellTxts: Phaser.GameObjects.Text[] = [];
-  private hitZones: Phaser.GameObjects.Zone[] = [];
-  private cellEmojis: string[] = [];
+  private hintTxt?: Phaser.GameObjects.Text;
+  private hintBg?: Phaser.GameObjects.Graphics;
+  private cells: Cell[] = [];
   private endOverlay!: ReturnType<typeof createEndPopup>;
+  private timerEvent!: Phaser.Time.TimerEvent;
 
   constructor() { super('GameScene'); }
 
+  init(data: { difficulty?: Difficulty }): void {
+    this.difficulty = data?.difficulty ?? 'easy';
+  }
+
   create(): void {
     drawBg(this);
-    this.score = 0; this.streak = 0;
-    this.timeLeft = GAME_DURATION; this.answering = false; this.lastGroupIdx = -1;
+    this.score = 0;
+    this.streak = 0;
+    this.timeLeft = GAME_DURATION;
+    this.answering = false;
+    this.lastGroupIdx = -1;
 
     this.buildHeader();
-    this.buildProgressBar();
+    this.buildHint();
+    this.buildStreakLine();
     this.buildGrid();
     this.buildEndOverlay();
 
     this.timerEvent = this.time.addEvent({
-      delay: 1000, callback: this.tick, callbackScope: this, repeat: GAME_DURATION - 1,
+      delay: 1000, callback: this.tick, callbackScope: this,
+      repeat: GAME_DURATION - 1,
     });
 
     this.nextQuestion();
   }
 
+  // ─── Header ─────────────────────────────────────────────────────────────
+
   private buildHeader(): void {
-    this.add.text(W / 2, 28, '🤔 Odd One Out', {
-      fontFamily: F.head, fontSize: '22px', color: T.main,
+    const modeDot = this.difficulty === 'hard' ? '🔥' : '🌱';
+    this.add.text(24, 34, `🤔 Odd One Out ${modeDot}`, {
+      fontFamily: F.head, fontSize: '18px', color: T.main,
+    }).setOrigin(0, 0.5);
+
+    this.pill(W - 178, 34, 88, 34);
+    this.scoreTxt = this.add.text(W - 178, 34, '⭐ 0', {
+      fontFamily: F.head, fontSize: '16px', color: T.main,
     }).setOrigin(0.5);
 
-    const timer = statBox(this, W - 70, 28, `⏱ ${GAME_DURATION}s`);
-    this.timerTxt = timer.txt;
-    const score = statBox(this, W - 195, 28, '⭐ 0');
-    this.scoreTxt = score.txt;
-  }
+    this.pill(W - 74, 34, 100, 34);
+    this.timerTxt = this.add.text(W - 74, 34, `⏱ ${GAME_DURATION}s`, {
+      fontFamily: F.head, fontSize: '16px', color: T.main,
+    }).setOrigin(0.5);
 
-  private buildProgressBar(): void {
     const track = this.add.graphics();
     track.fillStyle(0xce93d8, 0.25);
-    track.fillRoundedRect(10, 50, W - 20, 8, 4);
+    track.fillRoundedRect(24, 62, W - 48, 6, 3);
     this.progressFill = this.add.graphics();
     this.drawProgress(1);
+  }
 
-    this.streakTxt = this.add.text(W / 2, 74, '', {
-      fontFamily: F.head, fontSize: '17px', color: T.sub,
-    }).setOrigin(0.5);
-
-    this.add.text(W / 2, 104, "Which one doesn't belong? 🤔", {
-      fontFamily: F.head, fontSize: '22px', color: T.main,
-    }).setOrigin(0.5);
+  private pill(cx: number, cy: number, w: number, h: number): void {
+    const g = this.add.graphics();
+    g.fillStyle(0xffffff, 1);
+    g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
+    g.lineStyle(1.5, C.lavender, 0.35);
+    g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
   }
 
   private drawProgress(ratio: number): void {
     this.progressFill.clear();
     this.progressFill.fillStyle(C.pink, 1);
-    this.progressFill.fillRoundedRect(10, 50, Math.max(0, (W - 20) * ratio), 8, 4);
+    this.progressFill.fillRoundedRect(24, 62, Math.max(0, (W - 48) * ratio), 6, 3);
   }
+
+  // ─── Hint card (easy mode only) ────────────────────────────────────────
+
+  private buildHint(): void {
+    if (this.difficulty === 'hard') {
+      // Hard mode: single centred question, no category hint
+      this.add.text(W / 2, 150, "Spot the odd one out! 🔍", {
+        fontFamily: F.head, fontSize: '22px', color: T.main,
+      }).setOrigin(0.5);
+      this.add.text(W / 2, 186, "Which one doesn't fit with the rest?", {
+        fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
+      }).setOrigin(0.5);
+      return;
+    }
+
+    const cardX = 24, cardY = 90, cardW = W - 48, cardH = 170;
+    this.hintBg = this.add.graphics();
+    this.hintBg.fillStyle(C.white, 1);
+    this.hintBg.fillRoundedRect(cardX, cardY, cardW, cardH, 22);
+
+    this.add.text(W / 2, cardY + 30, 'LOOK FOR THE THEME', {
+      fontFamily: F.body, fontSize: '11px', color: T.sub,
+      fontStyle: 'bold', letterSpacing: 1.5,
+    }).setOrigin(0.5);
+
+    this.hintTxt = this.add.text(W / 2, cardY + 70, '', {
+      fontFamily: F.head, fontSize: '22px', color: T.main,
+    }).setOrigin(0.5);
+
+    // Mnemonic row (static emojis) rebuilt every question via setText
+    this.mnemonicTxt = this.add.text(W / 2, cardY + 112, '', {
+      fontFamily: F.body, fontSize: '32px',
+    }).setOrigin(0.5);
+
+    this.add.text(W / 2, cardY + 150, '… one of them is sneaking in!', {
+      fontFamily: F.body, fontSize: '12px', color: T.sub, fontStyle: 'bold',
+    }).setOrigin(0.5);
+  }
+  private mnemonicTxt?: Phaser.GameObjects.Text;
+
+  // ─── Streak line ───────────────────────────────────────────────────────
+
+  private buildStreakLine(): void {
+    const y = this.difficulty === 'hard' ? 218 : 278;
+    this.streakTxt = this.add.text(W / 2, y, '', {
+      fontFamily: F.head, fontSize: '14px', color: T.sub,
+    }).setOrigin(0.5);
+  }
+
+  // ─── Grid ──────────────────────────────────────────────────────────────
 
   private buildGrid(): void {
-    const positions = this.gridPositions();
+    const layout = LAYOUT[this.difficulty];
+    const gridW = layout.cols * layout.cell + (layout.cols - 1) * layout.gap;
+    const startX = W / 2 - gridW / 2 + layout.cell / 2;
+    const startY = layout.top + layout.cell / 2;
+    const total = layout.rows * layout.cols;
 
-    this.cellBgs = positions.map(pos => {
-      const g = this.add.graphics().setPosition(pos.x, pos.y);
-      this.drawCellBg(g, false, false);
-      return g;
-    });
+    this.cells = Array.from({ length: total }, (_, i) => {
+      const col = i % layout.cols;
+      const row = Math.floor(i / layout.cols);
+      const cx = startX + col * (layout.cell + layout.gap);
+      const cy = startY + row * (layout.cell + layout.gap);
 
-    this.cellTxts = positions.map(pos =>
-      this.add.text(pos.x, pos.y, '', { fontSize: '60px' }).setOrigin(0.5)
-    );
+      const bg = this.add.graphics().setPosition(cx, cy);
+      this.drawCellBg(bg, 'idle', layout.cell);
 
-    this.hitZones = positions.map((pos, i) => {
-      const zone = this.add.zone(pos.x, pos.y, CELL, CELL).setInteractive({ cursor: 'pointer' });
+      const txt = this.add.text(cx, cy, '', { fontSize: layout.emoji }).setOrigin(0.5);
+
+      const zone = this.add.zone(cx, cy, layout.cell, layout.cell).setInteractive({ cursor: 'pointer' });
       zone.on('pointerdown', () => this.onAnswer(i));
       zone.on('pointerover', () => {
-        if (!this.answering) {
-          this.cellBgs[i].clear();
-          this.cellBgs[i].lineStyle(3.5, C.pink, 0.5);
-          this.cellBgs[i].fillStyle(0xfff0f4, 1);
-          this.cellBgs[i].fillRoundedRect(-CELL/2, -CELL/2, CELL, CELL, 20);
-          this.cellBgs[i].strokeRoundedRect(-CELL/2, -CELL/2, CELL, CELL, 20);
-        }
+        if (!this.answering) this.drawCellBg(bg, 'hover', layout.cell);
       });
       zone.on('pointerout', () => {
-        if (!this.answering) this.drawCellBg(this.cellBgs[i], false, false);
+        if (!this.answering) this.drawCellBg(bg, 'idle', layout.cell);
       });
-      return zone;
+
+      return { bg, txt, zone, emoji: '' };
     });
   }
 
-  private gridPositions(): { x: number; y: number }[] {
-    return [0, 1, 2, 3].map(i => ({
-      x: GRID_CX - CELL / 2 - GAP / 2 + (i % 2) * (CELL + GAP),
-      y: GRID_CY - CELL / 2 - GAP / 2 + Math.floor(i / 2) * (CELL + GAP),
-    }));
+  private drawCellBg(
+    g: Phaser.GameObjects.Graphics,
+    state: 'idle' | 'hover' | 'correct' | 'wrong',
+    size: number,
+  ): void {
+    g.clear();
+    const radius = size >= 140 ? 20 : 14;
+    switch (state) {
+      case 'idle':
+        g.fillStyle(C.white, 1);
+        g.lineStyle(3, 0xce93d8, 0.35);
+        break;
+      case 'hover':
+        g.fillStyle(0xfff0f7, 1);
+        g.lineStyle(3, C.pink, 0.85);
+        break;
+      case 'correct':
+        g.fillStyle(C.mintBg, 1);
+        g.lineStyle(3.5, C.mint, 1);
+        break;
+      case 'wrong':
+        g.fillStyle(0xffebee, 1);
+        g.lineStyle(3.5, 0xef5350, 1);
+        break;
+    }
+    g.fillRoundedRect(-size / 2, -size / 2, size, size, radius);
+    g.strokeRoundedRect(-size / 2, -size / 2, size, size, radius);
   }
 
-  private drawCellBg(g: Phaser.GameObjects.Graphics, correct: boolean, wrong: boolean): void {
-    g.clear();
-    if (correct) {
-      g.fillStyle(C.mintBg, 1);
-      g.lineStyle(3.5, C.mint, 1);
-    } else if (wrong) {
-      g.fillStyle(0xfff0f4, 1);
-      g.lineStyle(3.5, C.pink, 1);
-    } else {
-      g.fillStyle(C.white, 1);
-      g.lineStyle(3.5, 0xce93d8, 0.3);
+  /**
+   * Return a category that has at least `minSize` unique emojis. Walks the
+   * list from `startIdx` onward so we don't silently duplicate emojis inside
+   * a single round when hard mode needs 8 picks from a short category.
+   */
+  private pickCategoryWithSize(startIdx: number, minSize: number) {
+    for (let i = 0; i < CATEGORIES.length; i++) {
+      const idx = (startIdx + i) % CATEGORIES.length;
+      if (CATEGORIES[idx].emojis.length >= minSize) {
+        this.lastGroupIdx = idx;
+        return CATEGORIES[idx];
+      }
     }
-    g.fillRoundedRect(-CELL/2, -CELL/2, CELL, CELL, 20);
-    g.strokeRoundedRect(-CELL/2, -CELL/2, CELL, CELL, 20);
+    return CATEGORIES[startIdx]; // fallback — shouldn't happen in practice
   }
+
+  // ─── Round logic ───────────────────────────────────────────────────────
 
   private nextQuestion(): void {
     this.answering = false;
+    const layout = LAYOUT[this.difficulty];
+    const total = layout.rows * layout.cols;
 
+    // Pick a category, avoiding immediate repeat
     let groupIdx: number;
     do { groupIdx = Math.floor(Math.random() * CATEGORIES.length); }
     while (groupIdx === this.lastGroupIdx);
     this.lastGroupIdx = groupIdx;
 
-    const group = CATEGORIES[groupIdx];
-    const groupThree = shuffle([...group.emojis]).slice(0, 3);
+    const sameCount = total - 1;
+    const group = this.pickCategoryWithSize(groupIdx, sameCount);
+    const sames = shuffle([...group.emojis]).slice(0, sameCount);
+
     const oddIdx = randomOtherIdx(groupIdx, CATEGORIES.length);
-    const odd = CATEGORIES[oddIdx].emojis[Math.floor(Math.random() * CATEGORIES[oddIdx].emojis.length)];
+    const oddGroup = CATEGORIES[oddIdx];
+    const odd = oddGroup.emojis[Math.floor(Math.random() * oddGroup.emojis.length)];
 
     this.correctEmoji = odd;
-    this.cellEmojis = shuffle([...groupThree, odd]);
+    const ordered = shuffle([...sames, odd]);
 
-    this.cellTxts.forEach((t, i) => t.setText(this.cellEmojis[i]));
-    this.cellBgs.forEach(g => this.drawCellBg(g, false, false));
+    this.cells.forEach((c, i) => {
+      c.emoji = ordered[i];
+      c.txt.setText(ordered[i]).setScale(1);
+      this.drawCellBg(c.bg, 'idle', layout.cell);
+      c.zone.setInteractive({ cursor: 'pointer' });
+    });
+
+    // Easy-mode hint
+    if (this.difficulty === 'easy') {
+      this.hintTxt?.setText(group.prompt);
+      this.mnemonicTxt?.setText(group.mnemonic);
+    }
   }
 
   private onAnswer(idx: number): void {
     if (this.answering) return;
     this.answering = true;
+    const layout = LAYOUT[this.difficulty];
 
-    const isCorrect = this.cellEmojis[idx] === this.correctEmoji;
+    const cell = this.cells[idx];
+    const isCorrect = cell.emoji === this.correctEmoji;
+    this.cells.forEach(c => c.zone.disableInteractive());
 
     if (isCorrect) {
-      this.drawCellBg(this.cellBgs[idx], true, false);
+      this.drawCellBg(cell.bg, 'correct', layout.cell);
+      this.tweens.add({
+        targets: cell.bg, scale: { from: 1, to: 1.07 },
+        yoyo: true, duration: 180, ease: 'Sine.InOut',
+      });
       this.streak++;
       this.score += this.streak >= 3 ? 15 : 10;
       this.scoreTxt.setText(`⭐ ${this.score}`);
-      this.tweens.add({ targets: this.cellBgs[idx], scaleX: 1.06, scaleY: 1.06, yoyo: true, duration: 150 });
 
       if (this.streak >= 3) {
         sounds.streak();
-        this.streakTxt.setText(`🔥 ${this.streak} in a row! +15`).setColor('#f06292');
+        this.streakTxt.setText(`🔥 ${this.streak} in a row!  +15`).setColor('#f06292');
+      } else if (this.streak === 2) {
+        sounds.correct();
+        this.streakTxt.setText('✨ One more for a streak!').setColor(T.sub);
       } else {
         sounds.correct();
-        this.streakTxt.setText(this.streak === 2 ? '✨ One more for a streak!' : '').setColor(T.sub);
+        this.streakTxt.setText('').setColor(T.sub);
       }
-      this.time.delayedCall(900, () => this.nextQuestion());
+
+      this.time.delayedCall(700, () => this.nextQuestion());
     } else {
-      this.drawCellBg(this.cellBgs[idx], false, true);
+      this.drawCellBg(cell.bg, 'wrong', layout.cell);
       this.streak = 0;
       sounds.wrong();
       this.streakTxt.setText('').setColor(T.sub);
-      this.cellEmojis.forEach((e, i) => {
-        if (e === this.correctEmoji) this.drawCellBg(this.cellBgs[i], true, false);
+
+      // Highlight the correct cell(s)
+      this.cells.forEach(c => {
+        if (c.emoji === this.correctEmoji) this.drawCellBg(c.bg, 'correct', layout.cell);
       });
-      this.tweens.add({ targets: this.cellBgs[idx], x: this.cellBgs[idx].x - 7, yoyo: true, repeat: 2, duration: 60 });
-      this.time.delayedCall(1100, () => this.nextQuestion());
+      this.tweens.add({ targets: cell.bg, x: cell.bg.x - 6, yoyo: true, repeat: 3, duration: 55 });
+
+      this.time.delayedCall(1000, () => this.nextQuestion());
     }
   }
+
+  // ─── Timer / end ───────────────────────────────────────────────────────
 
   private tick(): void {
     this.timeLeft--;
@@ -200,27 +331,29 @@ export class GameScene extends Phaser.Scene {
 
   private buildEndOverlay(): void {
     this.endOverlay = createEndPopup(this, W, H, {
-      onPlayAgain: () => this.scene.restart(),
-      onHome: () => { window.location.href = '../'; },
+      onPlayAgain: () => this.scene.restart({ difficulty: this.difficulty }),
+      onHome: () => this.scene.start('TitleScene'),
+      homeLabel: '🏠 Menu',
     });
   }
 
   private endGame(): void {
     this.timerEvent.remove();
+    this.cells.forEach(c => c.zone.disableInteractive());
     sounds.end();
 
     const s = this.score;
     let emoji: string, title: string, subtitle: string, stars: number;
-    if (s >= 60)      { emoji = '🏆'; title = 'Super Spotter!';  subtitle = 'Aya finds every odd one out! 🌈✨'; stars = 3; }
-    else if (s >= 40) { emoji = '🌟'; title = 'Brilliant, Aya!'; subtitle = "You've got a great eye! 🔍";       stars = 3; }
-    else if (s >= 20) { emoji = '🎀'; title = 'Well done, Aya!'; subtitle = 'Great spotting! 💖';               stars = 2; }
-    else              { emoji = '🌸'; title = 'Nice try, Aya!';  subtitle = "Let's play again! 🌺";             stars = 1; }
+    if (s >= TIERS.gold)        { emoji = '🏆'; title = 'Super Spotter!';  subtitle = 'Aya finds every odd one out! 🌈✨'; stars = 3; }
+    else if (s >= TIERS.silver) { emoji = '🌟'; title = 'Brilliant, Aya!'; subtitle = "You've got a great eye! 🔍";        stars = 3; }
+    else if (s >= TIERS.bronze) { emoji = '🎀'; title = 'Well done, Aya!'; subtitle = 'Great spotting! 💖';                 stars = 2; }
+    else                        { emoji = '🌸'; title = 'Nice try, Aya!';  subtitle = "Let's play again! 🌺";               stars = 1; }
 
     this.endOverlay.show({
       emoji, title, subtitle,
-      score: { value: s, label: 'Points' },
+      score: { value: s, label: `Points · ${this.difficulty}` },
       stars: { earned: stars },
     });
-    if (s >= 40) launchConfetti(this, CONFETTI_EMOJIS);
+    if (s >= TIERS.silver) launchConfetti(this, CONFETTI_EMOJIS);
   }
 }

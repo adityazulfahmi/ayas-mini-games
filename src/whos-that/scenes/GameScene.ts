@@ -10,13 +10,16 @@ import {
 
 const W = 420, H = 800;
 
-const CARD    = { x: 20, y: 90, w: W - 40, h: 380, r: 28 };
-const SILH    = { y: CARD.y + 172, w: 180, h: 230 };
-const BAR     = { x: CARD.x + 30, y: CARD.y + CARD.h - 42, w: CARD.w - 60, h: 12 };
-const STREAK_Y = CARD.y + CARD.h + 20;
+const CARD    = { x: 20, y: 96, w: W - 40, h: 380, r: 28 };
+const SILH    = { y: CARD.y + 190, w: 180, h: 230 };
+const BAR_INSET = 40;
+const BAR       = { x: CARD.x + BAR_INSET, y: CARD.y + CARD.h - 36, w: CARD.w - BAR_INSET * 2, h: 10 };
+const STREAK_Y = CARD.y + CARD.h + 22;
 
 interface OptionBtn {
   bg: Phaser.GameObjects.Graphics;
+  dot: Phaser.GameObjects.Graphics;
+  icon: Phaser.GameObjects.Text;
   txt: Phaser.GameObjects.Text;
   zone: Phaser.GameObjects.Zone;
   y: number;
@@ -26,8 +29,10 @@ interface OptionBtn {
 interface RoundItem {
   /** Unique id used to match the chosen option against the correct answer. */
   key: string;
-  /** Label shown on option buttons — name for bing mode, emoji for animal mode. */
+  /** Display name shown next to the emoji dot in option buttons. */
   label: string;
+  /** Optional emoji prefix (animal mode) for the left side of option rows. */
+  emoji?: string;
 }
 
 type ModeConfig = (typeof MODE)[Difficulty];
@@ -44,9 +49,11 @@ export class GameScene extends Phaser.Scene {
   private answered = false;
 
   private scoreTxt!: Phaser.GameObjects.Text;
-  private roundTxt!: Phaser.GameObjects.Text;
+  private roundBadge!: Phaser.GameObjects.Container;
+  private roundBadgeTxt!: Phaser.GameObjects.Text;
   private silhouetteImg!: Phaser.GameObjects.Image;
   private silhouetteEmoji!: Phaser.GameObjects.Text;
+  private spotlight!: Phaser.GameObjects.Graphics;
   private countdownBar!: Phaser.GameObjects.Graphics;
   private countdownTween?: Phaser.Tweens.Tween;
   private countdownTimer?: Phaser.Time.TimerEvent;
@@ -63,11 +70,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // Character PNGs are preloaded by TitleScene on first boot, but if the
-    // player comes here directly from ResultScene (Play Again) we re-request
-    // them. Phaser's Loader is a no-op for keys already in the TextureManager
-    // cache, so this is free — it just guarantees the textures are ready
-    // before create() runs and keeps the flow self-contained.
     CHARACTERS.forEach(c => this.load.image(c.key, c.url));
   }
 
@@ -77,17 +79,13 @@ export class GameScene extends Phaser.Scene {
     this.streak = 0;
     this.questionIndex = 0;
 
-    // Build the round list from whichever pool matches the chosen mode.
     const pool: RoundItem[] = this.gameMode === 'bing'
       ? CHARACTERS.map((c: Character) => ({ key: c.key, label: c.name }))
-      : ANIMALS.map((a: Animal) => ({ key: a.name, label: a.emoji }));
+      : ANIMALS.map((a: Animal) => ({ key: a.name, label: a.name, emoji: a.emoji }));
     this.roundItems = shuffle(pool).slice(0, this.mode.rounds);
 
-    // Phaser reuses the scene instance across scene.start(). Class-field
-    // array initialisers only run in the constructor, so we must clear the
-    // arrays that are push()-populated in buildXxx() — otherwise destroyed
-    // game objects from the previous run stay in the array and blow up the
-    // next loadQuestion's setText().
+    // Scene is reused across scene.start() — clear arrays populated in
+    // build* so stale objects from a previous run don't leak.
     this.optionBtns = [];
     this.progressDots = [];
 
@@ -102,7 +100,7 @@ export class GameScene extends Phaser.Scene {
   private get allItems(): RoundItem[] {
     return this.gameMode === 'bing'
       ? CHARACTERS.map(c => ({ key: c.key, label: c.name }))
-      : ANIMALS.map(a => ({ key: a.name, label: a.emoji }));
+      : ANIMALS.map(a => ({ key: a.name, label: a.name, emoji: a.emoji }));
   }
 
   // ─── Header ─────────────────────────────────────────────────────────────
@@ -110,23 +108,24 @@ export class GameScene extends Phaser.Scene {
   private buildHeader(): void {
     const modeDot = this.difficulty === 'hard' ? '🔥' : '🌱';
     const titleIcon = this.gameMode === 'animal' ? '🐾' : '🐰';
-    this.add.text(24, 34, `${titleIcon} Who's That? ${modeDot}`, {
-      fontFamily: F.head, fontSize: '18px', color: T.main,
+    this.add.text(22, 32, `${titleIcon} Who's That? ${modeDot}`, {
+      fontFamily: F.head, fontSize: '17px', color: T.main,
     }).setOrigin(0, 0.5);
 
     // Score pill
-    this.pill(W - 72, 34, 96, 34);
-    this.scoreTxt = this.add.text(W - 72, 34, `⭐ 0/${this.mode.rounds}`, {
-      fontFamily: F.head, fontSize: '16px', color: T.main,
+    this.pill(W - 70, 32, 104, 32);
+    this.scoreTxt = this.add.text(W - 70, 32, `⭐ 0/${this.mode.rounds}`, {
+      fontFamily: F.head, fontSize: '15px', color: T.main,
     }).setOrigin(0.5);
 
     // Progress dots (center-aligned under the title row)
     const n = this.mode.rounds;
-    const dotGap = 16;
-    const totalW = n * 12 + (n - 1) * dotGap;
-    const startX = W / 2 - totalW / 2 + 6;
+    const dotGap = 14;
+    const dotW = 12;
+    const totalW = n * dotW + (n - 1) * dotGap;
+    const startX = W / 2 - totalW / 2 + dotW / 2;
     this.progressDots = Array.from({ length: n }, (_, i) =>
-      this.add.graphics().setPosition(startX + i * (12 + dotGap), 62),
+      this.add.graphics().setPosition(startX + i * (dotW + dotGap), 64),
     );
   }
 
@@ -134,24 +133,26 @@ export class GameScene extends Phaser.Scene {
     const g = this.add.graphics();
     g.fillStyle(0xffffff, 1);
     g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
-    g.lineStyle(1.5, C.lavender, 0.35);
+    g.lineStyle(1.5, C.lavender, 0.4);
     g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
   }
 
   private renderDots(): void {
+    // Active dot is pink (brand accent) — the previous lavender-on-lavender
+    // combo blended into the inactive dots.
     this.progressDots.forEach((g, i) => {
       g.clear();
       if (i < this.questionIndex) {
         g.fillStyle(C.pink, 1);
-        g.fillCircle(0, 0, 6);
+        g.fillCircle(0, 0, 5);
       } else if (i === this.questionIndex) {
-        g.fillStyle(C.lavender, 0.35);
+        g.fillStyle(C.pink, 0.22);
         g.fillCircle(0, 0, 11);
-        g.fillStyle(C.lavender, 1);
+        g.fillStyle(C.pink, 1);
         g.fillCircle(0, 0, 6);
       } else {
         g.fillStyle(0xe1bee7, 1);
-        g.fillCircle(0, 0, 6);
+        g.fillCircle(0, 0, 5);
       }
     });
   }
@@ -159,19 +160,29 @@ export class GameScene extends Phaser.Scene {
   // ─── Silhouette card ───────────────────────────────────────────────────
 
   private buildCard(): void {
+    // Card base with a soft drop shadow — the previous flat white card felt
+    // like a placeholder; a lifted shadow lets it read as the primary focal
+    // surface.
+    const shadow = this.add.graphics();
+    shadow.fillStyle(C.shadow, 0.12);
+    shadow.fillRoundedRect(CARD.x, CARD.y + 8, CARD.w, CARD.h, CARD.r);
+
     const g = this.add.graphics();
     g.fillStyle(C.white, 1);
     g.fillRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, CARD.r);
 
-    // Round label lives on the card, so add it after the card graphic
-    this.roundTxt = this.add.text(W / 2, CARD.y + 28, '', {
-      fontFamily: F.body, fontSize: '13px', color: T.sub,
-      fontStyle: 'bold', letterSpacing: 1.5,
-    }).setOrigin(0.5);
+    // Spotlight — two stacked soft ellipses behind the silhouette, so the
+    // figure appears to stand on a lit stage instead of floating.
+    this.spotlight = this.add.graphics();
+    this.drawSpotlight();
+
+    // Round pill badge — replaces the plain "ROUND X OF Y" text. A chip at
+    // the top of the card floats half-over the card edge so it reads as a
+    // "tag" marking this round.
+    this.roundBadge = this.buildRoundBadge(W / 2, CARD.y);
 
     // Both silhouette renderers exist simultaneously; we only show the one
-    // matching the current mode. This keeps loadQuestion() simple — no
-    // create/destroy on every round.
+    // matching the current mode.
     this.silhouetteImg = this.add.image(W / 2, SILH.y, CHARACTERS[0].key).setDisplaySize(SILH.w, SILH.h);
     this.silhouetteEmoji = this.add.text(W / 2, SILH.y, '', {
       fontFamily: F.body, fontSize: '180px',
@@ -179,12 +190,41 @@ export class GameScene extends Phaser.Scene {
     this.silhouetteImg.setVisible(this.gameMode === 'bing');
     this.silhouetteEmoji.setVisible(this.gameMode === 'animal');
 
-    // Countdown track + fill
+    // Countdown track + fill — simple pink→red bar, no extra chrome.
     this.add.graphics()
       .fillStyle(0xf3e5f5, 1)
       .fillRoundedRect(BAR.x, BAR.y, BAR.w, BAR.h, BAR.h / 2);
     this.countdownBar = this.add.graphics();
     this.drawCountdown(1);
+  }
+
+  private drawSpotlight(): void {
+    const g = this.spotlight;
+    g.clear();
+    // Outer soft glow
+    g.fillStyle(C.lavender, 0.14);
+    g.fillEllipse(W / 2, SILH.y + 10, 260, 260);
+    // Inner warm plate
+    g.fillStyle(C.bg1, 0.9);
+    g.fillEllipse(W / 2, SILH.y + 10, 200, 210);
+    // Ground shadow directly beneath the figure
+    g.fillStyle(C.shadow, 0.16);
+    g.fillEllipse(W / 2, SILH.y + 108, 160, 22);
+  }
+
+  private buildRoundBadge(cx: number, cy: number): Phaser.GameObjects.Container {
+    const w = 132, h = 30;
+    const bg = this.add.graphics();
+    bg.fillStyle(C.pink, 1);
+    bg.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2);
+    bg.lineStyle(3, C.white, 1);
+    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2);
+    this.roundBadgeTxt = this.add.text(0, 0, '', {
+      fontFamily: F.head, fontSize: '13px', color: T.white,
+    }).setOrigin(0.5);
+    const c = this.add.container(cx, cy, [bg, this.roundBadgeTxt]);
+    c.setDepth(2);
+    return c;
   }
 
   private drawCountdown(ratio: number): void {
@@ -209,22 +249,24 @@ export class GameScene extends Phaser.Scene {
   private buildOptions(): void {
     const n = this.mode.optionCount;
     const btnW = 340;
-    const btnH = n >= 4 ? 48 : 58;
+    const btnH = n >= 4 ? 50 : 60;
     const gap  = n >= 4 ? 10 : 12;
-    const totalH = n * btnH + (n - 1) * gap;
-    const startY = (CARD.y + CARD.h + 60) + btnH / 2;    // below streak line
-    // Emoji options render visibly larger than name text; bump the font size
-    // only for the animal mode so the glyphs actually dominate the pill.
-    const txtSize = this.gameMode === 'animal' ? (btnH >= 56 ? '30px' : '26px')
-                                               : (btnH >= 56 ? '20px' : '18px');
+    const startY = (CARD.y + CARD.h + 62) + btnH / 2;    // below streak line
 
     for (let i = 0; i < n; i++) {
       const cx = W / 2;
       const cy = startY + i * (btnH + gap);
 
       const bg = this.add.graphics().setPosition(cx, cy);
-      const txt = this.add.text(cx, cy, '', {
-        fontFamily: F.head, fontSize: txtSize, color: T.main,
+      // Left-side circular "dot" — emoji in animal mode, letter index in
+      // bing mode. Adds visual structure to what was previously a plain
+      // text-in-rectangle button.
+      const dot = this.add.graphics().setPosition(cx - btnW / 2 + 34, cy);
+      const icon = this.add.text(cx - btnW / 2 + 34, cy, '', {
+        fontFamily: F.body, fontSize: '26px', color: T.main,
+      }).setOrigin(0.5);
+      const txt = this.add.text(cx - 26, cy, '', {
+        fontFamily: F.head, fontSize: '18px', color: T.main,
       }).setOrigin(0.5);
 
       const zone = this.add.zone(cx, cy, btnW, btnH).setInteractive({ cursor: 'pointer' });
@@ -233,14 +275,11 @@ export class GameScene extends Phaser.Scene {
       zone.on('pointerdown', () => this.onAnswer(i));
 
       this.drawOptionBg(bg, btnW, btnH, 'idle');
-      this.optionBtns.push({ bg, txt, zone, y: cy, key: '' });
-      // keep btnW/btnH local references to redraw per-state later
+      this.optionBtns.push({ bg, dot, icon, txt, zone, y: cy, key: '' });
+      // keep btnW/btnH references for redraws
       (bg as unknown as { _w: number; _h: number })._w = btnW;
       (bg as unknown as { _w: number; _h: number })._h = btnH;
     }
-
-    // Ensure the column fits — abort if we'd overflow the canvas
-    void totalH;
   }
 
   private drawOptionBg(
@@ -249,13 +288,17 @@ export class GameScene extends Phaser.Scene {
     state: 'idle' | 'hover' | 'correct' | 'wrong',
   ): void {
     g.clear();
+    // Soft shadow under every option — gives the column a stacked,
+    // tactile feel instead of looking like thin outlined boxes.
+    g.fillStyle(C.shadow, 0.10);
+    g.fillRoundedRect(-w / 2, -h / 2 + 4, w, h, 20);
     switch (state) {
       case 'idle':
         g.fillStyle(C.white, 1);
         g.lineStyle(2.5, 0xe1bee7, 1);
         break;
       case 'hover':
-        g.fillStyle(C.bg1, 1);
+        g.fillStyle(C.cream, 1);
         g.lineStyle(2.5, C.pink, 1);
         break;
       case 'correct':
@@ -267,14 +310,30 @@ export class GameScene extends Phaser.Scene {
         g.lineStyle(3, 0xef5350, 1);
         break;
     }
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 18);
-    g.strokeRoundedRect(-w / 2, -h / 2, w, h, 18);
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, 20);
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, 20);
+  }
+
+  private drawOptionDot(
+    g: Phaser.GameObjects.Graphics,
+    state: 'idle' | 'hover' | 'correct' | 'wrong',
+  ): void {
+    g.clear();
+    let fill: number = C.bg1;
+    if (state === 'correct') fill = 0xc8e6c9;
+    else if (state === 'wrong') fill = 0xffcdd2;
+    else if (state === 'hover') fill = 0xfce4ec;
+    g.fillStyle(fill, 1);
+    g.fillCircle(0, 0, 18);
+    g.lineStyle(1.5, C.lavender, 0.5);
+    g.strokeCircle(0, 0, 18);
   }
 
   private paintOption(i: number, state: 'idle' | 'hover' | 'correct' | 'wrong'): void {
-    const bg = this.optionBtns[i].bg;
-    const { _w: w, _h: h } = bg as unknown as { _w: number; _h: number };
-    this.drawOptionBg(bg, w, h, state);
+    const btn = this.optionBtns[i];
+    const { _w: w, _h: h } = btn.bg as unknown as { _w: number; _h: number };
+    this.drawOptionBg(btn.bg, w, h, state);
+    this.drawOptionDot(btn.dot, state);
   }
 
   // ─── Round logic ───────────────────────────────────────────────────────
@@ -284,7 +343,7 @@ export class GameScene extends Phaser.Scene {
     this.stopCountdown();
 
     const item = this.roundItems[this.questionIndex];
-    this.roundTxt.setText(`ROUND ${this.questionIndex + 1} OF ${this.mode.rounds}`);
+    this.roundBadgeTxt.setText(`ROUND ${this.questionIndex + 1} / ${this.mode.rounds}`);
     this.renderDots();
 
     // Show the mode-appropriate silhouette renderer.
@@ -292,7 +351,7 @@ export class GameScene extends Phaser.Scene {
       this.silhouetteImg.setTexture(item.key).setDisplaySize(SILH.w, SILH.h);
       this.silhouetteImg.setTintFill(this.mode.tintFill);
     } else {
-      this.silhouetteEmoji.setText(item.label);
+      this.silhouetteEmoji.setText(item.emoji ?? item.label);
       this.silhouetteEmoji.setTintFill(this.mode.tintFill);
     }
 
@@ -302,8 +361,19 @@ export class GameScene extends Phaser.Scene {
     const options = shuffle([item, ...wrong]);
 
     this.optionBtns.forEach((btn, i) => {
-      btn.key = options[i].key;
-      btn.txt.setText(options[i].label);
+      const opt = options[i];
+      btn.key = opt.key;
+      if (this.gameMode === 'animal') {
+        btn.icon.setText(opt.emoji ?? '');
+        btn.txt.setText(opt.label);
+      } else {
+        // Bing mode: no emoji available for each character, use a
+        // numbered indicator so the left-side dot still reads as a
+        // structural element rather than an empty circle.
+        btn.icon.setText(`${i + 1}`);
+        btn.icon.setStyle({ fontFamily: F.head, fontSize: '16px', color: T.sub });
+        btn.txt.setText(opt.label);
+      }
       this.paintOption(i, 'idle');
       btn.zone.setInteractive({ cursor: 'pointer' });
     });
@@ -337,7 +407,6 @@ export class GameScene extends Phaser.Scene {
     const chosen = this.optionBtns[idx];
     const correctKey = this.roundItems[this.questionIndex].key;
 
-    // Reveal the answer in full colour
     if (this.gameMode === 'bing') this.silhouetteImg.clearTint();
     else                          this.silhouetteEmoji.clearTint();
 

@@ -16,6 +16,8 @@ export default defineConfig({
         flipMatch:   resolve(__dirname, 'ayas-flip-matching/index.html'),
         tictactoe:   resolve(__dirname, 'ayas-tictactoe/index.html'),
         whosThat:    resolve(__dirname, 'ayas-whos-that/index.html'),
+        connectMatch: resolve(__dirname, 'ayas-connect-match/index.html'),
+        whoMakesSound: resolve(__dirname, 'ayas-who-makes-sound/index.html'),
       },
     },
   },

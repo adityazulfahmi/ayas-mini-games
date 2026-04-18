@@ -24,6 +24,7 @@ interface OptionBtn {
   zone: Phaser.GameObjects.Zone;
   y: number;
   key: string;
+  dotR: number;
 }
 
 interface RoundItem {
@@ -249,24 +250,50 @@ export class GameScene extends Phaser.Scene {
   private buildOptions(): void {
     const n = this.mode.optionCount;
     const btnW = 340;
-    const btnH = n >= 4 ? 50 : 60;
-    const gap  = n >= 4 ? 10 : 12;
-    const startY = (CARD.y + CARD.h + 62) + btnH / 2;    // below streak line
+    // Animal mode makes the emoji the hero — Aya is 2 and picks by image,
+    // so buttons (and the emoji inside them) are sized up aggressively.
+    // Bing mode keeps the tighter layout since the name is the key signal.
+    const isAnimal = this.gameMode === 'animal';
+    const btnH = isAnimal
+      ? (n >= 4 ? 60 : 70)
+      : (n >= 4 ? 50 : 60);
+    const gap = isAnimal
+      ? (n >= 4 ? 8 : 12)
+      : (n >= 4 ? 10 : 12);
+    const dotR = isAnimal
+      ? (n >= 4 ? 24 : 28)
+      : 18;
+    const iconSize = isAnimal
+      ? (n >= 4 ? '38px' : '44px')
+      : '26px';
+    const txtSize = isAnimal
+      ? (n >= 4 ? '20px' : '22px')
+      : '18px';
+    // Tighten the card-to-options gap for animal mode so the bigger
+    // buttons still fit comfortably above the safe-area.
+    const cardGap = isAnimal ? 40 : 62;
+    const dotCx   = isAnimal ? 42 : 34;
+    const startY  = (CARD.y + CARD.h + cardGap) + btnH / 2;
 
     for (let i = 0; i < n; i++) {
       const cx = W / 2;
       const cy = startY + i * (btnH + gap);
 
       const bg = this.add.graphics().setPosition(cx, cy);
-      // Left-side circular "dot" — emoji in animal mode, letter index in
-      // bing mode. Adds visual structure to what was previously a plain
-      // text-in-rectangle button.
-      const dot = this.add.graphics().setPosition(cx - btnW / 2 + 34, cy);
-      const icon = this.add.text(cx - btnW / 2 + 34, cy, '', {
-        fontFamily: F.body, fontSize: '26px', color: T.main,
+      // Left-side circular "dot" — emoji in animal mode, numbered index in
+      // bing mode. In animal mode the dot is sized up so the emoji inside
+      // reads instantly from across a small phone.
+      const dot = this.add.graphics().setPosition(cx - btnW / 2 + dotCx, cy);
+      const icon = this.add.text(cx - btnW / 2 + dotCx, cy, '', {
+        fontFamily: F.body, fontSize: iconSize, color: T.main,
       }).setOrigin(0.5);
-      const txt = this.add.text(cx - 26, cy, '', {
-        fontFamily: F.head, fontSize: '18px', color: T.main,
+      // Name text is centered within the horizontal space that remains
+      // to the right of the dot — gives the button a balanced feel without
+      // having to guess at label width.
+      const dotRightEdge = (cx - btnW / 2 + dotCx) + dotR;
+      const txtX = (dotRightEdge + (cx + btnW / 2 - 16)) / 2;
+      const txt = this.add.text(txtX, cy, '', {
+        fontFamily: F.head, fontSize: txtSize, color: T.main,
       }).setOrigin(0.5);
 
       const zone = this.add.zone(cx, cy, btnW, btnH).setInteractive({ cursor: 'pointer' });
@@ -275,7 +302,7 @@ export class GameScene extends Phaser.Scene {
       zone.on('pointerdown', () => this.onAnswer(i));
 
       this.drawOptionBg(bg, btnW, btnH, 'idle');
-      this.optionBtns.push({ bg, dot, icon, txt, zone, y: cy, key: '' });
+      this.optionBtns.push({ bg, dot, icon, txt, zone, y: cy, key: '', dotR });
       // keep btnW/btnH references for redraws
       (bg as unknown as { _w: number; _h: number })._w = btnW;
       (bg as unknown as { _w: number; _h: number })._h = btnH;
@@ -316,6 +343,7 @@ export class GameScene extends Phaser.Scene {
 
   private drawOptionDot(
     g: Phaser.GameObjects.Graphics,
+    r: number,
     state: 'idle' | 'hover' | 'correct' | 'wrong',
   ): void {
     g.clear();
@@ -324,16 +352,16 @@ export class GameScene extends Phaser.Scene {
     else if (state === 'wrong') fill = 0xffcdd2;
     else if (state === 'hover') fill = 0xfce4ec;
     g.fillStyle(fill, 1);
-    g.fillCircle(0, 0, 18);
+    g.fillCircle(0, 0, r);
     g.lineStyle(1.5, C.lavender, 0.5);
-    g.strokeCircle(0, 0, 18);
+    g.strokeCircle(0, 0, r);
   }
 
   private paintOption(i: number, state: 'idle' | 'hover' | 'correct' | 'wrong'): void {
     const btn = this.optionBtns[i];
     const { _w: w, _h: h } = btn.bg as unknown as { _w: number; _h: number };
     this.drawOptionBg(btn.bg, w, h, state);
-    this.drawOptionDot(btn.dot, state);
+    this.drawOptionDot(btn.dot, btn.dotR, state);
   }
 
   // ─── Round logic ───────────────────────────────────────────────────────

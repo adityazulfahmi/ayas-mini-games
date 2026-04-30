@@ -4,6 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Always Do First
 - **Invoke the `frontend-design` skill** before writing any frontend code, every session, no exceptions.
+- **Skim `docs/STATE.md` and `docs/decisions.md`** before changing anything load-bearing. The decisions log captures *why* certain choices look weird (body gradient direction, body::before dim, scene array resets, etc.) — undoing them tends to re-open bugs we already fixed.
 
 ## Screenshot workflow
 

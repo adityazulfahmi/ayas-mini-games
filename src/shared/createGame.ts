@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { F } from './theme';
 import { ensureLetterboxDimStyle } from './letterboxDim';
+import { mountLoading, dismissLoading } from './loadingScreen';
 
 /**
  * Wait for Fredoka One + Nunito to actually be usable before booting Phaser.
@@ -11,6 +12,9 @@ import { ensureLetterboxDimStyle } from './letterboxDim';
  * we actually use, then boot.
  */
 export async function waitForFonts(): Promise<void> {
+  // Show the loading cover before we even await fonts — heavy games
+  // (e.g. Who's That, Aya?) sit on a black canvas otherwise.
+  mountLoading();
   if (!document.fonts?.load) return;
   try {
     await Promise.all([
@@ -46,6 +50,10 @@ export function createGame(
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'game',
+    // Pink clear color so any frame rendered before the first scene's
+    // drawBg() runs already blends with the body gradient instead of
+    // flashing the WebGL default black.
+    backgroundColor: '#fce4ec',
     render: { antialias: true, pixelArt: false, roundPixels: false },
     scale: {
       mode: Phaser.Scale.FIT,
@@ -58,6 +66,12 @@ export function createGame(
   };
 
   const game = new Phaser.Game(config);
+  // Fade the loading cover after Phaser is fully booted plus one frame,
+  // so by the time the cover starts fading the title scene's bg has
+  // already painted underneath.
+  game.events.once(Phaser.Core.Events.READY, () => {
+    requestAnimationFrame(() => requestAnimationFrame(dismissLoading));
+  });
   if (import.meta.env?.DEV) {
     (window as unknown as { __game: Phaser.Game }).__game = game;
   }

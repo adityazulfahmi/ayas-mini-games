@@ -18,6 +18,7 @@ export default defineConfig({
         whosThat:    resolve(__dirname, 'ayas-whos-that/index.html'),
         connectMatch: resolve(__dirname, 'ayas-connect-match/index.html'),
         whoMakesSound: resolve(__dirname, 'ayas-who-makes-sound/index.html'),
+        whatsNext:    resolve(__dirname, 'ayas-whats-next/index.html'),
       },
     },
   },

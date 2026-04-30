@@ -17,6 +17,7 @@ Live at [adityazulfahmi.github.io/ayas-mini-games](https://adityazulfahmi.github
 | [🔍 Colour Hunt](./ayas-colour-hunt/) | A colour pops up — find the emoji that wears it. 30 seconds, 8 colour families, streak bonuses. |
 | [🔗 Connect the Match](./ayas-connect-match/) | Tap a friend on the left and its pair on the right to draw a match line. Rounds of 3 pairs refill automatically for 30 seconds of matching. |
 | [🔊 Who Makes This Sound?](./ayas-who-makes-sound/) | Tap the speaker to hear an animal sound, then tap the right animal from four big choices. 5 rounds, 10 animals, toddler-easy. |
+| [🔮 What Comes Next?](./ayas-whats-next/) | Two modes: **Pattern** (spot the next item in an ABAB row of shapes & colours) or **Story** (pick what comes after a 3-frame growing-up story). 5 rounds. |
 
 ## 🎨 Design
 

@@ -46,11 +46,11 @@ export class TitleScene extends Phaser.Scene {
 
     // Hero silhouette — Bing image OR darkened animal emoji, swapped on mode change
     this.heroBing = this.add.image(W / 2, 250, 'bing').setDisplaySize(120, 155);
-    this.heroBing.setTintFill(0x2d1b3d);
+    this.heroBing.setTint(0x2d1b3d).setTintMode(Phaser.TintModes.FILL);
     this.heroAnimal = this.add.text(W / 2, 250, '🐼', {
       fontFamily: F.body, fontSize: '120px',
     }).setOrigin(0.5);
-    this.heroAnimal.setTintFill(0x2d1b3d);
+    this.heroAnimal.setTint(0x2d1b3d).setTintMode(Phaser.TintModes.FILL);
 
     this.tweens.add({
       targets: [this.heroBing, this.heroAnimal],
@@ -220,7 +220,7 @@ export class TitleScene extends Phaser.Scene {
       // gets a feel for the silhouette-guessing flow before starting.
       const preview = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
       this.heroAnimal.setText(preview.emoji);
-      this.heroAnimal.setTintFill(0x2d1b3d);
+      this.heroAnimal.setTint(0x2d1b3d).setTintMode(Phaser.TintModes.FILL);
       this.subtitleTxt.setText('Guess the animal\nfrom its shadow! 🐾');
       this.drawHintChip(`${MODE.easy.rounds} mystery critters await 🔍`);
     }

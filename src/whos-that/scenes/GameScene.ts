@@ -377,10 +377,10 @@ export class GameScene extends Phaser.Scene {
     // Show the mode-appropriate silhouette renderer.
     if (this.gameMode === 'bing') {
       this.silhouetteImg.setTexture(item.key).setDisplaySize(SILH.w, SILH.h);
-      this.silhouetteImg.setTintFill(this.mode.tintFill);
+      this.silhouetteImg.setTint(this.mode.tintFill).setTintMode(Phaser.TintModes.FILL);
     } else {
       this.silhouetteEmoji.setText(item.emoji ?? item.label);
-      this.silhouetteEmoji.setTintFill(this.mode.tintFill);
+      this.silhouetteEmoji.setTint(this.mode.tintFill).setTintMode(Phaser.TintModes.FILL);
     }
 
     // Build options: correct + N-1 distractors pulled from the same pool.

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { C, T, F } from './theme';
+import { ensureLetterboxDimStyle } from './letterboxDim';
 
 export interface EndPopupData {
   emoji: string;
@@ -53,6 +54,8 @@ export function createEndPopup(
   sceneH: number,
   opts: EndPopupOptions,
 ): EndPopup {
+  ensureLetterboxDimStyle();
+
   const dim = scene.add.graphics();
   dim.fillStyle(0x2d1b3d, 0.55);
   dim.fillRect(-sceneW / 2, -sceneH / 2, sceneW, sceneH);
@@ -151,9 +154,17 @@ export function createEndPopup(
   const overlay = scene.add.container(sceneW / 2, sceneH / 2, parts);
   overlay.setVisible(false).setDepth(100);
 
-  againBtn.zone.on('pointerdown', opts.onPlayAgain);
-  homeBtn.zone.on('pointerdown', opts.onHome);
-  allGamesBtn.zone.on('pointerdown', opts.onAllGames);
+  const wrap = (cb: () => void) => () => {
+    document.body.classList.remove('aya-popup-open');
+    cb();
+  };
+  againBtn.zone.on('pointerdown', wrap(opts.onPlayAgain));
+  homeBtn.zone.on('pointerdown', wrap(opts.onHome));
+  allGamesBtn.zone.on('pointerdown', wrap(opts.onAllGames));
+
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+    document.body.classList.remove('aya-popup-open');
+  });
 
   function show(data: EndPopupData): void {
     emojiTxt.setText(data.emoji);
@@ -185,6 +196,7 @@ export function createEndPopup(
       stars.forEach(s => s.setVisible(false));
     }
 
+    document.body.classList.add('aya-popup-open');
     overlay.setVisible(true).setScale(0.85).setAlpha(0);
     scene.tweens.add({
       targets: overlay, scale: 1, alpha: 1,
@@ -211,6 +223,7 @@ export function createEndPopup(
 
   function hide(): void {
     overlay.setVisible(false);
+    document.body.classList.remove('aya-popup-open');
   }
 
   return { overlay, show, hide };
@@ -264,3 +277,4 @@ function makeOutlineButton(
   zone.on('pointerout',  () => scene.tweens.add({ targets: container, scale: 1, duration: 120 }));
   return { container, zone };
 }
+

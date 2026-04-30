@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { F } from './theme';
+import { ensureLetterboxDimStyle } from './letterboxDim';
 
 /**
  * Wait for Fredoka One + Nunito to actually be usable before booting Phaser.
@@ -40,6 +41,7 @@ export function createGame(
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   patchTextResolutionOnce(dpr);
+  ensureLetterboxDimStyle();
 
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,

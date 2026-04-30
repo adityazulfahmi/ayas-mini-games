@@ -38,6 +38,9 @@ export class GameScene extends Phaser.Scene {
   private currentAnimal!: Animal;
   private options: Animal[] = [];
   private cards: AnimalCard[] = [];
+  // Pre-shuffled queue of distinct correct answers — one per round —
+  // so the player never hears the same animal twice in a single game.
+  private roundAnimals: Animal[] = [];
 
   private speakerBg!: Phaser.GameObjects.Graphics;
   private speakerIcon!: Phaser.GameObjects.Graphics;
@@ -58,6 +61,7 @@ export class GameScene extends Phaser.Scene {
     this.score = 0;
     this.cards = [];
     this.progressDots = [];
+    this.roundAnimals = shuffle(ANIMALS).slice(0, TOTAL_ROUNDS);
 
     this.buildHeader();
     this.buildSpeaker();
@@ -276,8 +280,8 @@ export class GameScene extends Phaser.Scene {
     this.answered = false;
     this.renderDots();
 
-    // Pick the correct animal + 3 distractors
-    this.currentAnimal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+    // Pick the correct animal from the pre-shuffled queue + 3 distractors
+    this.currentAnimal = this.roundAnimals[this.roundIndex];
     const wrong = shuffle(ANIMALS.filter(a => a.name !== this.currentAnimal.name))
       .slice(0, OPTIONS_PER_ROUND - 1);
     this.options = shuffle([this.currentAnimal, ...wrong]);

@@ -24,22 +24,30 @@
   <ellipse cx="80" cy="119" rx="4" ry="2"  fill="white" opacity="0.65"/>
   <ellipse cx="114" cy="80" rx="4.5" ry="2.2" fill="white" opacity="0.65"/>
 
-  <!-- Target swatch -->
-  <circle cx="244" cy="64" r="40" fill="#80cbc4" opacity="0.22"/>
-  <circle cx="244" cy="64" r="34" fill="url(#cm-target)" stroke="#80cbc4" stroke-width="3"/>
-  <ellipse cx="234" cy="52" rx="11" ry="5" fill="white" opacity="0.85"/>
-  <text x="244" y="116" font-family="Fredoka One, system-ui, sans-serif" font-size="11" font-weight="700" fill="#9c4dcc" text-anchor="middle" opacity="0.85">match this!</text>
-
-  <!-- Brush -->
-  <g transform="rotate(-22 230 132)">
-    <rect x="186" y="128" width="60" height="9" rx="2" fill="#a1887f"/>
-    <rect x="244" y="126" width="14" height="13" rx="2" fill="#cfd8dc"/>
-    <path d="M 258 124 L 282 122 L 282 142 L 258 140 Z" fill="#f06292"/>
-    <path d="M 282 122 Q 295 132 282 142 Z" fill="#ec407a"/>
+  <!-- "MATCH THIS!" label pill, ABOVE the target swatch (where the brush
+       can't reach) — sits in clear space between swatch and the top edge -->
+  <g>
+    <rect x="200" y="10" width="88" height="22" rx="11" fill="white" stroke="#ce93d8" stroke-width="1.5"/>
+    <text x="244" y="26" font-family="Fredoka One, system-ui, sans-serif" font-size="11" font-weight="700" fill="#9c4dcc" text-anchor="middle">MATCH THIS!</text>
   </g>
-  <circle cx="278" cy="158" r="3" fill="#f06292" opacity="0.7"/>
-  <circle cx="290" cy="166" r="2" fill="#f06292" opacity="0.5"/>
 
-  <text x="220" y="32" font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
-  <text x="290" y="50" font-size="12" fill="#ce93d8" opacity="0.85">✨</text>
+  <!-- Target swatch — moved down slightly so the label pill above has room -->
+  <circle cx="244" cy="80" r="40" fill="#80cbc4" opacity="0.22"/>
+  <circle cx="244" cy="80" r="34" fill="url(#cm-target)" stroke="#80cbc4" stroke-width="3"/>
+  <ellipse cx="234" cy="68" rx="11" ry="5" fill="white" opacity="0.85"/>
+
+  <!-- Brush — points from palette toward target -->
+  <g transform="rotate(-22 230 144)">
+    <rect x="186" y="140" width="60" height="9" rx="2" fill="#a1887f"/>
+    <rect x="244" y="138" width="14" height="13" rx="2" fill="#cfd8dc"/>
+    <path d="M 258 136 L 282 134 L 282 154 L 258 152 Z" fill="#f06292"/>
+    <path d="M 282 134 Q 295 144 282 154 Z" fill="#ec407a"/>
+  </g>
+  <!-- Paint drips beneath brush -->
+  <circle cx="276" cy="170" r="3" fill="#f06292" opacity="0.7"/>
+  <circle cx="288" cy="176" r="2" fill="#f06292" opacity="0.5"/>
+
+  <!-- Sparkles -->
+  <text x="296" y="60"  font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
+  <text x="190" y="50"  font-size="12" fill="#ce93d8" opacity="0.85">✨</text>
 </svg>

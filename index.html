@@ -586,37 +586,80 @@
               <stop offset="0%" style="stop-color:#fce4ec"/>
               <stop offset="100%" style="stop-color:#ede7f6"/>
             </linearGradient>
+            <radialGradient id="bub-correct" cx="35%" cy="32%" r="65%">
+              <stop offset="0%" style="stop-color:#ffffff"/>
+              <stop offset="55%" style="stop-color:#e0f7fa"/>
+              <stop offset="100%" style="stop-color:#b2ebf2"/>
+            </radialGradient>
+            <radialGradient id="bub-idle" cx="32%" cy="30%" r="70%">
+              <stop offset="0%" style="stop-color:#ffffff" stop-opacity="1"/>
+              <stop offset="60%" style="stop-color:#ffffff" stop-opacity="0.96"/>
+              <stop offset="100%" style="stop-color:#f3e7f8" stop-opacity="1"/>
+            </radialGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg9)"/>
 
-          <!-- Prompt pill at top: "Find the FRUIT!" -->
-          <rect x="64" y="16" width="192" height="34" rx="17" fill="white" stroke="#ce93d8" stroke-width="2"/>
-          <text x="78"  y="38" font-size="18" text-anchor="start">🍎</text>
-          <text x="160" y="38" font-family="Fredoka One, sans-serif" font-size="13" fill="#6a1b9a" text-anchor="middle" font-weight="700">Find the FRUIT!</text>
+          <!-- Floating ambient bubbles -->
+          <circle cx="28"  cy="148" r="14" fill="white" opacity="0.45" stroke="#ce93d8" stroke-opacity="0.4"/>
+          <circle cx="22"  cy="142" r="4"  fill="white" opacity="0.85"/>
+          <circle cx="298" cy="32"  r="11" fill="white" opacity="0.50" stroke="#ce93d8" stroke-opacity="0.4"/>
+          <circle cx="295" cy="29"  r="3"  fill="white" opacity="0.85"/>
+          <circle cx="305" cy="118" r="8"  fill="white" opacity="0.40" stroke="#ce93d8" stroke-opacity="0.3"/>
+          <circle cx="14"  cy="42"  r="6"  fill="white" opacity="0.40" stroke="#ce93d8" stroke-opacity="0.3"/>
 
-          <!-- 2x2 grid of mixed items, fruit highlighted (mint glow) -->
-          <!-- top-left: musical instrument (instrument distractor) -->
-          <rect x="46"  y="66" width="64" height="64" rx="14" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
-          <text x="78"  y="112" font-size="32" text-anchor="middle">🎸</text>
+          <!-- Prompt speech-bubble at top -->
+          <g>
+            <rect x="60" y="14" width="200" height="36" rx="18" fill="white" stroke="#ce93d8" stroke-width="2"/>
+            <ellipse cx="160" cy="22" rx="78" ry="6" fill="white" opacity="0.6"/>
+            <text x="78"  y="38" font-size="18" text-anchor="start">🍎</text>
+            <text x="170" y="38" font-family="Fredoka One, sans-serif" font-size="14" fill="#6a1b9a" text-anchor="middle" font-weight="700">Find the FRUIT!</text>
+            <!-- bubble tail -->
+            <path d="M 152 50 L 160 62 L 168 50 Z" fill="white" stroke="#ce93d8" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="153" y1="50" x2="167" y2="50" stroke="white" stroke-width="3"/>
+          </g>
 
-          <!-- top-right: fruit (correct, mint glow) -->
-          <rect x="124" y="66" width="64" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3"/>
-          <text x="156" y="112" font-size="32" text-anchor="middle">🍓</text>
+          <!-- Cluster of bubble-cards. Strawberry is highlighted (mint
+               radial gradient + outer ring) — that's the "correct" pick. -->
 
-          <!-- bottom-left: building -->
-          <rect x="46"  y="142" width="64" height="34" rx="14" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
-          <text x="78"  y="170" font-size="22" text-anchor="middle">🏠</text>
+          <!-- top-left bubble: drum (instrument distractor) -->
+          <g>
+            <ellipse cx="60" cy="118" rx="30" ry="6" fill="#9c4dcc" opacity="0.10"/>
+            <circle cx="60" cy="106" r="28" fill="url(#bub-idle)" stroke="#ce93d8" stroke-width="2"/>
+            <ellipse cx="52" cy="96" rx="11" ry="5" fill="white" opacity="0.85"/>
+            <text x="60" y="116" font-size="28" text-anchor="middle">🥁</text>
+          </g>
 
-          <!-- bottom-right: tool -->
-          <rect x="124" y="142" width="64" height="34" rx="14" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
-          <text x="156" y="170" font-size="22" text-anchor="middle">🔨</text>
+          <!-- center bubble: STRAWBERRY (correct) — slightly bigger, mint glow -->
+          <g>
+            <circle cx="130" cy="100" r="38" fill="#80cbc4" opacity="0.22"/>
+            <ellipse cx="130" cy="118" rx="34" ry="6" fill="#9c4dcc" opacity="0.14"/>
+            <circle cx="130" cy="100" r="32" fill="url(#bub-correct)" stroke="#80cbc4" stroke-width="2.5"/>
+            <ellipse cx="120" cy="88" rx="13" ry="6" fill="white" opacity="0.9"/>
+            <text x="130" y="112" font-size="32" text-anchor="middle">🍓</text>
+            <!-- target reticle hovering above -->
+            <text x="130" y="62" font-size="20" text-anchor="middle">🎯</text>
+          </g>
 
-          <!-- Right column: bubbles + target ring -->
-          <circle cx="244" cy="92"  r="18" fill="none" stroke="#ce93d8" stroke-width="2" opacity="0.55"/>
-          <circle cx="278" cy="124" r="11" fill="none" stroke="#ce93d8" stroke-width="2" opacity="0.45"/>
-          <text x="244" y="100" font-size="22" text-anchor="middle">🫧</text>
-          <text x="280" y="68"  font-size="20" text-anchor="middle">🎯</text>
-          <text x="298" y="158" font-size="14" text-anchor="middle" fill="#ce93d8" opacity="0.7">✨</text>
+          <!-- right bubble: house (building distractor) -->
+          <g>
+            <ellipse cx="208" cy="124" rx="28" ry="6" fill="#9c4dcc" opacity="0.10"/>
+            <circle cx="208" cy="112" r="26" fill="url(#bub-idle)" stroke="#ce93d8" stroke-width="2"/>
+            <ellipse cx="200" cy="103" rx="10" ry="4.5" fill="white" opacity="0.85"/>
+            <text x="208" y="121" font-size="26" text-anchor="middle">🏠</text>
+          </g>
+
+          <!-- bottom-right bubble: hammer (tool distractor) -->
+          <g>
+            <ellipse cx="270" cy="160" rx="22" ry="5" fill="#9c4dcc" opacity="0.10"/>
+            <circle cx="270" cy="150" r="22" fill="url(#bub-idle)" stroke="#ce93d8" stroke-width="2"/>
+            <ellipse cx="263" cy="142" rx="8" ry="4" fill="white" opacity="0.85"/>
+            <text x="270" y="159" font-size="22" text-anchor="middle">🔨</text>
+          </g>
+
+          <!-- Pop sparkles around the correct answer -->
+          <text x="166" y="80"  font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
+          <text x="98"  y="80"  font-size="12" fill="#ce93d8" opacity="0.85">✨</text>
+          <text x="148" y="142" font-size="11" fill="#ce93d8" opacity="0.7">🫧</text>
         </svg>
       </div>
       <div class="card-body">

@@ -8,15 +8,17 @@ import {
   CONFETTI_EMOJIS, DISTRACTOR_POOLS, OPTIONS_PER_ROUND, TARGETS,
   TOTAL_ROUNDS, type TargetCategory,
 } from '../data';
+import { BUBBLE_STYLES, drawBubble, popShockwave, spawnBubbleField } from './bubbles';
 
 const W = 420, H = 780;
 
-// 2×2 answer grid
+// 2×2 answer grid — bubble cards
 const CARD_W = 152;
 const CARD_H = 152;
+const CARD_R = 60;       // very rounded — reads as "bubble" not "card"
 const CARD_GAP = 18;
 const GRID_CX = W / 2;
-const GRID_TOP_Y = 312;
+const GRID_TOP_Y = 318;
 const ROW_GAP = CARD_H + CARD_GAP;
 const COL_GAP = CARD_W + CARD_GAP;
 const EMOJI_PX = 86;
@@ -28,6 +30,8 @@ interface AnswerCard {
   bg: Phaser.GameObjects.Graphics;
   txt: Phaser.GameObjects.Text;
   zone: Phaser.GameObjects.Zone;
+  /** Per-card idle bob, kept so we can stop it on tap */
+  idleBob?: Phaser.Tweens.Tween;
   cx: number;
   cy: number;
   value: string;
@@ -47,8 +51,8 @@ export class GameScene extends Phaser.Scene {
   private answered = false;
 
   private current!: RoundData;
-  // Pre-shuffled per-round target categories so categories get spread across
-  // the 5 rounds with at most one repeat (4 categories, 5 rounds).
+  // Pre-shuffled per-round target categories so categories spread across the
+  // 5 rounds with at most one repeat (4 categories, 5 rounds).
   private roundCategories: TargetCategory[] = [];
 
   private scoreTxt!: Phaser.GameObjects.Text;
@@ -63,6 +67,7 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     drawBg(this);
+    spawnBubbleField(this, W, H, 12);
 
     this.roundIndex = 0;
     this.score = 0;
@@ -136,27 +141,42 @@ export class GameScene extends Phaser.Scene {
 
   private paintPrompt(): void {
     const cx = W / 2, cy = PROMPT_Y;
-    const padX = 24, h = 56;
+    const padX = 24, h = 60;
     const w = Math.max(this.promptTxt.width + padX * 2, 280);
+    const x = cx - w / 2, y = cy - h / 2;
     this.promptBg.clear();
-    this.promptBg.fillStyle(C.shadow, 0.14);
-    this.promptBg.fillRoundedRect(cx - w / 2 + 2, cy - h / 2 + 6, w, h, h / 2);
+    // Drop shadow
+    this.promptBg.fillStyle(C.shadow, 0.18);
+    this.promptBg.fillRoundedRect(x + 2, y + 8, w, h, h / 2);
+    // Body — lavender-tinted pill so it feels distinct from white answer bubbles
     this.promptBg.fillStyle(C.white, 1);
-    this.promptBg.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
+    this.promptBg.fillRoundedRect(x, y, w, h, h / 2);
     this.promptBg.lineStyle(2.5, C.lavender, 0.7);
-    this.promptBg.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
+    this.promptBg.strokeRoundedRect(x, y, w, h, h / 2);
+    // Gloss highlight along top
+    this.promptBg.fillStyle(C.white, 0.6);
+    this.promptBg.fillEllipse(x + w * 0.5, y + h * 0.22, w * 0.78, h * 0.30);
+    // Tail pointing toward the grid below — speech-bubble feel
+    this.promptBg.fillStyle(C.white, 1);
+    this.promptBg.fillTriangle(cx - 10, y + h - 1, cx + 10, y + h - 1, cx, y + h + 12);
+    this.promptBg.lineStyle(2.5, C.lavender, 0.7);
+    this.promptBg.lineBetween(cx - 10, y + h - 1, cx, y + h + 12);
+    this.promptBg.lineBetween(cx + 10, y + h - 1, cx, y + h + 12);
+    // Mask the seam where the tail meets the pill so the stroke looks continuous
+    this.promptBg.fillStyle(C.white, 1);
+    this.promptBg.fillRect(cx - 9, y + h - 2, 18, 3);
   }
 
-  // ─── Cards ────────────────────────────────────────────────────────────
+  // ─── Cards (bubbles) ───────────────────────────────────────────────────
 
   private buildCards(): void {
     const positions: [number, number][] = [
-      [GRID_CX - COL_GAP / 2, GRID_TOP_Y],                    // top-left
-      [GRID_CX + COL_GAP / 2, GRID_TOP_Y],                    // top-right
-      [GRID_CX - COL_GAP / 2, GRID_TOP_Y + ROW_GAP],          // bottom-left
-      [GRID_CX + COL_GAP / 2, GRID_TOP_Y + ROW_GAP],          // bottom-right
+      [GRID_CX - COL_GAP / 2, GRID_TOP_Y],
+      [GRID_CX + COL_GAP / 2, GRID_TOP_Y],
+      [GRID_CX - COL_GAP / 2, GRID_TOP_Y + ROW_GAP],
+      [GRID_CX + COL_GAP / 2, GRID_TOP_Y + ROW_GAP],
     ];
-    positions.forEach(([cx, cy]) => {
+    positions.forEach(([cx, cy], i) => {
       const bg = this.add.graphics();
       const txt = this.add.text(cx, cy, '', {
         fontFamily: F.body, fontSize: `${EMOJI_PX}px`,
@@ -165,7 +185,11 @@ export class GameScene extends Phaser.Scene {
 
       const card: AnswerCard = { bg, txt, zone, cx, cy, value: '', state: 'idle' };
       this.cards.push(card);
-      this.paintCard(card, 'idle');
+      this.paintCardState(card);
+
+      // Continuous lazy bob — each bubble out of phase so the grid breathes.
+      // Stopped on tap; restarted at next loadRound().
+      this.startIdleBob(card, i);
 
       zone.on('pointerdown', () => this.onCardTap(card));
       zone.on('pointerover', () => {
@@ -179,29 +203,22 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private paintCard(card: AnswerCard, state: 'idle' | 'correct' | 'wrong'): void {
-    card.state = state;
-    const x = card.cx - CARD_W / 2, y = card.cy - CARD_H / 2;
-    const g = card.bg;
-    g.clear();
-    g.fillStyle(C.shadow, 0.18);
-    g.fillRoundedRect(x + 2, y + 8, CARD_W, CARD_H, 26);
-    if (state === 'correct') {
-      g.fillStyle(C.mintBg, 1);
-      g.fillRoundedRect(x, y, CARD_W, CARD_H, 26);
-      g.lineStyle(3.5, C.mint, 1);
-      g.strokeRoundedRect(x, y, CARD_W, CARD_H, 26);
-    } else if (state === 'wrong') {
-      g.fillStyle(C.white, 0.55);
-      g.fillRoundedRect(x, y, CARD_W, CARD_H, 26);
-      g.lineStyle(2.5, C.lavender, 0.4);
-      g.strokeRoundedRect(x, y, CARD_W, CARD_H, 26);
-    } else {
-      g.fillStyle(C.white, 1);
-      g.fillRoundedRect(x, y, CARD_W, CARD_H, 26);
-      g.lineStyle(2.5, C.lavender, 0.85);
-      g.strokeRoundedRect(x, y, CARD_W, CARD_H, 26);
-    }
+  private startIdleBob(card: AnswerCard, i: number): void {
+    card.idleBob?.stop();
+    card.idleBob = this.tweens.add({
+      targets: [card.bg, card.txt],
+      y: '+=6',
+      duration: 1700 + i * 160,
+      delay: i * 200,
+      ease: 'Sine.InOut',
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
+  private paintCardState(card: AnswerCard): void {
+    const style = BUBBLE_STYLES[card.state];
+    drawBubble(card.bg, card.cx, card.cy, CARD_W, CARD_H, CARD_R, style);
   }
 
   // ─── Round logic ──────────────────────────────────────────────────────
@@ -234,8 +251,10 @@ export class GameScene extends Phaser.Scene {
     this.cards.forEach((card, i) => {
       card.value = this.current.options[i];
       card.txt.setText(card.value).setScale(0).setAlpha(1);
-      this.paintCard(card, 'idle');
+      card.state = 'idle';
+      this.paintCardState(card);
       card.zone.setInteractive({ cursor: 'pointer' });
+      this.startIdleBob(card, i);
       this.tweens.add({
         targets: card.txt, scale: 1,
         delay: 120 + i * 90, duration: 320, ease: 'Back.Out',
@@ -243,12 +262,6 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  /**
-   * Build a single round: pick the correct item from the target pool, then
-   * three distractors — each from a *different* extreme distractor pool —
-   * so no two cards on screen feel category-adjacent. Distractor categories
-   * are reshuffled per round.
-   */
   private makeRound(category: TargetCategory): RoundData {
     const pool = TARGETS[category].items;
     const correct = pool[Math.floor(Math.random() * pool.length)];
@@ -274,17 +287,24 @@ export class GameScene extends Phaser.Scene {
 
   private handleWrong(card: AnswerCard): void {
     this.firstTry = false;
-    this.paintCard(card, 'wrong');
+    card.state = 'wrong';
+    this.paintCardState(card);
     card.zone.disableInteractive();
     sounds.wrong();
-    // Shake + dim, but the round stays playable so Aya can try again.
+
+    // Soft jiggle: tilt + tiny scale wobble (instead of horizontal shake).
+    // Reads as "ehh, not that one" rather than punitive.
+    card.idleBob?.stop();
     this.tweens.add({
       targets: [card.bg, card.txt],
-      x: '+=8',
-      duration: 70, yoyo: true, repeat: 3,
+      angle: { from: -6, to: 6 },
+      duration: 90, yoyo: true, repeat: 2,
       onComplete: () => {
-        card.bg.x = 0; card.txt.x = card.cx;
-        this.tweens.add({ targets: card.txt, alpha: 0.5, duration: 200 });
+        card.bg.angle = 0; card.txt.angle = 0;
+        this.tweens.add({
+          targets: card.txt, alpha: 0.45, scale: 0.9,
+          duration: 220,
+        });
       },
     });
   }
@@ -297,35 +317,45 @@ export class GameScene extends Phaser.Scene {
 
     this.cards.forEach(c => {
       c.zone.disableInteractive();
+      c.idleBob?.stop();
       if (c === card) {
-        this.paintCard(c, 'correct');
-        this.tweens.add({ targets: c.txt, scale: 1.18, duration: 220, ease: 'Back.Out' });
+        c.state = 'correct';
+        this.paintCardState(c);
+        // Pop sequence: pre-stretch bubble briefly, then settle into final
+        this.tweens.add({
+          targets: c.txt,
+          scale: { from: 1, to: 1.28 },
+          duration: 180, ease: 'Back.Out',
+          yoyo: true,
+          onComplete: () => { c.txt.setScale(1.18); },
+        });
+        // Expanding ring — the actual "pop"
+        popShockwave(this, c.cx, c.cy, CARD_W * 0.45, CARD_W * 0.95);
       } else if (c.state === 'idle') {
         this.tweens.add({ targets: [c.bg, c.txt], alpha: 0.4, duration: 220 });
       }
     });
 
     this.popBurst(card.cx, card.cy);
-
-    this.time.delayedCall(900, () => this.nextRound());
+    this.time.delayedCall(950, () => this.nextRound());
   }
 
-  /** Bubble-pop sparkle radiating from the tapped card */
+  /** Sparkle burst radiating from the popped bubble */
   private popBurst(cx: number, cy: number): void {
     const sparks = ['🫧', '✨', '🎯', '⭐', '💖'];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
       const s = this.add.text(cx, cy, sparks[i % sparks.length], {
         fontFamily: F.body, fontSize: '24px',
       }).setOrigin(0.5).setAlpha(0.95);
-      const angle = (i / 8) * Math.PI * 2 + Math.random() * 0.3;
-      const dist = 80 + Math.random() * 30;
+      const angle = (i / 10) * Math.PI * 2 + Math.random() * 0.3;
+      const dist = 80 + Math.random() * 40;
       this.tweens.add({
         targets: s,
         x: cx + Math.cos(angle) * dist,
         y: cy + Math.sin(angle) * dist - 24,
         alpha: 0,
-        scale: { from: 0.4, to: 1.5 },
-        duration: 720, ease: 'Cubic.Out',
+        scale: { from: 0.4, to: 1.55 },
+        duration: 760, ease: 'Cubic.Out',
         onComplete: () => s.destroy(),
       });
     }

@@ -32,9 +32,11 @@ function spawnOne(
   const opacity = 0.10 + Math.random() * 0.18;
   const duration = 9000 + Math.random() * 7000;
 
-  // Default depth — bubbles render right after drawBg() (since they're
-  // added later) but before all UI (since UI is added later still).
-  const g = scene.add.graphics();
+  // Explicit low depth so respawned bubbles (added to the display list
+  // *after* the UI) still render behind the prompt and answer cards.
+  // drawBg() is pinned at -1000; UI lives at default 0 or higher; -500
+  // sits between them.
+  const g = scene.add.graphics().setDepth(-500);
 
   // Bubble outline + soft fill
   g.fillStyle(C.white, opacity);

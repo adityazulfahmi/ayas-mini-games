@@ -6,6 +6,10 @@ export function drawBg(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   g.fillGradientStyle(C.bg1, C.bg1, C.bg2, C.bg2, 1);
   g.fillRect(0, 0, W, H);
+  // Pin the bg gradient to the back regardless of add-order. Lets scenes
+  // layer atmospheric effects (e.g. Pick & Pop's drifting bubbles) above
+  // the gradient without worrying about display-list ordering.
+  g.setDepth(-1000);
 }
 
 export function panel(

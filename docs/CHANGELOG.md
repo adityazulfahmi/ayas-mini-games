@@ -10,6 +10,27 @@ reference the commit hash so you can `git show <hash>` for the diff.
 
 ---
 
+## 2026-05-01 — Pick & Pop: pick-a-category mode
+
+- Title scene's 4-bubble cluster now drives **category selection**: tap
+  any bubble to lock in fruit / animal / vehicle / instrument; "Let's
+  Pop!" runs 5 rounds on that category with distinct items each round.
+  Vegetable is no longer a target — demoted to a distractor pool but
+  still excluded on FRUIT rounds (food/food adjacency rule preserved).
+  Per-target distractor exclusions are now declared on `TARGETS[k]
+  .excludedDistractorPools` rather than special-cased in scene code.
+  Prompt phrasing also rotates by round ("Find the FRUIT!" → "Where's
+  the FRUIT?" → "Tap the FRUIT!" → …) so the screen stays fresh.
+
+## 2026-05-01 — Pick & Pop: bubble-themed redesign
+
+- Pick & Pop's title and game scenes redesigned around a literal bubble
+  motif: drifting backdrop bubbles, glossy bubble-shaped cards, speech-
+  bubble prompt with a tail pointing at the grid, expanding-ring
+  shockwave on correct, tilt-jiggle (not horizontal shake) on wrong.
+  Landing card SVG also rebuilt with radial-gradient bubbles so it's
+  visibly distinct on the menu page.
+
 ## 2026-05-01 — Pick & Pop! game
 
 - **Add 'Pick & Pop!' game** — 10th game in the collection. Toddler taps the

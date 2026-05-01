@@ -52,11 +52,14 @@ is parked: what it is, why it's parked, where the work-in-progress is.
 
 ## Recent direction
 
-Most recent push (2026-05-01): added 10th game **Pick & Pop!** — pick the
-matching item from a 2×2 grid where distractors are pulled from "extreme"
-non-overlapping categories (instruments, buildings, tools, etc.) so a 2yo
-never has to disambiguate between, e.g., a fruit and a vegetable. Tech
-stack on Phaser 4, Vite 8, TS 6, Node 22. No active migration in flight.
+Most recent push (2026-05-01): **Pick & Pop!** redesigned around a literal
+bubble motif (glossy bubble cards, drifting backdrop, speech-bubble
+prompt, pop shockwave + sparkle on correct). Title scene now lets the
+player choose a category up front (fruit / animal / vehicle / instrument)
+— five rounds run on the chosen category with distinct items each round.
+Vegetable was demoted from target to distractor pool; per-target
+`excludedDistractorPools` keeps food/food adjacency out of fruit rounds.
+Tech stack on Phaser 4, Vite 8, TS 6, Node 22.
 
 ## When this file goes stale
 

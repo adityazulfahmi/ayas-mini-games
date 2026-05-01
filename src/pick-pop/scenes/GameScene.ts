@@ -5,17 +5,16 @@ import { C, T, F } from '@shared/theme';
 import { sounds } from '@shared/audio';
 import { shuffle } from '@shared/utils';
 import {
-  CONFETTI_EMOJIS, DISTRACTOR_POOLS, OPTIONS_PER_ROUND, TARGETS,
-  TOTAL_ROUNDS, type TargetCategory,
+  CONFETTI_EMOJIS, DISTRACTOR_POOLS, OPTIONS_PER_ROUND, PROMPT_VARIANTS,
+  TARGETS, TOTAL_ROUNDS, type TargetCategory,
 } from '../data';
 import { BUBBLE_STYLES, drawBubble, popShockwave, spawnBubbleField } from './bubbles';
 
 const W = 420, H = 780;
 
-// 2×2 answer grid — bubble cards
 const CARD_W = 152;
 const CARD_H = 152;
-const CARD_R = 60;       // very rounded — reads as "bubble" not "card"
+const CARD_R = 60;
 const CARD_GAP = 18;
 const GRID_CX = W / 2;
 const GRID_TOP_Y = 318;
@@ -23,14 +22,12 @@ const ROW_GAP = CARD_H + CARD_GAP;
 const COL_GAP = CARD_W + CARD_GAP;
 const EMOJI_PX = 86;
 
-// Prompt pill
 const PROMPT_Y = 198;
 
 interface AnswerCard {
   bg: Phaser.GameObjects.Graphics;
   txt: Phaser.GameObjects.Text;
   zone: Phaser.GameObjects.Zone;
-  /** Per-card idle bob, kept so we can stop it on tap */
   idleBob?: Phaser.Tweens.Tween;
   cx: number;
   cy: number;
@@ -39,23 +36,29 @@ interface AnswerCard {
 }
 
 interface RoundData {
-  category: TargetCategory;
   correct: string;
   options: string[];
 }
 
+interface SceneInit { category?: TargetCategory }
+
 export class GameScene extends Phaser.Scene {
+  private category: TargetCategory = 'fruit';
   private roundIndex = 0;
   private score = 0;
   private firstTry = true;
   private answered = false;
 
   private current!: RoundData;
-  // Pre-shuffled per-round target categories so categories spread across the
-  // 5 rounds with at most one repeat (4 categories, 5 rounds).
-  private roundCategories: TargetCategory[] = [];
+  /**
+   * Pre-shuffled correct-answer queue: 5 distinct items from the chosen
+   * category's pool. Aya never sees the same fruit (or animal, etc.)
+   * twice in a single playthrough.
+   */
+  private correctQueue: string[] = [];
 
   private scoreTxt!: Phaser.GameObjects.Text;
+  private headerTitleTxt!: Phaser.GameObjects.Text;
   private progressDots: Phaser.GameObjects.Graphics[] = [];
   private promptBg!: Phaser.GameObjects.Graphics;
   private promptTxt!: Phaser.GameObjects.Text;
@@ -65,6 +68,10 @@ export class GameScene extends Phaser.Scene {
 
   constructor() { super('GameScene'); }
 
+  init(data: SceneInit): void {
+    this.category = data?.category ?? 'fruit';
+  }
+
   create(): void {
     drawBg(this);
     spawnBubbleField(this, W, H, 12);
@@ -73,14 +80,18 @@ export class GameScene extends Phaser.Scene {
     this.score = 0;
     this.progressDots = [];
     this.cards = [];
-    this.roundCategories = this.makeCategoryQueue();
+
+    const pool = TARGETS[this.category].items;
+    // 5 distinct correct answers from the chosen category's pool. Pools
+    // are sized ≥8 so this never under-supplies.
+    this.correctQueue = shuffle(pool).slice(0, TOTAL_ROUNDS);
 
     this.buildHeader();
     this.buildPrompt();
     this.buildCards();
 
     this.endOverlay = createEndPopup(this, W, H, {
-      onPlayAgain: () => this.scene.restart(),
+      onPlayAgain: () => this.scene.restart({ category: this.category }),
       onHome:      () => this.scene.start('TitleScene'),
       onAllGames:  () => { window.location.href = '../'; },
     });
@@ -91,7 +102,8 @@ export class GameScene extends Phaser.Scene {
   // ─── Header ────────────────────────────────────────────────────────────
 
   private buildHeader(): void {
-    this.add.text(22, 34, '🎯 Pick & Pop', {
+    const t = TARGETS[this.category];
+    this.headerTitleTxt = this.add.text(22, 34, `${t.promptIcon} ${t.label}`, {
       fontFamily: F.head, fontSize: '17px', color: T.main,
     }).setOrigin(0, 0.5);
 
@@ -130,7 +142,7 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  // ─── Prompt ───────────────────────────────────────────────────────────
+  // ─── Prompt (speech bubble) ───────────────────────────────────────────
 
   private buildPrompt(): void {
     this.promptBg = this.add.graphics();
@@ -145,10 +157,8 @@ export class GameScene extends Phaser.Scene {
     const w = Math.max(this.promptTxt.width + padX * 2, 280);
     const x = cx - w / 2, y = cy - h / 2;
     this.promptBg.clear();
-    // Drop shadow
     this.promptBg.fillStyle(C.shadow, 0.18);
     this.promptBg.fillRoundedRect(x + 2, y + 8, w, h, h / 2);
-    // Body — lavender-tinted pill so it feels distinct from white answer bubbles
     this.promptBg.fillStyle(C.white, 1);
     this.promptBg.fillRoundedRect(x, y, w, h, h / 2);
     this.promptBg.lineStyle(2.5, C.lavender, 0.7);
@@ -156,13 +166,12 @@ export class GameScene extends Phaser.Scene {
     // Gloss highlight along top
     this.promptBg.fillStyle(C.white, 0.6);
     this.promptBg.fillEllipse(x + w * 0.5, y + h * 0.22, w * 0.78, h * 0.30);
-    // Tail pointing toward the grid below — speech-bubble feel
+    // Speech-bubble tail pointing at the grid
     this.promptBg.fillStyle(C.white, 1);
     this.promptBg.fillTriangle(cx - 10, y + h - 1, cx + 10, y + h - 1, cx, y + h + 12);
     this.promptBg.lineStyle(2.5, C.lavender, 0.7);
     this.promptBg.lineBetween(cx - 10, y + h - 1, cx, y + h + 12);
     this.promptBg.lineBetween(cx + 10, y + h - 1, cx, y + h + 12);
-    // Mask the seam where the tail meets the pill so the stroke looks continuous
     this.promptBg.fillStyle(C.white, 1);
     this.promptBg.fillRect(cx - 9, y + h - 2, 18, 3);
   }
@@ -186,9 +195,6 @@ export class GameScene extends Phaser.Scene {
       const card: AnswerCard = { bg, txt, zone, cx, cy, value: '', state: 'idle' };
       this.cards.push(card);
       this.paintCardState(card);
-
-      // Continuous lazy bob — each bubble out of phase so the grid breathes.
-      // Stopped on tap; restarted at next loadRound().
       this.startIdleBob(card, i);
 
       zone.on('pointerdown', () => this.onCardTap(card));
@@ -217,37 +223,24 @@ export class GameScene extends Phaser.Scene {
   }
 
   private paintCardState(card: AnswerCard): void {
-    const style = BUBBLE_STYLES[card.state];
-    drawBubble(card.bg, card.cx, card.cy, CARD_W, CARD_H, CARD_R, style);
+    drawBubble(card.bg, card.cx, card.cy, CARD_W, CARD_H, CARD_R, BUBBLE_STYLES[card.state]);
   }
 
   // ─── Round logic ──────────────────────────────────────────────────────
 
-  /**
-   * Build a 5-round category sequence. With 4 distinct target categories
-   * and 5 rounds, exactly one category will repeat. We shuffle the four
-   * unique categories first, then append a random fifth — guaranteeing
-   * every category appears at least once.
-   */
-  private makeCategoryQueue(): TargetCategory[] {
-    const all: TargetCategory[] = ['fruit', 'vegetable', 'vehicle', 'animal'];
-    const shuffled = shuffle(all);
-    const fifth = shuffled[Math.floor(Math.random() * shuffled.length)];
-    return [...shuffled, fifth];
-  }
-
   private loadRound(): void {
     this.answered = false;
     this.firstTry = true;
-    this.current = this.makeRound(this.roundCategories[this.roundIndex]);
+    this.current = this.makeRound();
     this.renderDots();
 
-    // Prompt: "<emoji> Find the <CATEGORY>!"
-    const t = TARGETS[this.current.category];
-    this.promptTxt.setText(`${t.promptIcon}  Find the ${t.label}!`);
+    // Prompt phrasing rotates by round so the screen stays fresh.
+    const t = TARGETS[this.category];
+    const variant = PROMPT_VARIANTS[this.roundIndex % PROMPT_VARIANTS.length];
+    const text = variant.replace('{LABEL}', t.label);
+    this.promptTxt.setText(`${t.promptIcon}  ${text}`);
     this.paintPrompt();
 
-    // Reset cards and stagger pop-in
     this.cards.forEach((card, i) => {
       card.value = this.current.options[i];
       card.txt.setText(card.value).setScale(0).setAlpha(1);
@@ -262,19 +255,25 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private makeRound(category: TargetCategory): RoundData {
-    const pool = TARGETS[category].items;
-    const correct = pool[Math.floor(Math.random() * pool.length)];
-
-    const distractorCategories = shuffle(Object.keys(DISTRACTOR_POOLS))
-      .slice(0, OPTIONS_PER_ROUND - 1);
-    const distractors = distractorCategories.map(key => {
+  /**
+   * Build a single round: pull the correct from the queue, plus three
+   * distractors — one each from three different distractor pools, after
+   * filtering out any pools the target has explicitly excluded. The
+   * exclusion list lives on TARGETS so the policy is data-driven, not
+   * hard-coded into the round generator.
+   */
+  private makeRound(): RoundData {
+    const t = TARGETS[this.category];
+    const correct = this.correctQueue[this.roundIndex];
+    const excluded = new Set(t.excludedDistractorPools ?? []);
+    const pools = Object.keys(DISTRACTOR_POOLS).filter(k => !excluded.has(k));
+    const chosenPools = shuffle(pools).slice(0, OPTIONS_PER_ROUND - 1);
+    const distractors = chosenPools.map(key => {
       const items = DISTRACTOR_POOLS[key];
       return items[Math.floor(Math.random() * items.length)];
     });
-
     const options = shuffle([correct, ...distractors]);
-    return { category, correct, options };
+    return { correct, options };
   }
 
   // ─── Tap handling ─────────────────────────────────────────────────────
@@ -291,9 +290,6 @@ export class GameScene extends Phaser.Scene {
     this.paintCardState(card);
     card.zone.disableInteractive();
     sounds.wrong();
-
-    // Soft jiggle: tilt + tiny scale wobble (instead of horizontal shake).
-    // Reads as "ehh, not that one" rather than punitive.
     card.idleBob?.stop();
     this.tweens.add({
       targets: [card.bg, card.txt],
@@ -321,7 +317,6 @@ export class GameScene extends Phaser.Scene {
       if (c === card) {
         c.state = 'correct';
         this.paintCardState(c);
-        // Pop sequence: pre-stretch bubble briefly, then settle into final
         this.tweens.add({
           targets: c.txt,
           scale: { from: 1, to: 1.28 },
@@ -329,7 +324,6 @@ export class GameScene extends Phaser.Scene {
           yoyo: true,
           onComplete: () => { c.txt.setScale(1.18); },
         });
-        // Expanding ring — the actual "pop"
         popShockwave(this, c.cx, c.cy, CARD_W * 0.45, CARD_W * 0.95);
       } else if (c.state === 'idle') {
         this.tweens.add({ targets: [c.bg, c.txt], alpha: 0.4, duration: 220 });
@@ -340,7 +334,6 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(950, () => this.nextRound());
   }
 
-  /** Sparkle burst radiating from the popped bubble */
   private popBurst(cx: number, cy: number): void {
     const sparks = ['🫧', '✨', '🎯', '⭐', '💖'];
     for (let i = 0; i < 10; i++) {
@@ -380,11 +373,13 @@ export class GameScene extends Phaser.Scene {
 
   private endGameData(): Parameters<typeof this.endOverlay.show>[0] {
     const stars = this.score >= 5 ? 3 : this.score >= 3 ? 2 : this.score >= 1 ? 1 : 0;
+    const t = TARGETS[this.category];
+    const labelLine = `${t.label} · PICK & POP`;
     if (this.score === TOTAL_ROUNDS) {
       return {
         emoji: '🏆', title: 'Perfect Pop!',
-        subtitle: 'Aya found every one! 🎯✨',
-        score: { value: `${this.score}/${TOTAL_ROUNDS}`, label: 'PICK & POP · PERFECT' },
+        subtitle: `Aya popped every ${t.label.toLowerCase()}! 🎯✨`,
+        score: { value: `${this.score}/${TOTAL_ROUNDS}`, label: `${labelLine} · PERFECT` },
         stars: { earned: stars, total: 3 },
       };
     }
@@ -392,14 +387,14 @@ export class GameScene extends Phaser.Scene {
       return {
         emoji: '🌟', title: 'Sharp eyes!',
         subtitle: 'So many right picks! 🫧',
-        score: { value: `${this.score}/${TOTAL_ROUNDS}`, label: 'PICK & POP' },
+        score: { value: `${this.score}/${TOTAL_ROUNDS}`, label: labelLine },
         stars: { earned: stars, total: 3 },
       };
     }
     return {
       emoji: '🌸', title: 'Nice try!',
       subtitle: 'Tap the matching one — try again! 💖',
-      score: { value: `${this.score}/${TOTAL_ROUNDS}`, label: 'PICK & POP' },
+      score: { value: `${this.score}/${TOTAL_ROUNDS}`, label: labelLine },
       stars: { earned: stars, total: 3 },
     };
   }

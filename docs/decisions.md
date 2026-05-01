@@ -290,6 +290,17 @@ emoji — visually a near-miss for a 2-year-old. Now excluded with an
 inline comment. Watch for similar cases when adding new distractors:
 plush toys, animal-shaped cookies/sweets, vehicle-shaped toys.
 
+**Amendment (2026-05-01).** Pick & Pop's target categories changed to
+fruit / animal / vehicle / instrument (vegetable demoted to a distractor
+pool). Vegetables are *still excluded* on FRUIT rounds — same food/food
+adjacency rule as before — but allowed as distractors on animal /
+vehicle / instrument rounds (a carrot vs a bear, a carrot vs a car, a
+carrot vs a drum are all unambiguous to a 2yo). The exclusion is now
+data-driven: each `TARGETS[k]` carries an optional
+`excludedDistractorPools: string[]` and the round generator filters
+pools through it. Add new exclusions there rather than special-casing
+in scene code.
+
 ## How to add a new decision
 
 1. Pick the next `D-NNN` number.

@@ -832,55 +832,45 @@
           </defs>
           <rect width="320" height="180" fill="url(#bg2)"/>
 
-          <!-- 3 cells × 2 rows. Cat wins the diagonal-ish set on the
-               diagonal, but to keep the board readable at thumbnail size we
-               show a winning DIAGONAL with the strike-through. -->
+          <!-- 3 cells × 2 rows, centered horizontally in the 320-wide
+               canvas (cells at x=48, 126, 204). Cat wins the top row. -->
 
           <!-- Row 1 — three cats win the row (mint highlight on all three) -->
-          <ellipse cx="126" cy="48" rx="120" ry="20" fill="url(#ttt-spot)"/>
+          <ellipse cx="160" cy="48" rx="124" ry="20" fill="url(#ttt-spot)"/>
 
-          <rect x="14"  y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
-          <ellipse cx="30" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
-          <text x="48" y="62" font-size="36" text-anchor="middle">🐱</text>
+          <rect x="48"  y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
+          <ellipse cx="64" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="82" y="62" font-size="36" text-anchor="middle">🐱</text>
 
-          <rect x="92"  y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
-          <ellipse cx="108" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
-          <text x="126" y="62" font-size="36" text-anchor="middle">🐱</text>
+          <rect x="126" y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
+          <ellipse cx="142" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="160" y="62" font-size="36" text-anchor="middle">🐱</text>
 
-          <rect x="170" y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
-          <ellipse cx="186" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
-          <text x="204" y="62" font-size="36" text-anchor="middle">🐱</text>
+          <rect x="204" y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
+          <ellipse cx="220" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="238" y="62" font-size="36" text-anchor="middle">🐱</text>
 
           <!-- Row 2 — bunnies sprinkled, the loser side (idle outline) -->
-          <rect x="14"  y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
-          <ellipse cx="30" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
-          <text x="48" y="140" font-size="36" text-anchor="middle">🐰</text>
+          <rect x="48"  y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
+          <ellipse cx="64" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="82" y="140" font-size="36" text-anchor="middle">🐰</text>
 
-          <rect x="92"  y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
-          <ellipse cx="108" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
-          <text x="126" y="140" font-size="36" text-anchor="middle">🐱</text>
+          <rect x="126" y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
+          <ellipse cx="142" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="160" y="140" font-size="36" text-anchor="middle">🐱</text>
 
-          <rect x="170" y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
-          <ellipse cx="186" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
-          <text x="204" y="140" font-size="36" text-anchor="middle">🐰</text>
+          <rect x="204" y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
+          <ellipse cx="220" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="238" y="140" font-size="36" text-anchor="middle">🐰</text>
 
-          <!-- Horizontal winning strike across top row -->
-          <line x1="22" y1="48" x2="232" y2="48" stroke="url(#ttt-strike)" stroke-width="8" stroke-linecap="round" opacity="0.95"/>
-          <line x1="22" y1="48" x2="232" y2="48" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+          <!-- Horizontal winning strike across top row (slight overhang) -->
+          <line x1="40" y1="48" x2="280" y2="48" stroke="url(#ttt-strike)" stroke-width="8" stroke-linecap="round" opacity="0.95"/>
+          <line x1="40" y1="48" x2="280" y2="48" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
 
-          <!-- Score / trophy panel on the right -->
-          <g transform="translate(266 90)">
-            <rect x="-26" y="-50" width="52" height="100" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 4px 10px rgba(156,77,204,0.18))"/>
-            <ellipse cx="-12" cy="-40" rx="11" ry="4" fill="white" opacity="0.7"/>
-            <text x="0" y="-22" font-size="20" text-anchor="middle">🏆</text>
-            <text x="0" y="2"   font-family="Fredoka One, sans-serif" font-size="11" fill="#9c4dcc" text-anchor="middle" font-weight="700" opacity="0.75">CAT</text>
-            <text x="0" y="22"  font-family="Fredoka One, sans-serif" font-size="22" fill="#6a1b9a" text-anchor="middle" font-weight="700">3</text>
-            <text x="0" y="40"  font-family="Fredoka One, sans-serif" font-size="9"  fill="#9c4dcc" text-anchor="middle" font-weight="700" opacity="0.75">in a row!</text>
-          </g>
-
-          <!-- Sparkle pop near the winning diagonal -->
-          <text x="130" y="78" font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
-          <text x="206" y="166" font-size="13" fill="#ce93d8" opacity="0.85">✨</text>
+          <!-- Sparkles around the winning row -->
+          <text x="22"  y="74" font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
+          <text x="290" y="74" font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
+          <text x="160" y="174" font-size="13" fill="#ce93d8" opacity="0.85">✨</text>
         </svg>
       </div>
       <div class="card-body">

@@ -10,6 +10,18 @@ reference the commit hash so you can `git show <hash>` for the diff.
 
 ---
 
+## 2026-05-01 — Pick & Pop! game
+
+- **Add 'Pick & Pop!' game** — 10th game in the collection. Toddler taps the
+  one card in a 2×2 grid that matches the asked-about category (fruit,
+  vegetable, vehicle, animal). Distractors are deliberately from
+  *non-overlapping* "extreme" pools (instruments, buildings, tools, tech,
+  toys, stationery, cosmic, clothing, sport, furniture) so a 2-year-old
+  never has to disambiguate two adjacent food categories. Each round picks
+  3 distractors from 3 different pools, so the four cards always feel
+  varied. Round queue is built so all four target categories appear at
+  least once across 5 rounds (one repeats).
+
 ## 2026-05-01 — Tech stack upgrade
 
 - **Migrate to Phaser 4.1, Vite 8, TS 6, Node 22 in CI** — `4f8b2b5`. Single

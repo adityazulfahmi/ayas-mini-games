@@ -258,6 +258,38 @@ The old method still exists in the d.ts but is documented as a no-op.
 
 ---
 
+## D-012 — Pick & Pop distractors come from disjoint, non-food, non-vehicle pools
+
+**What.** In `src/pick-pop/data.ts`, distractors live in `DISTRACTOR_POOLS`
+(instruments, buildings, furniture, tools, tech, toys, stationery, cosmic,
+clothing, sport). Each round draws 1 correct from the target pool + 3
+distractors from 3 *different* distractor pools. No distractor can come
+from a target category (no fruit/veg/vehicle/animal items in the
+distractor pools).
+
+**Problem.** A 2-year-old asked "which is the FRUIT?" should not have to
+disambiguate between an apple and a tomato, or between a car and a bicycle
+when the question is "which is the VEHICLE?". Adjacent-category distractors
+are pedagogically frustrating at this age — the child *picks* a category
+member but it happens to be the "wrong" one.
+
+**Solution.** Every distractor must be obviously, visually-unmistakably
+*not* a fruit/veg/vehicle/animal. Buildings, instruments, tools — they
+share none of the visual cues. The 3-different-pools rule per round means
+the four cards on screen also never accidentally feel like "three musical
+instruments and a fruit", which would skew the visual weight.
+
+**Don't touch.** Don't add foods, plants, or living creatures to the
+distractor pools — the whole point is non-overlap. If you grow the target
+categories beyond fruit/veg/vehicle/animal, audit the distractor pools at
+the same time so the disjointness invariant still holds.
+
+**Already caught.** 🧸 (teddy bear) was originally in the `toy` distractor
+pool. On an "Find the ANIMAL!" round it appeared next to a real bear face
+emoji — visually a near-miss for a 2-year-old. Now excluded with an
+inline comment. Watch for similar cases when adding new distractors:
+plush toys, animal-shaped cookies/sweets, vehicle-shaped toys.
+
 ## How to add a new decision
 
 1. Pick the next `D-NNN` number.

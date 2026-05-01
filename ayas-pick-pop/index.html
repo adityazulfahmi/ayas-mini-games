@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pick &amp; Pop! 🎯</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: linear-gradient(180deg, #fce4ec 0%, #ede7f6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* 100dvh follows mobile Chrome's URL bar so the centred canvas
+         never sits under it; 100vh stays as a fallback for old browsers. */
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+    #game canvas { display: block; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <script type="module" src="../src/pick-pop/main.ts"></script>
+</body>
+</html>

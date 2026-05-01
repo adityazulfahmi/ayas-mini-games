@@ -30,10 +30,10 @@ public/                          ← bundled-as-is assets
 screenshot.mjs                   ← visual-regression workflow (Puppeteer)
 ```
 
-## Games (9 total, all live)
+## Games (10 total, all live)
 
 `flip-matching`, `tictactoe`, `whos-that`, `colour-match`, `colour-hunt`,
-`odd-one-out`, `connect-match`, `who-makes-sound`, `whats-next`.
+`odd-one-out`, `connect-match`, `who-makes-sound`, `whats-next`, `pick-pop`.
 
 ## Smoke-test recipe
 
@@ -52,8 +52,11 @@ is parked: what it is, why it's parked, where the work-in-progress is.
 
 ## Recent direction
 
-Most recent push (2026-05-01): tech-stack upgrade landed (Phaser 4, Vite 8,
-TS 6, Node 22). Nine games stable. No active migration in flight.
+Most recent push (2026-05-01): added 10th game **Pick & Pop!** — pick the
+matching item from a 2×2 grid where distractors are pulled from "extreme"
+non-overlapping categories (instruments, buildings, tools, etc.) so a 2yo
+never has to disambiguate between, e.g., a fruit and a vegetable. Tech
+stack on Phaser 4, Vite 8, TS 6, Node 22. No active migration in flight.
 
 ## When this file goes stale
 

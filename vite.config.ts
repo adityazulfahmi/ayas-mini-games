@@ -19,6 +19,7 @@ export default defineConfig({
         connectMatch: resolve(__dirname, 'ayas-connect-match/index.html'),
         whoMakesSound: resolve(__dirname, 'ayas-who-makes-sound/index.html'),
         whatsNext:    resolve(__dirname, 'ayas-whats-next/index.html'),
+        pickPop:      resolve(__dirname, 'ayas-pick-pop/index.html'),
       },
     },
   },

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="320" height="180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce4ec"/>
+      <stop offset="100%" style="stop-color:#ede7f6"/>
+    </linearGradient>
+    <linearGradient id="cm-link" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#80cbc4"/>
+      <stop offset="100%" style="stop-color:#26a69a"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#bg)"/>
+
+  <!-- Completed match line: dog (60,48) → bone (260,132) -->
+  <line x1="60" y1="48" x2="260" y2="132" stroke="url(#cm-link)" stroke-width="6" stroke-linecap="round"/>
+  <line x1="60" y1="48" x2="260" y2="132" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <circle cx="160" cy="90" r="11" fill="white" stroke="#80cbc4" stroke-width="2"/>
+  <text x="160" y="95" font-size="13" text-anchor="middle">💚</text>
+
+  <!-- In-progress dashed line: bunny (60,132) → carrot (260,48), stops at 70% -->
+  <line x1="60" y1="132" x2="200" y2="74" stroke="#f06292" stroke-width="5" stroke-linecap="round" stroke-dasharray="6 7"/>
+  <circle cx="200" cy="74" r="6" fill="#f06292"/>
+  <circle cx="200" cy="74" r="6" fill="none" stroke="#f06292" stroke-width="2" opacity="0.45"/>
+
+  <!-- Left column -->
+  <rect x="22"  y="16"  width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(128,203,196,0.32))"/>
+  <ellipse cx="38" cy="26" rx="13" ry="5" fill="white" opacity="0.85"/>
+  <text x="60" y="60" font-size="34" text-anchor="middle">🐶</text>
+
+  <rect x="22"  y="100" width="76" height="64" rx="14" fill="#fff5f8" stroke="#f06292" stroke-width="3"/>
+  <ellipse cx="38" cy="110" rx="13" ry="5" fill="white" opacity="0.85"/>
+  <text x="60" y="144" font-size="34" text-anchor="middle">🐰</text>
+
+  <!-- Right column -->
+  <rect x="222" y="16"  width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+  <ellipse cx="238" cy="26" rx="13" ry="5" fill="white" opacity="0.7"/>
+  <text x="260" y="60" font-size="34" text-anchor="middle">🥕</text>
+
+  <rect x="222" y="100" width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(128,203,196,0.32))"/>
+  <ellipse cx="238" cy="110" rx="13" ry="5" fill="white" opacity="0.85"/>
+  <text x="260" y="144" font-size="32" text-anchor="middle">🦴</text>
+
+  <text x="116" y="40" font-size="14" fill="#80cbc4" opacity="0.85">✨</text>
+</svg>

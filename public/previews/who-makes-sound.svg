@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="320" height="180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce4ec"/>
+      <stop offset="100%" style="stop-color:#ede7f6"/>
+    </linearGradient>
+    <radialGradient id="ws-speaker" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" style="stop-color:#ff8aaa"/>
+      <stop offset="100%" style="stop-color:#ec407a"/>
+    </radialGradient>
+    <radialGradient id="ws-spot" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#80cbc4" stop-opacity="0.55"/>
+      <stop offset="100%" style="stop-color:#80cbc4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#bg)"/>
+
+  <!-- Speaker hero -->
+  <circle cx="74" cy="90" r="56" fill="#9c4dcc" opacity="0.14"/>
+  <circle cx="74" cy="90" r="48" fill="url(#ws-speaker)" stroke="white" stroke-width="4"/>
+  <ellipse cx="62" cy="76" rx="14" ry="6" fill="white" opacity="0.55"/>
+  <text x="74" y="104" font-size="42" text-anchor="middle">🔊</text>
+
+  <!-- Sound ripples -->
+  <path d="M 132 74 Q 148 90 132 106" fill="none" stroke="#f06292" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 148 64 Q 172 90 148 116" fill="none" stroke="#f06292" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 164 56 Q 196 90 164 124" fill="none" stroke="#f06292" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+
+  <!-- Music notes -->
+  <text x="116" y="42" font-size="20" fill="#ce93d8" opacity="0.85" transform="rotate(-12 116 42)">🎵</text>
+  <text x="148" y="32" font-size="16" fill="#ce93d8" opacity="0.7"  transform="rotate(8 148 32)">🎶</text>
+  <text x="46"  y="36" font-size="14" fill="#ce93d8" opacity="0.55" transform="rotate(-18 46 36)">🎵</text>
+
+  <!-- Animal grid -->
+  <ellipse cx="209" cy="46" rx="42" ry="20" fill="url(#ws-spot)"/>
+  <rect x="178" y="14" width="62" height="62" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3"/>
+  <ellipse cx="194" cy="26" rx="14" ry="5" fill="white" opacity="0.75"/>
+  <text x="209" y="60" font-size="38" text-anchor="middle">🐮</text>
+
+  <rect x="248" y="16" width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+  <ellipse cx="262" cy="26" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+  <text x="279" y="60" font-size="32" text-anchor="middle">🐱</text>
+
+  <rect x="178" y="96" width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+  <ellipse cx="192" cy="106" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+  <text x="209" y="140" font-size="32" text-anchor="middle">🦆</text>
+
+  <rect x="248" y="96" width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+  <ellipse cx="262" cy="106" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+  <text x="279" y="140" font-size="32" text-anchor="middle">🐶</text>
+
+  <text x="246" y="34" font-size="14" fill="#9c4dcc" opacity="0.9">✨</text>
+</svg>

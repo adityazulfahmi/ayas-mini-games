@@ -86,41 +86,79 @@
 
     /* ── WHO'S THAT preview ── */
     .wt-preview {
-      background: linear-gradient(135deg, #fce4ec 0%, #ede7f6 100%);
-      gap: 10px;
-      padding: 14px 16px;
+      /* Vignette: darker at the top for "stage spotlight from above" */
+      background:
+        radial-gradient(ellipse at 50% 18%, rgba(255,255,255,0.55) 0%, transparent 55%),
+        linear-gradient(135deg, #fce4ec 0%, #ede7f6 100%);
+      gap: 6px;
+      padding: 10px 16px 12px;
       flex-direction: column;
       justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    .wt-top {
+    .wt-stage {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
+      padding: 4px 0 10px;
+    }
+
+    /* Soft pedestal beneath the silhouette */
+    .wt-stage::before {
+      content: '';
+      position: absolute;
+      left: 50%; bottom: -2px;
+      transform: translateX(-50%);
+      width: 150px; height: 14px;
+      background: radial-gradient(ellipse, rgba(206,147,216,0.45) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
     }
 
     .wt-char-card {
       background: white;
       border-radius: 16px;
-      padding: 8px 12px;
-      box-shadow: 0 4px 14px rgba(156,77,204,0.15);
+      padding: 8px 14px;
+      box-shadow: 0 6px 18px rgba(156,77,204,0.20);
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+      z-index: 1;
     }
 
     .wt-char-card img {
-      height: 72px;
+      height: 78px;
       object-fit: contain;
       filter: brightness(0);
     }
 
+    /* Question becomes a pink-gradient badge */
     .wt-question {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #f06292, #ce93d8);
+      color: white;
+      border-radius: 50%;
       font-family: 'Fredoka One', cursive;
-      font-size: 3rem;
-      color: rgba(206,147,216,0.7);
-      line-height: 1;
+      font-size: 1.55rem;
+      line-height: 42px;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(240,98,146,0.40);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Decorative sparkles drifting around the stage */
+    .wt-sparkle {
+      position: absolute;
+      font-size: 0.95rem;
+      opacity: 0.85;
+      pointer-events: none;
+      z-index: 0;
     }
 
     .wt-pills {
@@ -143,6 +181,7 @@
     .wt-pill.highlight {
       background: linear-gradient(135deg, #f06292, #ce93d8);
       color: white;
+      box-shadow: 0 3px 10px rgba(240,98,146,0.35);
     }
 
     /* ── CARD BODY ── */
@@ -312,23 +351,49 @@
               <stop offset="0%" style="stop-color:#fce4ec"/>
               <stop offset="100%" style="stop-color:#ede7f6"/>
             </linearGradient>
+            <radialGradient id="cm-target" cx="35%" cy="32%" r="65%">
+              <stop offset="0%" style="stop-color:#ff8aaa"/>
+              <stop offset="100%" style="stop-color:#f06292"/>
+            </radialGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg4)"/>
 
-          <!-- question: big colour circle -->
-          <circle cx="160" cy="64" r="44" fill="#f06292"/>
-          <circle cx="160" cy="64" r="44" fill="none" stroke="white" stroke-width="6"/>
-          <circle cx="160" cy="64" r="51" fill="none" stroke="rgba(206,147,216,0.4)" stroke-width="4"/>
+          <!-- Painter's palette (kidney-shaped) anchored bottom-left -->
+          <path d="M 90 52 Q 30 52 22 100 Q 16 138 50 154 Q 90 168 130 156 Q 178 144 184 110 Q 188 80 168 64 Q 140 44 90 52 Z"
+                fill="white" stroke="#ce93d8" stroke-width="2.5"
+                filter="drop-shadow(0 6px 14px rgba(156,77,204,0.20))"/>
+          <!-- Thumb hole -->
+          <ellipse cx="148" cy="116" rx="14" ry="10" fill="url(#bg4)" stroke="#ce93d8" stroke-width="1.5"/>
+          <!-- Paint blobs on the palette -->
+          <circle cx="56"  cy="92"  r="13" fill="#4fc3f7"/>
+          <circle cx="84"  cy="124" r="11" fill="#66bb6a"/>
+          <circle cx="118" cy="86"  r="12" fill="#ce93d8"/>
+          <circle cx="120" cy="142" r="10" fill="#ffd54f"/>
+          <!-- Tiny gloss on each blob so they read as wet paint -->
+          <ellipse cx="52" cy="86" rx="5" ry="2.5" fill="white" opacity="0.65"/>
+          <ellipse cx="80" cy="119" rx="4" ry="2"  fill="white" opacity="0.65"/>
+          <ellipse cx="114" cy="80" rx="4.5" ry="2.2" fill="white" opacity="0.65"/>
 
-          <!-- answer swatches: 2×2 grid of coloured rectangles -->
-          <!-- top-left: sky blue -->
-          <rect x="16"  y="122" width="130" height="26" rx="9" fill="#4fc3f7" stroke="white" stroke-width="4"/>
-          <!-- top-right: correct pink (mint glow) -->
-          <rect x="174" y="122" width="130" height="26" rx="9" fill="#f06292" stroke="#80cbc4" stroke-width="4"/>
-          <!-- bottom-left: green -->
-          <rect x="16"  y="153" width="130" height="22" rx="9" fill="#66bb6a" stroke="white" stroke-width="4"/>
-          <!-- bottom-right: lavender -->
-          <rect x="174" y="153" width="130" height="22" rx="9" fill="#ce93d8" stroke="white" stroke-width="4"/>
+          <!-- Target swatch — floats above the palette, mint-haloed (the "match this") -->
+          <circle cx="244" cy="64" r="40" fill="#80cbc4" opacity="0.22"/>
+          <circle cx="244" cy="64" r="34" fill="url(#cm-target)" stroke="#80cbc4" stroke-width="3"/>
+          <ellipse cx="234" cy="52" rx="11" ry="5" fill="white" opacity="0.85"/>
+          <text x="244" y="116" font-family="Fredoka One, sans-serif" font-size="11" font-weight="700" fill="#9c4dcc" text-anchor="middle" opacity="0.85">match this!</text>
+
+          <!-- Brush — points from palette toward target -->
+          <g transform="rotate(-22 230 132)">
+            <rect x="186" y="128" width="60" height="9" rx="2" fill="#a1887f"/>
+            <rect x="244" y="126" width="14" height="13" rx="2" fill="#cfd8dc"/>
+            <path d="M 258 124 L 282 122 L 282 142 L 258 140 Z" fill="#f06292"/>
+            <path d="M 282 122 Q 295 132 282 142 Z" fill="#ec407a"/>
+          </g>
+          <!-- Paint drips beneath brush -->
+          <circle cx="278" cy="158" r="3" fill="#f06292" opacity="0.7"/>
+          <circle cx="290" cy="166" r="2" fill="#f06292" opacity="0.5"/>
+
+          <!-- Sparkles -->
+          <text x="220" y="32"  font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
+          <text x="290" y="50"  font-size="12" fill="#ce93d8" opacity="0.85">✨</text>
         </svg>
       </div>
       <div class="card-body">
@@ -347,30 +412,54 @@
               <stop offset="0%" style="stop-color:#fce4ec"/>
               <stop offset="100%" style="stop-color:#ede7f6"/>
             </linearGradient>
+            <radialGradient id="ws-speaker" cx="35%" cy="30%" r="80%">
+              <stop offset="0%" style="stop-color:#ff8aaa"/>
+              <stop offset="100%" style="stop-color:#ec407a"/>
+            </radialGradient>
+            <radialGradient id="ws-spot" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" style="stop-color:#80cbc4" stop-opacity="0.55"/>
+              <stop offset="100%" style="stop-color:#80cbc4" stop-opacity="0"/>
+            </radialGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg7)"/>
 
-          <!-- Big speaker bubble on the left -->
-          <circle cx="78" cy="90" r="44" fill="#f06292"/>
-          <circle cx="78" cy="90" r="44" fill="none" stroke="white" stroke-width="4"/>
-          <text x="78" y="104" font-size="40" text-anchor="middle">🔊</text>
+          <!-- Speaker hero, left -->
+          <circle cx="74" cy="90" r="56" fill="#9c4dcc" opacity="0.14"/>
+          <circle cx="74" cy="90" r="48" fill="url(#ws-speaker)" stroke="white" stroke-width="4"/>
+          <ellipse cx="62" cy="76" rx="14" ry="6" fill="white" opacity="0.55"/>
+          <text x="74" y="104" font-size="42" text-anchor="middle">🔊</text>
 
-          <!-- Sound ripple arcs -->
-          <path d="M 130 74 Q 146 90 130 106" fill="none" stroke="#f06292" stroke-width="4" stroke-linecap="round"/>
-          <path d="M 144 66 Q 166 90 144 114" fill="none" stroke="#f06292" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+          <!-- Three sound ripples spreading right toward the cow -->
+          <path d="M 132 74 Q 148 90 132 106" fill="none" stroke="#f06292" stroke-width="4" stroke-linecap="round"/>
+          <path d="M 148 64 Q 172 90 148 116" fill="none" stroke="#f06292" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+          <path d="M 164 56 Q 196 90 164 124" fill="none" stroke="#f06292" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
 
-          <!-- 2×2 animal grid on the right -->
-          <rect x="178" y="16"  width="62" height="62" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="209" y="60"  font-size="34" text-anchor="middle">🐮</text>
+          <!-- Floating music notes drifting up from the speaker -->
+          <text x="116" y="42" font-size="20" fill="#ce93d8" opacity="0.85" transform="rotate(-12 116 42)">🎵</text>
+          <text x="148" y="32" font-size="16" fill="#ce93d8" opacity="0.7"  transform="rotate(8 148 32)">🎶</text>
+          <text x="46"  y="36" font-size="14" fill="#ce93d8" opacity="0.55" transform="rotate(-18 46 36)">🎵</text>
 
-          <rect x="248" y="16"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="279" y="60"  font-size="34" text-anchor="middle">🐱</text>
+          <!-- 2×2 animal grid (right). Cow is the "correct" answer — sits in
+               a mint spotlight, slightly larger, with a glow. -->
+          <ellipse cx="209" cy="46" rx="42" ry="20" fill="url(#ws-spot)"/>
+          <rect x="178" y="14" width="62" height="62" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3"/>
+          <ellipse cx="194" cy="26" rx="14" ry="5" fill="white" opacity="0.75"/>
+          <text x="209" y="60" font-size="38" text-anchor="middle">🐮</text>
 
-          <rect x="178" y="96"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="209" y="140" font-size="34" text-anchor="middle">🦆</text>
+          <rect x="248" y="16" width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <ellipse cx="262" cy="26" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="279" y="60" font-size="32" text-anchor="middle">🐱</text>
 
-          <rect x="248" y="96"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="279" y="140" font-size="34" text-anchor="middle">🐶</text>
+          <rect x="178" y="96" width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <ellipse cx="192" cy="106" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="209" y="140" font-size="32" text-anchor="middle">🦆</text>
+
+          <rect x="248" y="96" width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <ellipse cx="262" cy="106" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="279" y="140" font-size="32" text-anchor="middle">🐶</text>
+
+          <!-- Sparkle near correct answer -->
+          <text x="246" y="34" font-size="14" fill="#9c4dcc" opacity="0.9">✨</text>
         </svg>
       </div>
       <div class="card-body">
@@ -389,27 +478,63 @@
               <stop offset="0%" style="stop-color:#fce4ec"/>
               <stop offset="100%" style="stop-color:#ede7f6"/>
             </linearGradient>
+            <radialGradient id="ch-target" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" style="stop-color:#a5d6a7"/>
+              <stop offset="100%" style="stop-color:#43a047"/>
+            </radialGradient>
+            <radialGradient id="ch-lens" cx="35%" cy="30%" r="60%">
+              <stop offset="0%" style="stop-color:#ffffff" stop-opacity="0.6"/>
+              <stop offset="100%" style="stop-color:#ffffff" stop-opacity="0.05"/>
+            </radialGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg5)"/>
 
-          <!-- question: colour circle on the left -->
-          <circle cx="80" cy="90" r="48" fill="#4caf50"/>
-          <circle cx="80" cy="90" r="48" fill="none" stroke="white" stroke-width="6"/>
-          <circle cx="80" cy="90" r="55" fill="none" stroke="rgba(206,147,216,0.35)" stroke-width="3"/>
+          <!-- Target colour chip pill, top-left, with rays radiating from it -->
+          <g>
+            <!-- Rays -->
+            <line x1="50" y1="30" x2="32"  y2="22" stroke="#43a047" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+            <line x1="38" y1="48" x2="14"  y2="52" stroke="#43a047" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+            <line x1="50" y1="74" x2="30"  y2="86" stroke="#43a047" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+            <!-- Chip -->
+            <circle cx="64" cy="50" r="32" fill="#9c4dcc" opacity="0.10"/>
+            <circle cx="64" cy="50" r="26" fill="url(#ch-target)" stroke="white" stroke-width="4"/>
+            <ellipse cx="56" cy="40" rx="9" ry="4" fill="white" opacity="0.7"/>
+            <text x="64" y="100" font-family="Fredoka One, sans-serif" font-size="11" font-weight="700" fill="#9c4dcc" text-anchor="middle" opacity="0.85">find this!</text>
+          </g>
 
-          <!-- 2×2 emoji answer cards on the right -->
-          <rect x="152" y="18"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="189" y="63"  font-size="36" text-anchor="middle">🍎</text>
+          <!-- 2x2 emoji answer cards (right side). Turtle is the correct
+               (green-coloured) match — gets a mint outline. -->
+          <rect x="152" y="22" width="68" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="166" cy="32" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="186" y="64" font-size="32" text-anchor="middle">🍎</text>
 
-          <!-- correct: green border -->
-          <rect x="236" y="18"  width="74" height="66" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="273" y="63"  font-size="36" text-anchor="middle">🐢</text>
+          <rect x="228" y="22" width="68" height="62" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="242" cy="32" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="262" y="64" font-size="32" text-anchor="middle">🐢</text>
 
-          <rect x="152" y="96"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="189" y="141" font-size="36" text-anchor="middle">🍇</text>
+          <rect x="152" y="96" width="68" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="166" cy="106" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="186" y="138" font-size="32" text-anchor="middle">🍇</text>
 
-          <rect x="236" y="96"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="273" y="141" font-size="36" text-anchor="middle">🍋</text>
+          <rect x="228" y="96" width="68" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="242" cy="106" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="262" y="138" font-size="32" text-anchor="middle">🍋</text>
+
+          <!-- Magnifying glass hovering over the correct turtle card -->
+          <g transform="rotate(-22 262 54)">
+            <!-- Lens body — translucent so the turtle shows through -->
+            <circle cx="262" cy="54" r="30" fill="white" opacity="0.4"/>
+            <circle cx="262" cy="54" r="30" fill="url(#ch-lens)"/>
+            <circle cx="262" cy="54" r="30" fill="none" stroke="#6a1b9a" stroke-width="4"/>
+            <circle cx="262" cy="54" r="30" fill="none" stroke="white" stroke-width="1.5"/>
+            <!-- Handle -->
+            <line x1="285" y1="76" x2="312" y2="105" stroke="#6a1b9a" stroke-width="6" stroke-linecap="round"/>
+            <line x1="285" y1="76" x2="312" y2="105" stroke="#9c4dcc" stroke-width="2" stroke-linecap="round"/>
+          </g>
+
+          <!-- Sparkles -->
+          <text x="116" y="120" font-size="14" fill="#ce93d8" opacity="0.7">✨</text>
+          <text x="20"  y="156" font-size="12" fill="#9c4dcc" opacity="0.7">✨</text>
         </svg>
       </div>
       <div class="card-body">
@@ -473,9 +598,7 @@
     <!-- ── FLIP & MATCHING ── -->
     <a class="game-card" href="./ayas-flip-matching/">
       <div class="card-image">
-        <!-- SVG preview: flip matching card grid -->
         <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <!-- bg -->
           <defs>
             <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" style="stop-color:#fce4ec"/>
@@ -485,41 +608,56 @@
               <stop offset="0%" style="stop-color:#ce93d8"/>
               <stop offset="100%" style="stop-color:#ba68c8"/>
             </linearGradient>
+            <linearGradient id="cardback-edge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#ba68c8"/>
+              <stop offset="100%" style="stop-color:#9c4dcc"/>
+            </linearGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg1)"/>
 
-          <!-- card back (flipped down) -->
-          <rect x="22" y="24" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="52" y="62" font-size="26" text-anchor="middle">✨</text>
+          <!-- Matched pair (mint outline) — strawberry on both halves of the
+               row; sparkles wreath them so the "match" reads at a glance. -->
+          <rect x="32"  y="40" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(156,77,204,0.18))"/>
+          <ellipse cx="48" cy="52" rx="14" ry="5" fill="white" opacity="0.65"/>
+          <text x="66" y="86" font-size="32" text-anchor="middle">🍓</text>
 
-          <!-- card front - strawberry -->
-          <rect x="94" y="24" width="60" height="60" rx="12" fill="#fff8fc" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.15))"/>
-          <text x="124" y="62" font-size="28" text-anchor="middle">🍓</text>
+          <rect x="106" y="40" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(156,77,204,0.18))"/>
+          <ellipse cx="122" cy="52" rx="14" ry="5" fill="white" opacity="0.65"/>
+          <text x="140" y="86" font-size="32" text-anchor="middle">🍓</text>
+          <!-- Mint match line connecting the pair -->
+          <line x1="100" y1="74" x2="106" y2="74" stroke="#80cbc4" stroke-width="3" stroke-linecap="round"/>
 
-          <!-- card back -->
-          <rect x="166" y="24" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="196" y="62" font-size="26" text-anchor="middle">✨</text>
+          <!-- Card actively mid-flip (perspective squeezed horizontally,
+               with darker right edge so it reads as a 3D rotation). -->
+          <g transform="translate(216 74)">
+            <!-- Back face (slightly behind, larger) -->
+            <rect x="-20" y="-36" width="40" height="72" rx="10" fill="url(#cardback-edge)" filter="drop-shadow(0 6px 10px rgba(156,77,204,0.22))"/>
+            <!-- Front face (rotating in, narrower, brighter) -->
+            <rect x="-12" y="-32" width="24" height="64" rx="6" fill="white" stroke="#ce93d8" stroke-width="1.5"/>
+            <text y="10" font-size="22" text-anchor="middle">🐱</text>
+            <!-- Spinning sparkle behind it -->
+            <text x="-2" y="-46" font-size="14" fill="#ce93d8" opacity="0.85">✨</text>
+          </g>
 
-          <!-- card front - cat -->
-          <rect x="238" y="24" width="60" height="60" rx="12" fill="#fff8fc" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.15))"/>
-          <text x="268" y="62" font-size="28" text-anchor="middle">🐱</text>
+          <!-- Face-down card (back) further right -->
+          <rect x="252" y="40" width="52" height="68" rx="12" fill="url(#cardback)"/>
+          <ellipse cx="264" cy="52" rx="11" ry="4.5" fill="white" opacity="0.4"/>
+          <text x="278" y="84" font-size="22" text-anchor="middle" fill="white">✨</text>
 
-          <!-- row 2 -->
-          <!-- card front - strawberry (matched!) -->
-          <rect x="22" y="96" width="60" height="60" rx="12" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="52" y="134" font-size="28" text-anchor="middle">🍓</text>
+          <!-- Bottom row of face-downs (suggesting "more cards below") -->
+          <rect x="48"  y="124" width="44" height="44" rx="9" fill="url(#cardback)" opacity="0.65"/>
+          <text x="70"  y="154" font-size="18" text-anchor="middle" fill="white">✨</text>
+          <rect x="100" y="124" width="44" height="44" rx="9" fill="url(#cardback)" opacity="0.65"/>
+          <text x="122" y="154" font-size="18" text-anchor="middle" fill="white">✨</text>
+          <rect x="152" y="124" width="44" height="44" rx="9" fill="url(#cardback)" opacity="0.65"/>
+          <text x="174" y="154" font-size="18" text-anchor="middle" fill="white">✨</text>
+          <rect x="204" y="124" width="44" height="44" rx="9" fill="url(#cardback)" opacity="0.65"/>
+          <text x="226" y="154" font-size="18" text-anchor="middle" fill="white">✨</text>
 
-          <!-- card back -->
-          <rect x="94" y="96" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="124" y="134" font-size="26" text-anchor="middle">✨</text>
-
-          <!-- card front - cat (matched!) -->
-          <rect x="166" y="96" width="60" height="60" rx="12" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="196" y="134" font-size="28" text-anchor="middle">🐱</text>
-
-          <!-- card back -->
-          <rect x="238" y="96" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="268" y="134" font-size="26" text-anchor="middle">✨</text>
+          <!-- Sparkles wreathing the matched pair -->
+          <text x="20"  y="34"  font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
+          <text x="180" y="32"  font-size="13" fill="#ce93d8" opacity="0.85">✨</text>
+          <text x="14"  y="118" font-size="12" fill="#ce93d8" opacity="0.6">✨</text>
         </svg>
       </div>
       <div class="card-body">
@@ -538,26 +676,51 @@
               <stop offset="0%" style="stop-color:#fce4ec"/>
               <stop offset="100%" style="stop-color:#ede7f6"/>
             </linearGradient>
+            <radialGradient id="ooo-spot" cx="50%" cy="50%" r="55%">
+              <stop offset="0%" style="stop-color:#80cbc4" stop-opacity="0.55"/>
+              <stop offset="100%" style="stop-color:#80cbc4" stop-opacity="0"/>
+            </radialGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg6)"/>
 
-          <!-- 3 animals (same) -->
-          <rect x="16"  y="28" width="80" height="72" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="56"  y="78" font-size="40" text-anchor="middle">🐱</text>
+          <!-- Category chip at the top — communicates "easy mode hint" -->
+          <rect x="116" y="10" width="88" height="22" rx="11" fill="white" stroke="#ce93d8" stroke-width="1.5"/>
+          <text x="124" y="26" font-size="11" text-anchor="start">🐾</text>
+          <text x="160" y="26" font-family="Fredoka One, sans-serif" font-size="11" font-weight="700" fill="#9c4dcc" text-anchor="middle">ANIMALS</text>
 
-          <rect x="120" y="28" width="80" height="72" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="160" y="78" font-size="40" text-anchor="middle">🐶</text>
+          <!-- 2x2 grid: three animals + one car (the odd one).
+               Cards spaced and sized for an even row, asymmetric only via the
+               highlight on the odd one. -->
+          <rect x="20"  y="44" width="68" height="60" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="36" cy="54" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="54" y="84" font-size="32" text-anchor="middle">🐱</text>
 
-          <rect x="16"  y="110" width="80" height="60" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="56"  y="150" font-size="40" text-anchor="middle">🐸</text>
+          <rect x="98"  y="44" width="68" height="60" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="114" cy="54" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="132" y="84" font-size="32" text-anchor="middle">🐶</text>
 
-          <!-- 1 odd one (vehicle) with pink border -->
-          <rect x="120" y="110" width="80" height="60" rx="16" fill="#fff0f4" stroke="#f06292" stroke-width="3"/>
-          <text x="160" y="150" font-size="40" text-anchor="middle">🚗</text>
+          <rect x="20"  y="112" width="68" height="60" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="36" cy="122" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="54" y="152" font-size="32" text-anchor="middle">🐸</text>
 
-          <!-- question mark on right -->
-          <text x="252" y="82"  font-size="56" text-anchor="middle" fill="#ce93d8" opacity="0.7">?</text>
-          <text x="252" y="142" font-family="Fredoka One, sans-serif" font-size="13" font-weight="700" fill="#9c4dcc" text-anchor="middle" opacity="0.85">odd one!</text>
+          <!-- Odd one — mint spotlight halo + bold mint outline -->
+          <ellipse cx="132" cy="142" rx="58" ry="36" fill="url(#ooo-spot)"/>
+          <rect x="98"  y="112" width="68" height="60" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3.5" filter="drop-shadow(0 5px 9px rgba(128,203,196,0.32))"/>
+          <ellipse cx="114" cy="122" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="132" y="152" font-size="34" text-anchor="middle">🚗</text>
+
+          <!-- "Spot it!" label on the right, with magnifying glass cue -->
+          <g transform="translate(238 78)">
+            <circle cx="0" cy="0" r="22" fill="white" stroke="#9c4dcc" stroke-width="3"/>
+            <circle cx="0" cy="0" r="22" fill="none" stroke="white" stroke-width="1"/>
+            <line x1="16" y1="16" x2="34" y2="34" stroke="#9c4dcc" stroke-width="5" stroke-linecap="round"/>
+            <text x="0" y="6" font-family="Fredoka One, sans-serif" font-size="20" font-weight="700" fill="#9c4dcc" text-anchor="middle">?</text>
+          </g>
+          <text x="248" y="148" font-family="Fredoka One, sans-serif" font-size="11" font-weight="700" fill="#9c4dcc" text-anchor="middle" opacity="0.85">spot it!</text>
+
+          <!-- Sparkles around the odd one -->
+          <text x="76"  y="124" font-size="13" fill="#80cbc4" opacity="0.85">✨</text>
+          <text x="178" y="118" font-size="13" fill="#80cbc4" opacity="0.85">✨</text>
         </svg>
       </div>
       <div class="card-body">
@@ -576,26 +739,49 @@
               <stop offset="0%" style="stop-color:#fce4ec"/>
               <stop offset="100%" style="stop-color:#ede7f6"/>
             </linearGradient>
+            <linearGradient id="cm-link" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#80cbc4"/>
+              <stop offset="100%" style="stop-color:#26a69a"/>
+            </linearGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg6)"/>
 
-          <!-- Connecting lines -->
-          <line x1="82"  y1="48"  x2="238" y2="132" stroke="#80cbc4" stroke-width="6" stroke-linecap="round"/>
-          <line x1="82"  y1="132" x2="238" y2="48"  stroke="#f06292" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 6"/>
+          <!-- Completed match line (mint, solid, with a heart at the
+               midpoint) — connects dog → bone -->
+          <line x1="98" y1="48" x2="218" y2="148" stroke="url(#cm-link)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="98" y1="48" x2="218" y2="148" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          <circle cx="158" cy="98" r="11" fill="white" stroke="#80cbc4" stroke-width="2"/>
+          <text x="158" y="103" font-size="13" text-anchor="middle">💚</text>
 
-          <!-- Left column cards -->
-          <rect x="36"  y="16"  width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="74"  y="62"  font-size="36" text-anchor="middle">🐶</text>
+          <!-- In-progress match line (dashed pink) — connects bunny → carrot.
+               Stops short of the carrot to read as "currently being drawn". -->
+          <line x1="98" y1="148" x2="178" y2="68" stroke="#f06292" stroke-width="5" stroke-linecap="round" stroke-dasharray="6 7"/>
+          <!-- Pulsing pink dot at the leading edge -->
+          <circle cx="178" cy="68" r="6" fill="#f06292"/>
+          <circle cx="178" cy="68" r="6" fill="none" stroke="#f06292" stroke-width="2" opacity="0.45"/>
 
-          <rect x="36"  y="100" width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="74"  y="146" font-size="36" text-anchor="middle">🐰</text>
+          <!-- Left column: dog (matched, mint) above bunny (active, pink) -->
+          <rect x="22"  y="16"  width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(128,203,196,0.32))"/>
+          <ellipse cx="38" cy="26" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="60" y="60" font-size="34" text-anchor="middle">🐶</text>
 
-          <!-- Right column cards -->
-          <rect x="208" y="16"  width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="246" y="62"  font-size="34" text-anchor="middle">🥕</text>
+          <rect x="22"  y="100" width="76" height="64" rx="14" fill="#fff5f8" stroke="#f06292" stroke-width="3"/>
+          <ellipse cx="38" cy="110" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="60" y="144" font-size="34" text-anchor="middle">🐰</text>
 
-          <rect x="208" y="100" width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="246" y="146" font-size="34" text-anchor="middle">🦴</text>
+          <!-- Right column: carrot (target of dashed) above bone (already
+               matched). The carrot has a lavender outline (idle); the bone
+               has a mint outline (linked). -->
+          <rect x="222" y="16"  width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <ellipse cx="238" cy="26" rx="13" ry="5" fill="white" opacity="0.7"/>
+          <text x="260" y="60" font-size="34" text-anchor="middle">🥕</text>
+
+          <rect x="222" y="100" width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(128,203,196,0.32))"/>
+          <ellipse cx="238" cy="110" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="260" y="144" font-size="32" text-anchor="middle">🦴</text>
+
+          <!-- Sparkle near the matched pair -->
+          <text x="116" y="40" font-size="14" fill="#80cbc4" opacity="0.85">✨</text>
         </svg>
       </div>
       <div class="card-body">
@@ -608,7 +794,10 @@
     <!-- ── WHO'S THAT, AYA? ── -->
     <a class="game-card" href="./ayas-whos-that/">
       <div class="card-image wt-preview">
-        <div class="wt-top">
+        <span class="wt-sparkle" style="top: 8px;  left: 22px;">✨</span>
+        <span class="wt-sparkle" style="top: 14px; right: 24px;">✨</span>
+        <span class="wt-sparkle" style="top: 70px; left: 12px; opacity: 0.55;">✨</span>
+        <div class="wt-stage">
           <div class="wt-char-card">
             <img src="./ayas-whos-that/images/bing.png" alt="mystery character" />
           </div>
@@ -631,37 +820,72 @@
     <!-- ── TIC-TAC-TOE ── -->
     <a class="game-card" href="./ayas-tictactoe/">
       <div class="card-image">
-        <!-- SVG preview: tic-tac-toe board -->
         <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" style="stop-color:#fce4ec"/>
               <stop offset="100%" style="stop-color:#ede7f6"/>
             </linearGradient>
+            <linearGradient id="ttt-strike" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"  style="stop-color:#f06292"/>
+              <stop offset="100%" style="stop-color:#ce93d8"/>
+            </linearGradient>
+            <radialGradient id="ttt-spot" cx="50%" cy="50%" r="55%">
+              <stop offset="0%" style="stop-color:#80cbc4" stop-opacity="0.55"/>
+              <stop offset="100%" style="stop-color:#80cbc4" stop-opacity="0"/>
+            </radialGradient>
           </defs>
           <rect width="320" height="180" fill="url(#bg2)"/>
 
-          <!-- 3x3 grid of cells -->
-          <!-- row 1 -->
-          <rect x="30"  y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="66"  y="67" font-size="36" text-anchor="middle">🐱</text>
+          <!-- 3 cells × 2 rows. Cat wins the diagonal-ish set on the
+               diagonal, but to keep the board readable at thumbnail size we
+               show a winning DIAGONAL with the strike-through. -->
 
-          <rect x="124" y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="160" y="67" font-size="36" text-anchor="middle">🐰</text>
+          <!-- Row 1 — three cats win the row (mint highlight on all three) -->
+          <ellipse cx="126" cy="48" rx="120" ry="20" fill="url(#ttt-spot)"/>
 
-          <rect x="218" y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="254" y="67" font-size="36" text-anchor="middle">🐱</text>
+          <rect x="14"  y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
+          <ellipse cx="30" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="48" y="62" font-size="36" text-anchor="middle">🐱</text>
 
-          <!-- row 2 -->
-          <rect x="30"  y="100" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="66"  y="149" font-size="36" text-anchor="middle">🐰</text>
+          <rect x="92"  y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
+          <ellipse cx="108" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="126" y="62" font-size="36" text-anchor="middle">🐱</text>
 
-          <!-- winning cell highlight -->
-          <rect x="124" y="100" width="72" height="72" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="160" y="149" font-size="36" text-anchor="middle">🐱</text>
+          <rect x="170" y="14" width="68" height="68" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 5px 10px rgba(128,203,196,0.32))"/>
+          <ellipse cx="186" cy="24" rx="13" ry="5" fill="white" opacity="0.85"/>
+          <text x="204" y="62" font-size="36" text-anchor="middle">🐱</text>
 
-          <rect x="218" y="100" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="254" y="149" font-size="36" text-anchor="middle">🐰</text>
+          <!-- Row 2 — bunnies sprinkled, the loser side (idle outline) -->
+          <rect x="14"  y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
+          <ellipse cx="30" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="48" y="140" font-size="36" text-anchor="middle">🐰</text>
+
+          <rect x="92"  y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
+          <ellipse cx="108" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="126" y="140" font-size="36" text-anchor="middle">🐱</text>
+
+          <rect x="170" y="92" width="68" height="68" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.16))"/>
+          <ellipse cx="186" cy="102" rx="13" ry="4.5" fill="white" opacity="0.7"/>
+          <text x="204" y="140" font-size="36" text-anchor="middle">🐰</text>
+
+          <!-- Horizontal winning strike across top row -->
+          <line x1="22" y1="48" x2="232" y2="48" stroke="url(#ttt-strike)" stroke-width="8" stroke-linecap="round" opacity="0.95"/>
+          <line x1="22" y1="48" x2="232" y2="48" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+
+          <!-- Score / trophy panel on the right -->
+          <g transform="translate(266 90)">
+            <rect x="-26" y="-50" width="52" height="100" rx="14" fill="white" stroke="#ce93d8" stroke-width="2" filter="drop-shadow(0 4px 10px rgba(156,77,204,0.18))"/>
+            <ellipse cx="-12" cy="-40" rx="11" ry="4" fill="white" opacity="0.7"/>
+            <text x="0" y="-22" font-size="20" text-anchor="middle">🏆</text>
+            <text x="0" y="2"   font-family="Fredoka One, sans-serif" font-size="11" fill="#9c4dcc" text-anchor="middle" font-weight="700" opacity="0.75">CAT</text>
+            <text x="0" y="22"  font-family="Fredoka One, sans-serif" font-size="22" fill="#6a1b9a" text-anchor="middle" font-weight="700">3</text>
+            <text x="0" y="40"  font-family="Fredoka One, sans-serif" font-size="9"  fill="#9c4dcc" text-anchor="middle" font-weight="700" opacity="0.75">in a row!</text>
+          </g>
+
+          <!-- Sparkle pop near the winning diagonal -->
+          <text x="130" y="78" font-size="14" fill="#9c4dcc" opacity="0.85">✨</text>
+          <text x="206" y="166" font-size="13" fill="#ce93d8" opacity="0.85">✨</text>
         </svg>
       </div>
       <div class="card-body">

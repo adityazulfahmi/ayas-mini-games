@@ -10,6 +10,15 @@ reference the commit hash so you can `git show <hash>` for the diff.
 
 ---
 
+## 2026-05-01 — Sort landing cards by 2yo suitability
+
+- Reordered the 10 game cards in `index.html` and the games table in
+  `README.md` from "most 2yo-friendly" to "least". Pick & Pop! leads;
+  Tic-Tac-Toe (2-player strategy + reading) is last. Rationale and
+  the full ranking captured in `docs/decisions.md` D-013. A comment
+  at the top of the `games-grid` block in `index.html` points readers
+  at the decision so future re-shuffles are deliberate.
+
 ## 2026-05-01 — Pick & Pop: pick-a-category mode
 
 - Title scene's 4-bubble cluster now drives **category selection**: tap

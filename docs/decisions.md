@@ -301,6 +301,36 @@ data-driven: each `TARGETS[k]` carries an optional
 pools through it. Add new exclusions there rather than special-casing
 in scene code.
 
+## D-013 — Landing-page games sorted by 2yo suitability
+
+**What.** The 10 game cards in `index.html` are listed in a deliberate
+order (most → least 2yo-friendly), not alphabetical or chronological.
+README.md's games table mirrors the same order. A comment block at the
+top of the games-grid in `index.html` points at this entry.
+
+**Problem.** Aya is the primary user (2 years old) and her dad is the
+secondary user picking games for her. The first card she sees should be
+the one most likely to delight her; the last card should be the one she
+*can't* play yet (e.g. Tic-Tac-Toe needs reading + 2-player turn-taking).
+
+**Solution.** Ranked in this order:
+
+1. **Pick & Pop!** — designed for 2yo, single-category, no timer, forgiving wrong taps
+2. **Colour Match** — pure colour recognition, easy mode is unmistakable
+3. **Who Makes This Sound?** — sound + animal pairing, 5 rounds, no timer
+4. **Colour Hunt** — colour-on-emoji, same simplicity tier
+5. **What Comes Next?** — pattern/story sequencing, no timer, forgiving
+6. **Flip & Matching** — 2×2 mode is super basic memory; scales up
+7. **Odd One Out** — categorisation with category hints in easy mode
+8. **Connect the Match** — two-step pair tapping; 30s timer
+9. **Who's That, Aya?** — character recognition + tighter timer
+10. **Tic-Tac-Toe** — 2-player strategy, requires reading names
+
+**Don't touch.** Don't re-sort alphabetically or by recency. If you add
+a new game, slot it into the suitability ranking by feel — and update
+this entry plus the README table to match the HTML order. Keep the
+three artifacts in sync.
+
 ## How to add a new decision
 
 1. Pick the next `D-NNN` number.

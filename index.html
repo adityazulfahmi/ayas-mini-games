@@ -208,374 +208,8 @@
 
   <div class="games-grid">
 
-    <!-- ── FLIP & MATCHING ── -->
-    <a class="game-card" href="./ayas-flip-matching/">
-      <div class="card-image">
-        <!-- SVG preview: flip matching card grid -->
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <!-- bg -->
-          <defs>
-            <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-            <linearGradient id="cardback" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#ce93d8"/>
-              <stop offset="100%" style="stop-color:#ba68c8"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg1)"/>
-
-          <!-- card back (flipped down) -->
-          <rect x="22" y="24" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="52" y="62" font-size="26" text-anchor="middle">✨</text>
-
-          <!-- card front - strawberry -->
-          <rect x="94" y="24" width="60" height="60" rx="12" fill="#fff8fc" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.15))"/>
-          <text x="124" y="62" font-size="28" text-anchor="middle">🍓</text>
-
-          <!-- card back -->
-          <rect x="166" y="24" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="196" y="62" font-size="26" text-anchor="middle">✨</text>
-
-          <!-- card front - cat -->
-          <rect x="238" y="24" width="60" height="60" rx="12" fill="#fff8fc" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.15))"/>
-          <text x="268" y="62" font-size="28" text-anchor="middle">🐱</text>
-
-          <!-- row 2 -->
-          <!-- card front - strawberry (matched!) -->
-          <rect x="22" y="96" width="60" height="60" rx="12" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="52" y="134" font-size="28" text-anchor="middle">🍓</text>
-
-          <!-- card back -->
-          <rect x="94" y="96" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="124" y="134" font-size="26" text-anchor="middle">✨</text>
-
-          <!-- card front - cat (matched!) -->
-          <rect x="166" y="96" width="60" height="60" rx="12" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="196" y="134" font-size="28" text-anchor="middle">🐱</text>
-
-          <!-- card back -->
-          <rect x="238" y="96" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
-          <text x="268" y="134" font-size="26" text-anchor="middle">✨</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🃏 Flip &amp; Matching</div>
-        <div class="card-desc">Flip cards and find every matching pair. Pick your grid: 2×2, 4×4, 4×6, or a brain-stretching 6×6.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── TIC-TAC-TOE ── -->
-    <a class="game-card" href="./ayas-tictactoe/">
-      <div class="card-image">
-        <!-- SVG preview: tic-tac-toe board -->
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg2)"/>
-
-          <!-- 3x3 grid of cells -->
-          <!-- row 1 -->
-          <rect x="30"  y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="66"  y="67" font-size="36" text-anchor="middle">🐱</text>
-
-          <rect x="124" y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="160" y="67" font-size="36" text-anchor="middle">🐰</text>
-
-          <rect x="218" y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="254" y="67" font-size="36" text-anchor="middle">🐱</text>
-
-          <!-- row 2 -->
-          <rect x="30"  y="100" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="66"  y="149" font-size="36" text-anchor="middle">🐰</text>
-
-          <!-- winning cell highlight -->
-          <rect x="124" y="100" width="72" height="72" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="160" y="149" font-size="36" text-anchor="middle">🐱</text>
-
-          <rect x="218" y="100" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
-          <text x="254" y="149" font-size="36" text-anchor="middle">🐰</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🐱 Tic-Tac-Toe</div>
-        <div class="card-desc">Two players take turns — 🐱 Cat vs 🐰 Bunny. Enter your names and get three in a row to win. Score carries across rounds.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── WHO'S THAT, AYA? ── -->
-    <a class="game-card" href="./ayas-whos-that/">
-      <div class="card-image wt-preview">
-        <div class="wt-top">
-          <div class="wt-char-card">
-            <img src="./ayas-whos-that/images/bing.png" alt="mystery character" />
-          </div>
-          <div class="wt-question">?</div>
-        </div>
-        <div class="wt-pills">
-          <span class="wt-pill highlight">Bing</span>
-          <span class="wt-pill">Flop</span>
-          <span class="wt-pill">Sula</span>
-          <span class="wt-pill">Pando</span>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🐰 Who's That, Aya?</div>
-        <div class="card-desc">Two modes: guess the Bing character or the animal from a dark silhouette. Easy (3 choices · 12s) or Hard (4 choices · 8s). 5 rounds.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-
-    <!-- ── COLOUR MATCH ── -->
-    <a class="game-card" href="./ayas-colour-match/">
-      <div class="card-image">
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg4)"/>
-
-          <!-- question: big colour circle -->
-          <circle cx="160" cy="64" r="44" fill="#f06292"/>
-          <circle cx="160" cy="64" r="44" fill="none" stroke="white" stroke-width="6"/>
-          <circle cx="160" cy="64" r="51" fill="none" stroke="rgba(206,147,216,0.4)" stroke-width="4"/>
-
-          <!-- answer swatches: 2×2 grid of coloured rectangles -->
-          <!-- top-left: sky blue -->
-          <rect x="16"  y="122" width="130" height="26" rx="9" fill="#4fc3f7" stroke="white" stroke-width="4"/>
-          <!-- top-right: correct pink (mint glow) -->
-          <rect x="174" y="122" width="130" height="26" rx="9" fill="#f06292" stroke="#80cbc4" stroke-width="4"/>
-          <!-- bottom-left: green -->
-          <rect x="16"  y="153" width="130" height="22" rx="9" fill="#66bb6a" stroke="white" stroke-width="4"/>
-          <!-- bottom-right: lavender -->
-          <rect x="174" y="153" width="130" height="22" rx="9" fill="#ce93d8" stroke="white" stroke-width="4"/>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🎨 Colour Match</div>
-        <div class="card-desc">A colour appears — tap the swatch that matches. Easy: 10 bright hues. Hard: subtle shades that get trickier with every streak. 30 seconds.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── ODD ONE OUT ── -->
-    <a class="game-card" href="./ayas-odd-one-out/">
-      <div class="card-image">
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg6)"/>
-
-          <!-- 3 animals (same) -->
-          <rect x="16"  y="28" width="80" height="72" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="56"  y="78" font-size="40" text-anchor="middle">🐱</text>
-
-          <rect x="120" y="28" width="80" height="72" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="160" y="78" font-size="40" text-anchor="middle">🐶</text>
-
-          <rect x="16"  y="110" width="80" height="60" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="56"  y="150" font-size="40" text-anchor="middle">🐸</text>
-
-          <!-- 1 odd one (vehicle) with pink border -->
-          <rect x="120" y="110" width="80" height="60" rx="16" fill="#fff0f4" stroke="#f06292" stroke-width="3"/>
-          <text x="160" y="150" font-size="40" text-anchor="middle">🚗</text>
-
-          <!-- question mark on right -->
-          <text x="252" y="82"  font-size="56" text-anchor="middle" fill="#ce93d8" opacity="0.7">?</text>
-          <text x="252" y="142" font-family="Fredoka One, sans-serif" font-size="13" font-weight="700" fill="#9c4dcc" text-anchor="middle" opacity="0.85">odd one!</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🤔 Odd One Out</div>
-        <div class="card-desc">Three things belong together — one doesn't. Easy shows the category (animals, fruits, vehicles…); Hard hides it. 30 seconds. 🔍</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── COLOUR HUNT ── -->
-    <a class="game-card" href="./ayas-colour-hunt/">
-      <div class="card-image">
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg5)"/>
-
-          <!-- question: colour circle on the left -->
-          <circle cx="80" cy="90" r="48" fill="#4caf50"/>
-          <circle cx="80" cy="90" r="48" fill="none" stroke="white" stroke-width="6"/>
-          <circle cx="80" cy="90" r="55" fill="none" stroke="rgba(206,147,216,0.35)" stroke-width="3"/>
-
-          <!-- 2×2 emoji answer cards on the right -->
-          <rect x="152" y="18"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="189" y="63"  font-size="36" text-anchor="middle">🍎</text>
-
-          <!-- correct: green border -->
-          <rect x="236" y="18"  width="74" height="66" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="273" y="63"  font-size="36" text-anchor="middle">🐢</text>
-
-          <rect x="152" y="96"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="189" y="141" font-size="36" text-anchor="middle">🍇</text>
-
-          <rect x="236" y="96"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-          <text x="273" y="141" font-size="36" text-anchor="middle">🍋</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔍 Colour Hunt</div>
-        <div class="card-desc">A colour pops up — find the emoji that wears it. 30 seconds, 8 colours, streak bonuses for fast streaks. 🌈</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── CONNECT THE MATCH ── -->
-    <a class="game-card" href="./ayas-connect-match/">
-      <div class="card-image">
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg6)"/>
-
-          <!-- Connecting lines -->
-          <line x1="82"  y1="48"  x2="238" y2="132" stroke="#80cbc4" stroke-width="6" stroke-linecap="round"/>
-          <line x1="82"  y1="132" x2="238" y2="48"  stroke="#f06292" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 6"/>
-
-          <!-- Left column cards -->
-          <rect x="36"  y="16"  width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="74"  y="62"  font-size="36" text-anchor="middle">🐶</text>
-
-          <rect x="36"  y="100" width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="74"  y="146" font-size="36" text-anchor="middle">🐰</text>
-
-          <!-- Right column cards -->
-          <rect x="208" y="16"  width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="246" y="62"  font-size="34" text-anchor="middle">🥕</text>
-
-          <rect x="208" y="100" width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="246" y="146" font-size="34" text-anchor="middle">🦴</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔗 Connect the Match</div>
-        <div class="card-desc">Tap a friend on the left, then its pair on the right, to draw a match line. Rounds of 3 pairs refill automatically for 30 seconds of matching. 💞</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── WHO MAKES THIS SOUND ── -->
-    <a class="game-card" href="./ayas-who-makes-sound/">
-      <div class="card-image">
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg7" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg7)"/>
-
-          <!-- Big speaker bubble on the left -->
-          <circle cx="78" cy="90" r="44" fill="#f06292"/>
-          <circle cx="78" cy="90" r="44" fill="none" stroke="white" stroke-width="4"/>
-          <text x="78" y="104" font-size="40" text-anchor="middle">🔊</text>
-
-          <!-- Sound ripple arcs -->
-          <path d="M 130 74 Q 146 90 130 106" fill="none" stroke="#f06292" stroke-width="4" stroke-linecap="round"/>
-          <path d="M 144 66 Q 166 90 144 114" fill="none" stroke="#f06292" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
-
-          <!-- 2×2 animal grid on the right -->
-          <rect x="178" y="16"  width="62" height="62" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
-          <text x="209" y="60"  font-size="34" text-anchor="middle">🐮</text>
-
-          <rect x="248" y="16"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="279" y="60"  font-size="34" text-anchor="middle">🐱</text>
-
-          <rect x="178" y="96"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="209" y="140" font-size="34" text-anchor="middle">🦆</text>
-
-          <rect x="248" y="96"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
-          <text x="279" y="140" font-size="34" text-anchor="middle">🐶</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔊 Who Makes This Sound?</div>
-        <div class="card-desc">Tap the speaker to hear an animal sound, then tap the right animal from four big choices. 5 rounds, 10 friendly animals, toddler-easy. 🎧</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── WHAT COMES NEXT? ── -->
-    <a class="game-card" href="./ayas-whats-next/">
-      <div class="card-image">
-        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bg8" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fce4ec"/>
-              <stop offset="100%" style="stop-color:#ede7f6"/>
-            </linearGradient>
-          </defs>
-          <rect width="320" height="180" fill="url(#bg8)"/>
-
-          <!-- Sequence row: 3 frames + ? -->
-          <!-- Frame 1: red dot -->
-          <rect x="22"  y="60" width="56" height="64" rx="12" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
-          <text x="50"  y="104" font-size="32" text-anchor="middle">🔴</text>
-
-          <!-- Arrow -->
-          <text x="92"  y="98" font-size="20" text-anchor="middle" fill="#9c4dcc" opacity="0.7">➜</text>
-
-          <!-- Frame 2: yellow dot -->
-          <rect x="106" y="60" width="56" height="64" rx="12" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
-          <text x="134" y="104" font-size="32" text-anchor="middle">🟡</text>
-
-          <!-- Arrow -->
-          <text x="176" y="98" font-size="20" text-anchor="middle" fill="#9c4dcc" opacity="0.7">➜</text>
-
-          <!-- Frame 3: red dot -->
-          <rect x="190" y="60" width="56" height="64" rx="12" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
-          <text x="218" y="104" font-size="32" text-anchor="middle">🔴</text>
-
-          <!-- Arrow -->
-          <text x="260" y="98" font-size="20" text-anchor="middle" fill="#9c4dcc" opacity="0.7">➜</text>
-
-          <!-- Question mark slot -->
-          <rect x="274" y="60" width="34" height="64" rx="12" fill="#ede7f6" stroke="#ce93d8" stroke-width="2"/>
-          <text x="291" y="104" font-family="Fredoka One, cursive" font-size="28" text-anchor="middle" fill="#9c4dcc">?</text>
-
-          <!-- Sparkles -->
-          <text x="34"  y="34"  font-size="14" fill="#ce93d8" opacity="0.7">✨</text>
-          <text x="290" y="42"  font-size="14" fill="#ce93d8" opacity="0.7">✨</text>
-          <text x="160" y="158" font-size="14" fill="#ce93d8" opacity="0.7">✨</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔮 What Comes Next?</div>
-        <div class="card-desc">Two modes: spot the next item in a colour pattern, or pick what comes next in a tiny growing-up story. 5 rounds of brain-stretchy fun. 🌱</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
+    <!-- Cards are ordered by suitability for a 2-year-old (most → least).
+         See docs/decisions.md D-013 before re-shuffling. -->
 
     <!-- ── PICK & POP! ── -->
     <a class="game-card" href="./ayas-pick-pop/">
@@ -665,6 +299,374 @@
       <div class="card-body">
         <div class="card-title">🎯 Pick &amp; Pop!</div>
         <div class="card-desc">Pick your topic — fruit, animal, vehicle, or musical instrument — and pop the matching one in a row of mixed-up things. Distractors come from very different categories so the answer always pops out. 🫧</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── COLOUR MATCH ── -->
+    <a class="game-card" href="./ayas-colour-match/">
+      <div class="card-image">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg4)"/>
+
+          <!-- question: big colour circle -->
+          <circle cx="160" cy="64" r="44" fill="#f06292"/>
+          <circle cx="160" cy="64" r="44" fill="none" stroke="white" stroke-width="6"/>
+          <circle cx="160" cy="64" r="51" fill="none" stroke="rgba(206,147,216,0.4)" stroke-width="4"/>
+
+          <!-- answer swatches: 2×2 grid of coloured rectangles -->
+          <!-- top-left: sky blue -->
+          <rect x="16"  y="122" width="130" height="26" rx="9" fill="#4fc3f7" stroke="white" stroke-width="4"/>
+          <!-- top-right: correct pink (mint glow) -->
+          <rect x="174" y="122" width="130" height="26" rx="9" fill="#f06292" stroke="#80cbc4" stroke-width="4"/>
+          <!-- bottom-left: green -->
+          <rect x="16"  y="153" width="130" height="22" rx="9" fill="#66bb6a" stroke="white" stroke-width="4"/>
+          <!-- bottom-right: lavender -->
+          <rect x="174" y="153" width="130" height="22" rx="9" fill="#ce93d8" stroke="white" stroke-width="4"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🎨 Colour Match</div>
+        <div class="card-desc">A colour appears — tap the swatch that matches. Easy: 10 bright hues. Hard: subtle shades that get trickier with every streak. 30 seconds.</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── WHO MAKES THIS SOUND ── -->
+    <a class="game-card" href="./ayas-who-makes-sound/">
+      <div class="card-image">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg7" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg7)"/>
+
+          <!-- Big speaker bubble on the left -->
+          <circle cx="78" cy="90" r="44" fill="#f06292"/>
+          <circle cx="78" cy="90" r="44" fill="none" stroke="white" stroke-width="4"/>
+          <text x="78" y="104" font-size="40" text-anchor="middle">🔊</text>
+
+          <!-- Sound ripple arcs -->
+          <path d="M 130 74 Q 146 90 130 106" fill="none" stroke="#f06292" stroke-width="4" stroke-linecap="round"/>
+          <path d="M 144 66 Q 166 90 144 114" fill="none" stroke="#f06292" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+
+          <!-- 2×2 animal grid on the right -->
+          <rect x="178" y="16"  width="62" height="62" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
+          <text x="209" y="60"  font-size="34" text-anchor="middle">🐮</text>
+
+          <rect x="248" y="16"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <text x="279" y="60"  font-size="34" text-anchor="middle">🐱</text>
+
+          <rect x="178" y="96"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <text x="209" y="140" font-size="34" text-anchor="middle">🦆</text>
+
+          <rect x="248" y="96"  width="62" height="62" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <text x="279" y="140" font-size="34" text-anchor="middle">🐶</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🔊 Who Makes This Sound?</div>
+        <div class="card-desc">Tap the speaker to hear an animal sound, then tap the right animal from four big choices. 5 rounds, 10 friendly animals, toddler-easy. 🎧</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── COLOUR HUNT ── -->
+    <a class="game-card" href="./ayas-colour-hunt/">
+      <div class="card-image">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg5)"/>
+
+          <!-- question: colour circle on the left -->
+          <circle cx="80" cy="90" r="48" fill="#4caf50"/>
+          <circle cx="80" cy="90" r="48" fill="none" stroke="white" stroke-width="6"/>
+          <circle cx="80" cy="90" r="55" fill="none" stroke="rgba(206,147,216,0.35)" stroke-width="3"/>
+
+          <!-- 2×2 emoji answer cards on the right -->
+          <rect x="152" y="18"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <text x="189" y="63"  font-size="36" text-anchor="middle">🍎</text>
+
+          <!-- correct: green border -->
+          <rect x="236" y="18"  width="74" height="66" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
+          <text x="273" y="63"  font-size="36" text-anchor="middle">🐢</text>
+
+          <rect x="152" y="96"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <text x="189" y="141" font-size="36" text-anchor="middle">🍇</text>
+
+          <rect x="236" y="96"  width="74" height="66" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <text x="273" y="141" font-size="36" text-anchor="middle">🍋</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🔍 Colour Hunt</div>
+        <div class="card-desc">A colour pops up — find the emoji that wears it. 30 seconds, 8 colours, streak bonuses for fast streaks. 🌈</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── WHAT COMES NEXT? ── -->
+    <a class="game-card" href="./ayas-whats-next/">
+      <div class="card-image">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg8" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg8)"/>
+
+          <!-- Sequence row: 3 frames + ? -->
+          <!-- Frame 1: red dot -->
+          <rect x="22"  y="60" width="56" height="64" rx="12" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
+          <text x="50"  y="104" font-size="32" text-anchor="middle">🔴</text>
+
+          <!-- Arrow -->
+          <text x="92"  y="98" font-size="20" text-anchor="middle" fill="#9c4dcc" opacity="0.7">➜</text>
+
+          <!-- Frame 2: yellow dot -->
+          <rect x="106" y="60" width="56" height="64" rx="12" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
+          <text x="134" y="104" font-size="32" text-anchor="middle">🟡</text>
+
+          <!-- Arrow -->
+          <text x="176" y="98" font-size="20" text-anchor="middle" fill="#9c4dcc" opacity="0.7">➜</text>
+
+          <!-- Frame 3: red dot -->
+          <rect x="190" y="60" width="56" height="64" rx="12" fill="white" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.13))"/>
+          <text x="218" y="104" font-size="32" text-anchor="middle">🔴</text>
+
+          <!-- Arrow -->
+          <text x="260" y="98" font-size="20" text-anchor="middle" fill="#9c4dcc" opacity="0.7">➜</text>
+
+          <!-- Question mark slot -->
+          <rect x="274" y="60" width="34" height="64" rx="12" fill="#ede7f6" stroke="#ce93d8" stroke-width="2"/>
+          <text x="291" y="104" font-family="Fredoka One, cursive" font-size="28" text-anchor="middle" fill="#9c4dcc">?</text>
+
+          <!-- Sparkles -->
+          <text x="34"  y="34"  font-size="14" fill="#ce93d8" opacity="0.7">✨</text>
+          <text x="290" y="42"  font-size="14" fill="#ce93d8" opacity="0.7">✨</text>
+          <text x="160" y="158" font-size="14" fill="#ce93d8" opacity="0.7">✨</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🔮 What Comes Next?</div>
+        <div class="card-desc">Two modes: spot the next item in a colour pattern, or pick what comes next in a tiny growing-up story. 5 rounds of brain-stretchy fun. 🌱</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── FLIP & MATCHING ── -->
+    <a class="game-card" href="./ayas-flip-matching/">
+      <div class="card-image">
+        <!-- SVG preview: flip matching card grid -->
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <!-- bg -->
+          <defs>
+            <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+            <linearGradient id="cardback" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#ce93d8"/>
+              <stop offset="100%" style="stop-color:#ba68c8"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg1)"/>
+
+          <!-- card back (flipped down) -->
+          <rect x="22" y="24" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
+          <text x="52" y="62" font-size="26" text-anchor="middle">✨</text>
+
+          <!-- card front - strawberry -->
+          <rect x="94" y="24" width="60" height="60" rx="12" fill="#fff8fc" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.15))"/>
+          <text x="124" y="62" font-size="28" text-anchor="middle">🍓</text>
+
+          <!-- card back -->
+          <rect x="166" y="24" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
+          <text x="196" y="62" font-size="26" text-anchor="middle">✨</text>
+
+          <!-- card front - cat -->
+          <rect x="238" y="24" width="60" height="60" rx="12" fill="#fff8fc" filter="drop-shadow(0 3px 6px rgba(156,77,204,0.15))"/>
+          <text x="268" y="62" font-size="28" text-anchor="middle">🐱</text>
+
+          <!-- row 2 -->
+          <!-- card front - strawberry (matched!) -->
+          <rect x="22" y="96" width="60" height="60" rx="12" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
+          <text x="52" y="134" font-size="28" text-anchor="middle">🍓</text>
+
+          <!-- card back -->
+          <rect x="94" y="96" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
+          <text x="124" y="134" font-size="26" text-anchor="middle">✨</text>
+
+          <!-- card front - cat (matched!) -->
+          <rect x="166" y="96" width="60" height="60" rx="12" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
+          <text x="196" y="134" font-size="28" text-anchor="middle">🐱</text>
+
+          <!-- card back -->
+          <rect x="238" y="96" width="60" height="60" rx="12" fill="url(#cardback)" opacity="0.9"/>
+          <text x="268" y="134" font-size="26" text-anchor="middle">✨</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🃏 Flip &amp; Matching</div>
+        <div class="card-desc">Flip cards and find every matching pair. Pick your grid: 2×2, 4×4, 4×6, or a brain-stretching 6×6.</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── ODD ONE OUT ── -->
+    <a class="game-card" href="./ayas-odd-one-out/">
+      <div class="card-image">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg6)"/>
+
+          <!-- 3 animals (same) -->
+          <rect x="16"  y="28" width="80" height="72" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <text x="56"  y="78" font-size="40" text-anchor="middle">🐱</text>
+
+          <rect x="120" y="28" width="80" height="72" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <text x="160" y="78" font-size="40" text-anchor="middle">🐶</text>
+
+          <rect x="16"  y="110" width="80" height="60" rx="16" fill="white" opacity="0.95" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
+          <text x="56"  y="150" font-size="40" text-anchor="middle">🐸</text>
+
+          <!-- 1 odd one (vehicle) with pink border -->
+          <rect x="120" y="110" width="80" height="60" rx="16" fill="#fff0f4" stroke="#f06292" stroke-width="3"/>
+          <text x="160" y="150" font-size="40" text-anchor="middle">🚗</text>
+
+          <!-- question mark on right -->
+          <text x="252" y="82"  font-size="56" text-anchor="middle" fill="#ce93d8" opacity="0.7">?</text>
+          <text x="252" y="142" font-family="Fredoka One, sans-serif" font-size="13" font-weight="700" fill="#9c4dcc" text-anchor="middle" opacity="0.85">odd one!</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🤔 Odd One Out</div>
+        <div class="card-desc">Three things belong together — one doesn't. Easy shows the category (animals, fruits, vehicles…); Hard hides it. 30 seconds. 🔍</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── CONNECT THE MATCH ── -->
+    <a class="game-card" href="./ayas-connect-match/">
+      <div class="card-image">
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg6)"/>
+
+          <!-- Connecting lines -->
+          <line x1="82"  y1="48"  x2="238" y2="132" stroke="#80cbc4" stroke-width="6" stroke-linecap="round"/>
+          <line x1="82"  y1="132" x2="238" y2="48"  stroke="#f06292" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 6"/>
+
+          <!-- Left column cards -->
+          <rect x="36"  y="16"  width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
+          <text x="74"  y="62"  font-size="36" text-anchor="middle">🐶</text>
+
+          <rect x="36"  y="100" width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <text x="74"  y="146" font-size="36" text-anchor="middle">🐰</text>
+
+          <!-- Right column cards -->
+          <rect x="208" y="16"  width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5"/>
+          <text x="246" y="62"  font-size="34" text-anchor="middle">🥕</text>
+
+          <rect x="208" y="100" width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
+          <text x="246" y="146" font-size="34" text-anchor="middle">🦴</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🔗 Connect the Match</div>
+        <div class="card-desc">Tap a friend on the left, then its pair on the right, to draw a match line. Rounds of 3 pairs refill automatically for 30 seconds of matching. 💞</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── WHO'S THAT, AYA? ── -->
+    <a class="game-card" href="./ayas-whos-that/">
+      <div class="card-image wt-preview">
+        <div class="wt-top">
+          <div class="wt-char-card">
+            <img src="./ayas-whos-that/images/bing.png" alt="mystery character" />
+          </div>
+          <div class="wt-question">?</div>
+        </div>
+        <div class="wt-pills">
+          <span class="wt-pill highlight">Bing</span>
+          <span class="wt-pill">Flop</span>
+          <span class="wt-pill">Sula</span>
+          <span class="wt-pill">Pando</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🐰 Who's That, Aya?</div>
+        <div class="card-desc">Two modes: guess the Bing character or the animal from a dark silhouette. Easy (3 choices · 12s) or Hard (4 choices · 8s). 5 rounds.</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── TIC-TAC-TOE ── -->
+    <a class="game-card" href="./ayas-tictactoe/">
+      <div class="card-image">
+        <!-- SVG preview: tic-tac-toe board -->
+        <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#fce4ec"/>
+              <stop offset="100%" style="stop-color:#ede7f6"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="url(#bg2)"/>
+
+          <!-- 3x3 grid of cells -->
+          <!-- row 1 -->
+          <rect x="30"  y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
+          <text x="66"  y="67" font-size="36" text-anchor="middle">🐱</text>
+
+          <rect x="124" y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
+          <text x="160" y="67" font-size="36" text-anchor="middle">🐰</text>
+
+          <rect x="218" y="18" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
+          <text x="254" y="67" font-size="36" text-anchor="middle">🐱</text>
+
+          <!-- row 2 -->
+          <rect x="30"  y="100" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
+          <text x="66"  y="149" font-size="36" text-anchor="middle">🐰</text>
+
+          <!-- winning cell highlight -->
+          <rect x="124" y="100" width="72" height="72" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5"/>
+          <text x="160" y="149" font-size="36" text-anchor="middle">🐱</text>
+
+          <rect x="218" y="100" width="72" height="72" rx="14" fill="white" opacity="0.95" filter="drop-shadow(0 3px 8px rgba(156,77,204,0.13))"/>
+          <text x="254" y="149" font-size="36" text-anchor="middle">🐰</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-title">🐱 Tic-Tac-Toe</div>
+        <div class="card-desc">Two players take turns — 🐱 Cat vs 🐰 Bunny. Enter your names and get three in a row to win. Score carries across rounds.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>

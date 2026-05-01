@@ -1,14 +1,30 @@
 # Changelog
 
-What's shipped, in reverse chronological order. Group commits by theme so
-you can scan for "did we do X yet?" without scrolling. Every entry should
-reference the commit hash so you can `git show <hash>` for the diff.
+What's shipped in roughly the last 30 days, in reverse chronological
+order. Older entries live in [`archive/CHANGELOG-2025.md`](./archive/CHANGELOG-2025.md);
+move sections out of here when they're no longer load-bearing for current
+work — keep this file dense and fast to scan.
 
 > **Convention:** new entries go at the top under the most recent date.
 > When a chunk of work needs more than one sentence to explain, link to
-> the relevant `docs/<file>.md` — keep this file dense.
+> the relevant `docs/<file>.md` rather than putting paragraphs here.
 
 ---
+
+## 2026-05-01 — Token efficiency: SVG extraction, shared host CSS, archive
+
+- **Extract landing-card SVG previews** — `df58a43`. The 9 inline `<svg>`
+  blocks on the landing page moved into `public/previews/*.svg`; each
+  card is now a one-line `<img>`. `index.html` shrank from ~885 → 395
+  lines (-55%). Vite's `public/` dir copies the files into `dist/`
+  verbatim. Who's That, Aya? stayed inline (HTML+CSS + real PNG, not SVG).
+- **Polish the 8 other previews + Pick & Pop iterations** — see commits
+  `799b518`, `1aa5205`, `b7d73c8`, `44b6a06`, `62b6431`, `f86da8d`. Each
+  game preview now has a distinct hero motif (paint palette, magnifying
+  glass, speech bubble, etc.) instead of generic 2×2 swatch grids.
+- **Shared `public/game-host.css`** + sweep of stale `temporary screenshots/*.mjs`
+  probe scripts + this archive. Game-host HTMLs went from ~33 lines each
+  to 16 lines each (10 games × shared CSS).
 
 ## 2026-05-01 — Sort landing cards by 2yo suitability
 
@@ -85,35 +101,6 @@ reference the commit hash so you can `git show <hash>` for the diff.
 - **Who Makes This Sound?: soften speaker + polish title and game UI** — `32e1156`.
 - **Flip & Matching: refine title and in-game UI** — `edea241`.
 
-## Earlier 2026 — Sound & connect games
-
-- **Who Makes This Sound?: real animal audio + UI polish** — `caba879`.
-  Replaced synth tones with `.ogg` recordings under
-  `ayas-who-makes-sound/sounds/` (see `CREDITS.md` there for sources).
-- **Add Connect the Match and Who Makes This Sound? games** — `6336a66`.
-- **Unify end-popup to 3-button contract + add Who's That modes** — `7e10b40`.
-  Established the load-bearing **Again / 🏠 Home / 🎮 Games** contract that
-  all games must follow. Don't deviate — see `decisions.md`.
-
-## 2025 — Difficulty system + Phaser migration
-
-- **Rebuild Odd One Out with Easy / Hard difficulty and category hints** — `f038583`.
-- **Rebuild Colour Match with Easy / Hard difficulty** — `6b141aa`.
-- **Remove pre-migration artefacts** — `4cf0388`.
-- **Migrate to Phaser + TypeScript + Vite and auto-deploy via GitHub Actions** — `03b6cf3`.
-  This is the watershed commit: pre-migration the games were single-file
-  HTML+JS each. Post-migration: shared theme/utils, build pipeline, CI.
-
-## Pre-migration era — single-file HTML games
-
-The first ~15 commits (`eb83f99` through `38fd375`) built the first batch
-of games as standalone single-file HTML + inline JS in their own folders:
-Flip & Matching, Tic-Tac-Toe, Who's That Aya?, Colour Match, Colour Hunt,
-Odd One Out. The pastel design system (Fredoka One + Nunito + lavender→pink
-gradient) and the **Aya's Mini Games** landing-page menu were established
-during this phase. See `git log` if you need detail — most of that era's
-code was rewritten during the Phaser migration anyway.
-
 ---
 
 ## How to add an entry
@@ -126,3 +113,8 @@ When you ship something:
 4. If the change has non-obvious rationale, link to `decisions.md` rather
    than putting paragraphs here.
 5. Don't list trivial commits (typo fixes, formatting). Squash mentally.
+
+When the file gets long: move sections older than ~30 days to
+`archive/CHANGELOG-2025.md` (or open a new archive file for a future
+year). The archive isn't appended to during day-to-day work — it's a
+frozen historical record.

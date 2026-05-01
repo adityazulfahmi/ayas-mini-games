@@ -7,39 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body {
-      background: linear-gradient(180deg, #fce4ec 0%, #ede7f6 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* 100dvh follows mobile Chrome's URL bar so the centred canvas
-         never sits under it; 100vh stays as a fallback for old browsers. */
-      min-height: 100vh;
-      min-height: 100dvh;
-      overflow: hidden;
-      overscroll-behavior: none;
-    }
-    #game canvas { display: block; }
-    /* Phaser DOM input overlay */
-    #game .phaser-dom-wrapper input {
-      font-family: 'Nunito', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: #6a1b9a;
-      padding: 10px 12px;
-      border: 2.5px solid #e1bee7;
-      border-radius: 12px;
-      background: white;
-      outline: none;
-      width: 170px;
-      box-shadow: 0 2px 8px rgba(156,77,204,0.1);
-      transition: border-color 0.2s;
-    }
-    #game .phaser-dom-wrapper input:focus { border-color: #f06292; }
-  </style>
+  <link rel="stylesheet" href="../game-host.css" />
 </head>
 <body>
   <div id="game"></div>

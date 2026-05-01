@@ -9,7 +9,7 @@ project basics; then come here for state and rationale.
 | File | When to read it |
 |---|---|
 | [STATE.md](./STATE.md) | **First.** Current stack versions, what's open, smoke-test recipe. The one-page snapshot. |
-| [CHANGELOG.md](./CHANGELOG.md) | When you need to know what shipped recently and why. Reverse chronological, grouped by phase, references commit hashes. |
+| [CHANGELOG.md](./CHANGELOG.md) | When you need to know what shipped recently and why. Reverse chronological, capped at the last ~30 days. Older entries live in [`archive/CHANGELOG-2025.md`](./archive/CHANGELOG-2025.md). |
 | [decisions.md](./decisions.md) | Before changing anything that *looks* arbitrary. Captures the WHY for non-obvious choices so you don't undo them. |
 | [phaser-4-migration.md](./phaser-4-migration.md) | Historical record of the Phaser 3 → 4 migration. Useful as a recipe for future engine bumps. |
 

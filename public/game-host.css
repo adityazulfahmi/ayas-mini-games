@@ -31,6 +31,9 @@ body {
 
 #game canvas {
   display: block;
+  /* Skip the browser's 300ms double-tap-to-zoom heuristic so single
+   * taps register instantly on touch devices. */
+  touch-action: manipulation;
 }
 
 /* Phaser DOM input overlay (tictactoe player-name fields) */

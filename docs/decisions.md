@@ -303,6 +303,9 @@ in scene code.
 
 ## D-013 — Landing-page games sorted by 2yo suitability
 
+> Updated 2026-05-14: Crossword added at position 11 (least 2yo-suitable;
+> requires reading + English vocab + spelling). Aya can grow into it.
+
 **What.** The 10 game cards in `index.html` are listed in a deliberate
 order (most → least 2yo-friendly), not alphabetical or chronological.
 README.md's games table mirrors the same order. A comment block at the
@@ -325,6 +328,7 @@ the one most likely to delight her; the last card should be the one she
 8. **Connect the Match** — two-step pair tapping; 30s timer
 9. **Who's That, Aya?** — character recognition + tighter timer
 10. **Tic-Tac-Toe** — 2-player strategy, requires reading names
+11. **Crossword** — bilingual (Bahasa hint → English answer); needs reading and a starter English vocabulary, designed for a 6yo
 
 **Don't touch.** Don't re-sort alphabetically or by recency. If you add
 a new game, slot it into the suitability ranking by feel — and update

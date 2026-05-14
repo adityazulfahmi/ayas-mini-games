@@ -20,6 +20,7 @@ export default defineConfig({
         whoMakesSound: resolve(__dirname, 'ayas-who-makes-sound/index.html'),
         whatsNext:    resolve(__dirname, 'ayas-whats-next/index.html'),
         pickPop:      resolve(__dirname, 'ayas-pick-pop/index.html'),
+        crossword:    resolve(__dirname, 'ayas-crossword/index.html'),
       },
     },
   },

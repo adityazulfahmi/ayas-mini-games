@@ -21,6 +21,7 @@ Listed most → least suitable for a 2-year-old (see `docs/decisions.md` D-013):
 | [🔗 Connect the Match](./ayas-connect-match/) | Tap a friend on the left and its pair on the right to draw a match line. Rounds of 3 pairs refill automatically for 30 seconds of matching. |
 | [🐰 Who's That, Aya?](./ayas-whos-that/) | Two modes: guess the Bing character or the animal from a dark silhouette. Easy (3 choices · 12s) or Hard (4 choices · 8s). 5 rounds. |
 | [🐱 Tic-Tac-Toe](./ayas-tictactoe/) | Two players take turns — 🐱 Cat vs 🐰 Bunny. Enter your names, get three in a row, and the score carries across rounds. |
+| [🧩 Crossword](./ayas-crossword/) | Mini bilingual crossword on a 5×5 grid: read the Bahasa hint, tap the scrambled letters to spell the English answer. Words pulled from a kid-friendly subset of top-500 English. |
 
 ## 🎨 Design
 

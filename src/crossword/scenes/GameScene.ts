@@ -48,6 +48,11 @@ interface WordState {
 interface BankTile {
   letter: string;
   container: Phaser.GameObjects.Container;
+  /** Stable invisible hit-target. Kept separate from `container` so that
+   * scale/shake tweens on the visual never disturb input hit-testing —
+   * matches the zone-on-top pattern used by flip-matching and
+   * colour-match, which is what makes their taps reliable. */
+  zone: Phaser.GameObjects.Zone;
   bg: Phaser.GameObjects.Graphics;
   homeX: number;
   homeY: number;
@@ -277,24 +282,23 @@ export class GameScene extends Phaser.Scene {
       }).setOrigin(0.5);
 
       const container = this.add.container(x, y, [bg, txt]);
-      container.setSize(TILE_W, TILE_H).setInteractive({
-        useHandCursor: true,
-        hitArea: new Phaser.Geom.Rectangle(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H),
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-      });
 
-      const tile: BankTile = { letter, container, bg, homeX: x, homeY: y, used: false };
-      container.on('pointerdown', () => this.onBankTap(tile));
-      container.on('pointerover', () => {
+      // Separate zone for input — never tweened, so hit-testing is
+      // never racing against a moving/scaling target.
+      const zone = this.add.zone(x, y, TILE_W, TILE_H).setInteractive({ cursor: 'pointer' });
+
+      const tile: BankTile = { letter, container, zone, bg, homeX: x, homeY: y, used: false };
+      zone.on('pointerdown', () => this.onBankTap(tile));
+      zone.on('pointerover', () => {
         if (tile.used) return;
         this.tweens.add({ targets: container, scale: 1.06, duration: 120 });
       });
-      container.on('pointerout', () => {
+      zone.on('pointerout', () => {
         if (tile.used) return;
         this.tweens.add({ targets: container, scale: 1, duration: 120 });
       });
 
-      this.bankContainer.add(container);
+      this.bankContainer.add([container, zone]);
       this.bankTiles.push(tile);
     });
   }
@@ -392,7 +396,7 @@ export class GameScene extends Phaser.Scene {
       targets: cell.letterTxt, scale: 1, duration: 220, ease: 'Back.Out',
     });
     tile.used = true;
-    tile.container.disableInteractive();
+    tile.zone.disableInteractive();
     this.tweens.add({
       targets: tile.container, alpha: 0, scale: 0.5,
       duration: 220, ease: 'Back.In',

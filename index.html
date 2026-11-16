@@ -42,6 +42,19 @@
       font-weight: 600;
     }
 
+    /* ── VOICE SWITCH (same setting as the 🗣️ button inside every game) ── */
+    .voice-switch {
+      margin-top: 16px;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px 8px 10px; border-radius: 999px;
+      border: 2px solid rgba(206,147,216,0.55); background: rgba(255,255,255,0.85);
+      font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; color: #7b3fa0;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .voice-switch .vs-icon { font-size: 1.2rem; }
+    .voice-switch.off { background: rgba(243,229,245,0.9); color: #9c4dcc; }
+    .voice-switch:active { transform: scale(0.96); }
+
     /* ── SHELVES (now / later) ── */
     .shelf { width: 100%; max-width: 1120px; }
     .shelf + .shelf { margin-top: 44px; }
@@ -297,6 +310,9 @@
   <div class="header">
     <div class="logo">🌸 Aya's Mini Games</div>
     <div class="tagline">Pick a game and let's have fun! 🎀</div>
+    <button type="button" class="voice-switch" id="voice-switch" aria-pressed="true">
+      <span class="vs-icon">🗣️</span><span class="vs-text">Spoken instructions: <b>On</b></span>
+    </button>
   </div>
 
   <!-- Cards are ordered by suitability for Aya (most → least), split into
@@ -487,5 +503,24 @@
 
   <footer>Dari papa Ami untuk Aya 💖</footer>
 
+  <script>
+    // Same localStorage key as src/shared/voice.ts.
+    (function () {
+      var KEY = 'aya-voice', btn = document.getElementById('voice-switch');
+      function on() { try { return localStorage.getItem(KEY) !== 'off'; } catch (e) { return true; } }
+      function paint() {
+        var v = on();
+        btn.classList.toggle('off', !v);
+        btn.setAttribute('aria-pressed', String(v));
+        btn.querySelector('.vs-icon').textContent = v ? '🗣️' : '🔇';
+        btn.querySelector('.vs-text').innerHTML = 'Spoken instructions: <b>' + (v ? 'On' : 'Off') + '</b>';
+      }
+      btn.addEventListener('click', function () {
+        try { localStorage.setItem(KEY, on() ? 'off' : 'on'); } catch (e) {}
+        paint();
+      });
+      paint();
+    })();
+  </script>
 </body>
 </html>

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { F } from './theme';
 import { ensureLetterboxDimStyle } from './letterboxDim';
 import { mountLoading, dismissLoading } from './loadingScreen';
+import { installVoiceGate, mountVoiceToggle } from './voice';
 
 /**
  * Wait for Fredoka One + Nunito to actually be usable before booting Phaser.
@@ -46,6 +47,9 @@ export function createGame(
 
   patchTextResolutionOnce(dpr);
   ensureLetterboxDimStyle();
+  // Spoken-instructions switch shared by every game (see voice.ts).
+  installVoiceGate();
+  mountVoiceToggle();
 
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,

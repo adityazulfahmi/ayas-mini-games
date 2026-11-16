@@ -11,6 +11,14 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-17 — Spoken-instructions switch
+
+- `src/shared/voice.ts`: one on/off setting (localStorage `aya-voice`) for the
+  talking voice in every game. `createGame()` wraps `speechSynthesis.speak`:
+  when off nothing is spoken but `start`/`end` still fire after a similar delay,
+  so pacing is unchanged. Animal sounds and effects stay on. A 🗣️/🔇 button sits
+  bottom-left in every game; the landing page has the same switch.
+
 ## 2026-11-17 — Every game reworked for Aya at 2½
 
 One agent per game assessed and improved it (branches `improve/<game>`, merged).

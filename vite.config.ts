@@ -2,7 +2,8 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  base: '/ayas-mini-games/',
+  // GitHub Pages serves under /ayas-mini-games/; aya.adityazulfahmi.com builds with BASE=/.
+  base: process.env.BASE ?? '/ayas-mini-games/',
   resolve: {
     alias: { '@shared': resolve(__dirname, 'src/shared') },
   },
@@ -21,6 +22,7 @@ export default defineConfig({
         whatsNext:    resolve(__dirname, 'ayas-whats-next/index.html'),
         pickPop:      resolve(__dirname, 'ayas-pick-pop/index.html'),
         crossword:    resolve(__dirname, 'ayas-crossword/index.html'),
+        shapeSorter:  resolve(__dirname, 'ayas-shape-sorter/index.html'),
       },
     },
   },

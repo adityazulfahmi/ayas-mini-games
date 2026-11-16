@@ -11,6 +11,16 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-16 — Shape Sorter + aya.adityazulfahmi.com
+
+- **Shape Sorter** (`ayas-shape-sorter/`): drag (or tap-to-place) five
+  friendly shapes into a sorter box. Built for Aya at 2½: shape names are
+  spoken, wrong holes just wiggle and say the hole's name, a pointing hand
+  appears after 7s idle, no timer. Boxes grow 2 → 3 → 3 holes. Placed
+  second on the landing page (D-013).
+- **Self-hosted at aya.adityazulfahmi.com**: `vite.config.ts` `base` now
+  reads `process.env.BASE` (default stays `/ayas-mini-games/` for Pages).
+
 ## 2026-05-01 — Token efficiency: SVG extraction, shared host CSS, archive
 
 - **Extract landing-card SVG previews** — `df58a43`. The 9 inline `<svg>`

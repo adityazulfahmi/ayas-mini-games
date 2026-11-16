@@ -303,6 +303,9 @@ in scene code.
 
 ## D-013 — Landing-page games sorted by 2yo suitability
 
+> Updated 2026-11-16: Aya is now 2½. Shape Sorter added at position 2
+> (shape naming + matching is the core skill at this age, no reading, no timer).
+>
 > Updated 2026-05-14: Crossword added at position 11 (least 2yo-suitable;
 > requires reading + English vocab + spelling). Aya can grow into it.
 
@@ -319,6 +322,7 @@ the one most likely to delight her; the last card should be the one she
 **Solution.** Ranked in this order:
 
 1. **Pick & Pop!** — designed for 2yo, single-category, no timer, forgiving wrong taps
+1b. **Shape Sorter** — 2½yo shape matching, spoken names, drag *or* tap, idle hint, no timer
 2. **Colour Match** — pure colour recognition, easy mode is unmistakable
 3. **Who Makes This Sound?** — sound + animal pairing, 5 rounds, no timer
 4. **Colour Hunt** — colour-on-emoji, same simplicity tier

@@ -3,15 +3,16 @@
 A collection of calming, toddler-friendly mini games built with a soft pastel theme.
 Each game runs in the browser — no install, no accounts, just tap and play.
 
-Live at [adityazulfahmi.github.io/ayas-mini-games](https://adityazulfahmi.github.io/ayas-mini-games/).
+Live at [aya.adityazulfahmi.com](https://aya.adityazulfahmi.com/) (self-hosted, `BASE=/ npm run build`) and [adityazulfahmi.github.io/ayas-mini-games](https://adityazulfahmi.github.io/ayas-mini-games/).
 
 ## 🎮 Games
 
-Listed most → least suitable for a 2-year-old (see `docs/decisions.md` D-013):
+Listed most → least suitable for Aya (2½ years old) (see `docs/decisions.md` D-013):
 
 | Game | Description |
 |------|-------------|
 | [🎯 Pick & Pop!](./ayas-pick-pop/) | Pick a category to play (fruit, animal, vehicle, or musical instrument), then tap the matching one in a 2×2 grid of bubbles. Distractors are pulled from clearly-different categories — buildings, tools, vegetables, toys — so the right answer is unmistakable. 5 rounds. |
+| [🧩 Shape Sorter](./ayas-shape-sorter/) | Every shape has a home: drag the circle, square, triangle, star or heart into its matching hole in the sorter box, or just tap the hole. Shapes are said out loud; a little hand points the way after a pause. 3 boxes (2, 3, 3 holes), no timer. |
 | [🎨 Colour Match](./ayas-colour-match/) | Tap the swatch that matches the colour. Easy: 10 bright hues. Hard: subtle shades that get trickier with every streak. 30 seconds. |
 | [🔊 Who Makes This Sound?](./ayas-who-makes-sound/) | Tap the speaker to hear an animal sound, then tap the right animal from four big choices. 5 rounds, 10 animals, toddler-easy. |
 | [🔍 Colour Hunt](./ayas-colour-hunt/) | A colour pops up — find the emoji that wears it. 30 seconds, 8 colour families, streak bonuses. |

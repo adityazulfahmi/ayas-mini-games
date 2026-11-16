@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="320" height="180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fce4ec"/>
+      <stop offset="100%" style="stop-color:#ede7f6"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#bg)"/>
+
+  <!-- Sorter box: lid with three holes -->
+  <rect x="44" y="84" width="232" height="80" rx="22" fill="#d1c4e9"/>
+  <rect x="44" y="74" width="232" height="80" rx="22" fill="white" stroke="#ce93d8" stroke-width="2.5"
+        filter="drop-shadow(0 6px 14px rgba(156,77,204,0.20))"/>
+  <!-- circle hole -->
+  <circle cx="100" cy="114" r="25" fill="#ef5350" opacity="0.32"/>
+  <circle cx="100" cy="114" r="21" fill="#4a2c6e"/>
+  <!-- square hole -->
+  <rect x="140" y="94" width="40" height="40" rx="8" fill="#42a5f5" opacity="0.32"/>
+  <rect x="143" y="97" width="34" height="34" rx="7" fill="#4a2c6e"/>
+  <!-- triangle hole (filled: green piece sitting in it) -->
+  <path d="M220 90 L246 134 L194 134 Z" fill="#66bb6a" opacity="0.32" stroke-linejoin="round"/>
+  <path d="M220 96 L241 131 L199 131 Z" fill="#66bb6a" stroke="#4caf50" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Star piece dropping into... a friendly face -->
+  <g transform="translate(150 44) rotate(-10)">
+    <path d="M0 -30 L8.8 -12 L28.5 -9.3 L14.3 4.5 L17.6 24.3 L0 15 L-17.6 24.3 L-14.3 4.5 L-28.5 -9.3 L-8.8 -12 Z"
+          fill="#ffca28" stroke="#f9a825" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="-6" cy="0" r="2.6" fill="#3a1060"/>
+    <circle cx="6" cy="0" r="2.6" fill="#3a1060"/>
+    <path d="M-4.5 6 Q0 10 4.5 6" fill="none" stroke="#3a1060" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <!-- Red circle piece waiting -->
+  <g transform="translate(272 46)">
+    <circle r="20" fill="#ef5350" stroke="#e53935" stroke-width="2.5"/>
+    <circle cx="-5" cy="-2" r="2.4" fill="#3a1060"/>
+    <circle cx="5" cy="-2" r="2.4" fill="#3a1060"/>
+    <path d="M-4 4 Q0 8 4 4" fill="none" stroke="#3a1060" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <text x="58" y="44" font-family="Fredoka One, cursive" font-size="22" fill="#ce93d8">✨</text>
+</svg>

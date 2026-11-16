@@ -1,4 +1,4 @@
-export type ShapeKind = 'circle' | 'square' | 'triangle' | 'star' | 'heart';
+export type ShapeKind = 'circle' | 'square' | 'triangle' | 'star' | 'heart' | 'moon' | 'diamond';
 
 export interface ShapeDef {
   kind: ShapeKind;
@@ -14,12 +14,19 @@ export const SHAPES: ShapeDef[] = [
   { kind: 'triangle', name: 'Triangle', color: 0x66bb6a },
   { kind: 'star',     name: 'Star',     color: 0xffca28 },
   { kind: 'heart',    name: 'Heart',    color: 0xf06292 },
+  { kind: 'moon',     name: 'Moon',     color: 0x9575cd },
+  { kind: 'diamond',  name: 'Diamond',  color: 0xffa040 },
 ];
 
 /**
- * Holes per box. A 2.5-year-old starts with an easy two-hole box, then two
- * three-hole boxes. Every hole gets filled, so each box ends "complete".
+ * One sorter box per step. A 2.5-year-old starts with an easy two-hole box,
+ * then three holes, then a big four-hole box to finish. Every hole gets
+ * filled, so each box ends "complete". Each box has its own colour.
  */
-export const BOXES = [2, 3, 3];
+export const BOXES: { holes: number; color: number }[] = [
+  { holes: 2, color: 0xf48fb1 },
+  { holes: 3, color: 0x80cbc4 },
+  { holes: 4, color: 0x9fa8da },
+];
 
-export const CONFETTI_EMOJIS = ['🔴', '🟦', '🔺', '⭐', '💖', '🎉', '✨'];
+export const CONFETTI_EMOJIS = ['🔴', '🟦', '🔺', '⭐', '💖', '🌙', '🔶', '🎉', '✨'];

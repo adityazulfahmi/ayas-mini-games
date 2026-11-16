@@ -1,138 +1,157 @@
 import Phaser from 'phaser';
-import { drawBg, primaryBtn, bounceLoop } from '@shared/phaserUtils';
+import { drawBg, primaryBtn } from '@shared/phaserUtils';
+import { playTone } from '@shared/audio';
 import { C, T, F } from '@shared/theme';
 import { GRID_SIZES, type GridSize } from '../data';
+import { drawCardBack, drawCardFront, radiusFor, say } from '../cards';
 
 const W = 480, H = 820;
+const STORE_KEY = 'aya-flip-size';
+
+function loadSize(): number {
+  try {
+    const i = Number(localStorage.getItem(STORE_KEY));
+    return Number.isInteger(i) && i >= 0 && i < GRID_SIZES.length ? i : 0;
+  } catch { return 0; }
+}
 
 export class TitleScene extends Phaser.Scene {
-  private selectedSize: GridSize = GRID_SIZES[0];
+  private selected = 0;
 
   constructor() { super('TitleScene'); }
 
   create(): void {
     drawBg(this);
+    this.selected = loadSize();
 
-    this.add.text(W / 2, 96, '🌸 Aya\'s Flip\n& Matching', {
-      fontFamily: F.head, fontSize: '44px', color: T.main,
-      align: 'center',
+    this.add.text(W / 2, 86, 'Aya\'s Flip\n& Match', {
+      fontFamily: F.head, fontSize: '50px', color: T.main, align: 'center', lineSpacing: -6,
       shadow: { offsetX: 2, offsetY: 3, color: '#f8bbd0', fill: true },
     }).setOrigin(0.5);
 
-    this.add.text(W / 2, 188, 'Flip the cards, find the pairs! 🎀', {
-      fontFamily: F.body, fontSize: '16px', color: T.sub, fontStyle: 'bold',
+    this.add.text(W / 2, 170, 'Turn the cards, find two the same!', {
+      fontFamily: F.body, fontSize: '17px', color: T.sub, fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    // Preview cards — one pair shown "matched" to hint at the goal.
-    const previewEmojis = ['🍓', '🐱', '🦋', '🍊'];
-    const matchedSet = new Set([0, 2]);
-    const startX = W / 2 - (previewEmojis.length - 1) * 38;
-    const previews: Phaser.GameObjects.Container[] = previewEmojis.map((e, i) => {
-      const matched = matchedSet.has(i);
-      const bg = this.add.graphics();
-      if (matched) {
-        bg.fillStyle(C.mintBg, 1);
-        bg.fillRoundedRect(-27, -27, 54, 54, 12);
-        bg.lineStyle(2.5, C.mint, 1);
-        bg.strokeRoundedRect(-27, -27, 54, 54, 12);
-      } else {
-        bg.fillStyle(C.lavender, 1);
-        bg.fillRoundedRect(-27, -27, 54, 54, 12);
-      }
-      const txt = this.add.text(0, 0, e, { fontSize: '28px' }).setOrigin(0.5);
-      return this.add.container(startX + i * 76, 262, [bg, txt]);
-    });
-    bounceLoop(this, previews);
+    this.buildHero();
 
-    // Size selector label
-    this.add.text(W / 2, 326, 'CHOOSE GRID SIZE', {
-      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
+    this.add.text(W / 2, 392, 'How many cards?', {
+      fontFamily: F.head, fontSize: '20px', color: T.main,
     }).setOrigin(0.5);
 
-    this.buildSizeButtons();
+    this.buildSizeTiles();
 
-    // How-to-play row: simple tap-flip-match steps
-    const steps = [
-      { emoji: '👆', label: 'Tap' },
-      { emoji: '🔄', label: 'Flip' },
-      { emoji: '💖', label: 'Match' },
-    ];
-    const stepY = 540;
-    const stepGap = 110;
-    const stepStartX = W / 2 - ((steps.length - 1) * stepGap) / 2;
-    steps.forEach((s, i) => {
-      const cx = stepStartX + i * stepGap;
-      const circle = this.add.graphics();
-      circle.fillStyle(C.white, 1);
-      circle.fillCircle(cx, stepY, 28);
-      this.add.text(cx, stepY, s.emoji, { fontSize: '26px' }).setOrigin(0.5);
-      this.add.text(cx, stepY + 46, s.label, {
-        fontFamily: F.head, fontSize: '14px', color: T.main,
-      }).setOrigin(0.5);
-      if (i < steps.length - 1) {
-        const arrowX = cx + stepGap / 2;
-        this.add.text(arrowX, stepY, '›', {
-          fontFamily: F.head, fontSize: '26px', color: T.sub,
-        }).setOrigin(0.5);
-      }
-    });
-
-    primaryBtn(this, W / 2, H - 96, 380, 64, "Let's Play! 🎉", () => {
-      this.scene.start('GameScene', { size: this.selectedSize });
+    primaryBtn(this, W / 2, H - 76, 360, 72, "Let's Play! 🎉", () => {
+      const size: GridSize = GRID_SIZES[this.selected];
+      this.scene.start('GameScene', { size });
     });
   }
 
-  private buildSizeButtons(): void {
-    const btnW = 96, btnH = 60, gap = 10;
-    const totalW = GRID_SIZES.length * btnW + (GRID_SIZES.length - 1) * gap;
-    const startX = W / 2 - totalW / 2 + btnW / 2;
+  /** A face-down card that keeps peeking, next to a matched pair. */
+  private buildHero(): void {
+    const cw = 92, ch = 110, y = 278;
+    const xs = [W / 2 - 112, W / 2, W / 2 + 112];
 
-    const bgs: Phaser.GameObjects.Graphics[] = [];
-    const labels: Phaser.GameObjects.Text[] = [];
-    const subs: Phaser.GameObjects.Text[] = [];
+    const mk = (x: number, front: string | null, matched = false) => {
+      const g = this.add.graphics();
+      const t = this.add.text(0, 0, front ?? '🍓', { fontFamily: F.body, fontSize: '54px', padding: { top: 6, bottom: 6 } })
+        .setOrigin(0.5).setVisible(!!front);
+      if (front) drawCardFront(g, cw, ch, matched); else drawCardBack(g, cw, ch);
+      return { c: this.add.container(x, y, [g, t]), g, t };
+    };
+    const peeker = mk(xs[0], null);
+    const a = mk(xs[1], '🐰', true);
+    const b = mk(xs[2], '🐰', true);
+    a.c.setAngle(-4); b.c.setAngle(5);
+    [peeker.c, a.c, b.c].forEach((c, i) => this.tweens.add({
+      targets: c, y: y - 8, yoyo: true, repeat: -1, duration: 950, ease: 'Sine.InOut', delay: i * 220,
+    }));
+    this.add.text(xs[1] + 56, y - 66, '💖', { fontFamily: F.body, fontSize: '26px' }).setOrigin(0.5);
 
-    GRID_SIZES.forEach((size, i) => {
-      const x = startX + i * (btnW + gap);
-      const y = 395;
+    let up = false;
+    this.time.addEvent({
+      delay: 1900, loop: true, callback: () => {
+        up = !up;
+        this.tweens.add({
+          targets: peeker.c, scaleX: 0, duration: 120, ease: 'Sine.In',
+          onComplete: () => {
+            if (up) drawCardFront(peeker.g, cw, ch, false); else drawCardBack(peeker.g, cw, ch);
+            peeker.t.setVisible(up);
+            this.tweens.add({ targets: peeker.c, scaleX: 1, duration: 200, ease: 'Back.Out' });
+          },
+        });
+      },
+    });
+  }
 
-      const bg = this.add.graphics().setPosition(x, y);
-      bgs.push(bg);
-      this.drawSizeBtn(bg, btnW, btnH, i === 0);
+  /** Picture tiles: each shows a tiny grid of card backs, so no reading needed. */
+  private buildSizeTiles(): void {
+    const tw = 134, th = 124, gap = 14;
+    const rows = [GRID_SIZES.slice(0, 3), GRID_SIZES.slice(3)];
+    const draws: ((on: boolean) => void)[] = [];
+    let idx = 0;
 
-      const lbl = this.add.text(x, y - 10, size.label, {
-        fontFamily: F.head, fontSize: '19px', color: i === 0 ? T.white : T.main,
-      }).setOrigin(0.5);
+    rows.forEach((row, r) => {
+      const rowW = row.length * tw + (row.length - 1) * gap;
+      row.forEach((size, j) => {
+        const i = idx++;
+        const x = W / 2 - rowW / 2 + tw / 2 + j * (tw + gap);
+        const y = 486 + r * (th + gap);
+        const bg = this.add.graphics().setPosition(x, y);
+        const mini = this.add.graphics().setPosition(x, y - 14);
+        const n = size.cols * size.rows;
+        const lbl = this.add.text(x, y + th / 2 - 20, `${n} cards`, {
+          fontFamily: F.head, fontSize: '16px', color: T.main,
+        }).setOrigin(0.5);
 
-      const sub = this.add.text(x, y + 13, size.sub, {
-        fontFamily: F.body, fontSize: '11px', color: i === 0 ? 'rgba(255,255,255,0.9)' : T.sub, fontStyle: 'bold',
-      }).setOrigin(0.5);
+        const draw = (on: boolean) => {
+          bg.clear();
+          bg.fillStyle(C.shadow, on ? 0.25 : 0.12);
+          bg.fillRoundedRect(-tw / 2, -th / 2 + 5, tw, th, 22);
+          bg.fillStyle(on ? 0xfff0f6 : C.white, 1);
+          bg.fillRoundedRect(-tw / 2, -th / 2, tw, th, 22);
+          bg.lineStyle(on ? 4 : 2, on ? C.pink : C.lavender, on ? 1 : 0.6);
+          bg.strokeRoundedRect(-tw / 2, -th / 2, tw, th, 22);
+          this.drawMiniGrid(mini, size, on);
+          lbl.setColor(on ? '#d81b60' : T.main);
+          const s = on ? 1.04 : 1;
+          [bg, mini, lbl].forEach(o => o.setScale(s));
+          mini.setY(y - 14 * s);
+          lbl.setY(y + (th / 2 - 20) * s);
+        };
+        draws.push(draw);
+        draw(i === this.selected);
 
-      labels.push(lbl);
-      subs.push(sub);
-
-      const zone = this.add.zone(x, y, btnW, btnH).setInteractive({ cursor: 'pointer' });
-      zone.on('pointerdown', () => {
-        this.selectedSize = size;
-        bgs.forEach((b, j) => {
-          this.drawSizeBtn(b, btnW, btnH, j === i);
-          labels[j].setColor(j === i ? T.white : T.main);
-          subs[j].setColor(j === i ? 'rgba(255,255,255,0.9)' : T.sub);
+        this.add.zone(x, y, tw + gap, th + gap).setInteractive({ cursor: 'pointer' }).on('pointerdown', () => {
+          if (this.selected === i) return;
+          this.selected = i;
+          try { localStorage.setItem(STORE_KEY, String(i)); } catch { /* private mode */ }
+          draws.forEach((d, k) => d(k === i));
+          playTone(520 + i * 90, 0.12, 'sine', 0.12);
+          say(`${n} cards`);
+          this.tweens.add({ targets: [bg, mini, lbl], angle: { from: -3, to: 3 }, duration: 80, yoyo: true, repeat: 1,
+            onComplete: () => [bg, mini, lbl].forEach(o => o.setAngle(0)) });
         });
       });
     });
   }
 
-  private drawSizeBtn(g: Phaser.GameObjects.Graphics, w: number, h: number, active: boolean): void {
+  private drawMiniGrid(g: Phaser.GameObjects.Graphics, size: GridSize, on: boolean): void {
     g.clear();
-    if (active) {
-      g.fillStyle(C.shadow, 0.25);
-      g.fillRoundedRect(-w / 2, -h / 2 + 4, w, h, 14);
-      g.fillStyle(C.pink, 1);
-    } else {
-      g.lineStyle(2.5, C.lavender, 1);
-      g.fillStyle(C.white, 1);
+    const boxW = 84, boxH = 62, gap = 4;
+    const cw = Math.min((boxW - gap * (size.cols - 1)) / size.cols, (boxH - gap * (size.rows - 1)) / size.rows / 1.2);
+    const ch = cw * 1.2;
+    const gw = size.cols * cw + (size.cols - 1) * gap;
+    const gh = size.rows * ch + (size.rows - 1) * gap;
+    for (let r = 0; r < size.rows; r++) {
+      for (let c = 0; c < size.cols; c++) {
+        const x = -gw / 2 + c * (cw + gap);
+        const y = -gh / 2 + r * (ch + gap);
+        g.fillStyle(on ? C.pink : C.lavender2, 1);
+        g.fillRoundedRect(x, y, cw, ch, Math.max(2, radiusFor(cw, ch)));
+        g.fillStyle(0xffd54f, 1);
+        g.fillCircle(x + cw / 2, y + ch / 2, Math.max(1.5, cw * 0.16));
+      }
     }
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 14);
-    if (!active) g.strokeRoundedRect(-w / 2, -h / 2, w, h, 14);
   }
 }

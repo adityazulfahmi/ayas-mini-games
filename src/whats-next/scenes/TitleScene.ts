@@ -1,15 +1,18 @@
 import Phaser from 'phaser';
 import { drawBg, primaryBtn } from '@shared/phaserUtils';
 import { C, T, F } from '@shared/theme';
-import { PATTERN_SETS, STORIES, TOTAL_ROUNDS, type GameMode } from '../data';
+import { PATTERN_FAMILIES, STORIES, TOTAL_ROUNDS, type GameMode } from '../data';
+import { say, unlockSpeech } from '../speech';
+
+const HERO_Y = 248;
 
 export class TitleScene extends Phaser.Scene {
   private mode: GameMode = 'pattern';
   private patternBtn!: Phaser.GameObjects.Container;
   private storyBtn!: Phaser.GameObjects.Container;
-  private heroFrames: Phaser.GameObjects.Text[] = [];
-  private heroArrows: Phaser.GameObjects.Text[] = [];
-  private heroQuestion!: Phaser.GameObjects.Text;
+  private heroObjs: Phaser.GameObjects.GameObject[] = [];
+  private heroSlots: Phaser.GameObjects.Container[] = [];
+  private heroLoop?: Phaser.Time.TimerEvent;
   private hintTxt!: Phaser.GameObjects.Text;
   private hintChip!: Phaser.GameObjects.Graphics;
 
@@ -19,120 +22,109 @@ export class TitleScene extends Phaser.Scene {
     const { width: W, height: H } = this.scale;
     drawBg(this);
     this.decorateBg(W, H);
-    // Phaser reuses scene instances across scene.start, so any field
-    // collected via .push() must be reset at the top of create() — otherwise
-    // the second visit would re-use stale references to destroyed objects.
-    this.heroFrames = [];
-    this.heroArrows = [];
+    // D-005: reset pushed-into fields on every visit.
+    this.heroObjs = [];
+    this.heroSlots = [];
+    this.heroLoop = undefined;
 
-    this.add.text(W / 2, 92, '🔮 What Comes Next?', {
+    this.add.text(W / 2, 86, '🔮 What Comes Next?', {
       fontFamily: F.head, fontSize: '32px', color: T.main, align: 'center',
       shadow: { offsetX: 2, offsetY: 3, color: '#f8bbd0', fill: true },
     }).setOrigin(0.5);
 
-    this.add.text(W / 2, 138, 'Spot the next one in the row!', {
+    this.add.text(W / 2, 130, 'Listen, look, and find the next one!', {
+      fontFamily: F.body, fontSize: '15px', color: T.sub, fontStyle: 'bold',
+    }).setOrigin(0.5);
+
+    // Hero panel: a live mini version of the game row.
+    const pg = this.add.graphics();
+    pg.fillStyle(C.shadow, 0.1);
+    pg.fillRoundedRect(22, HERO_Y - 74 + 6, W - 44, 148, 28);
+    pg.fillStyle(C.white, 0.75);
+    pg.fillRoundedRect(22, HERO_Y - 74, W - 44, 148, 28);
+
+    this.sectionLabel(W / 2, 372, 'CHOOSE A MODE');
+
+    const modeW = 176, modeH = 140, modeGap = 16;
+    this.patternBtn = this.buildPickerBtn(
+      W / 2 - modeW / 2 - modeGap / 2, 466, modeW, modeH,
+      '🎶', 'Pattern', 'Hear the beat',
+      () => this.selectMode('pattern', true),
+    );
+    this.storyBtn = this.buildPickerBtn(
+      W / 2 + modeW / 2 + modeGap / 2, 466, modeW, modeH,
+      '📖', 'Story', 'Little stories',
+      () => this.selectMode('story', true),
+    );
+
+    this.hintChip = this.add.graphics();
+    this.hintTxt = this.add.text(W / 2, 570, '', {
       fontFamily: F.body, fontSize: '14px', color: T.sub, fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    // Hero preview — a mini sequence row reflecting the chosen mode.
-    // Three small cards with arrow connectors and a final ? card so the
-    // player sees exactly what gameplay will look like before tapping Play.
-    this.buildHero(W, 222);
+    this.selectMode(this.mode, false);
 
-    // Mode picker — section chip + two large pickable cards
-    this.sectionLabel(W / 2, 372, 'CHOOSE A MODE');
-
-    const modeW = 168, modeH = 86, modeGap = 14;
-    this.patternBtn = this.buildPickerBtn(
-      W / 2 - modeW / 2 - modeGap / 2, 432, modeW, modeH,
-      '🎨', 'Pattern', 'Shapes & colours',
-      () => this.selectMode('pattern'),
-    );
-    this.storyBtn = this.buildPickerBtn(
-      W / 2 + modeW / 2 + modeGap / 2, 432, modeW, modeH,
-      '📖', 'Story', 'Things that grow',
-      () => this.selectMode('story'),
-    );
-
-    // Hint chip below the picker
-    this.hintChip = this.add.graphics();
-    this.hintTxt = this.add.text(W / 2, 538, '', {
-      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
-    }).setOrigin(0.5);
-
-    this.selectMode('pattern');
-
-    primaryBtn(this, W / 2, H - 90, 340, 62, "Let's Go! 🎉", () => {
+    primaryBtn(this, W / 2, H - 96, 340, 70, "Let's Go! 🎉", () => {
+      unlockSpeech();
       this.scene.start('GameScene', { mode: this.mode });
     });
   }
 
   // ─── Hero preview ──────────────────────────────────────────────────────
 
-  private buildHero(W: number, cy: number): void {
-    // Four slots: three filled frames + a final ? frame. Lavender arrows
-    // sit in the gaps so the row reads as a left-to-right sequence.
-    const frameW = 56, frameH = 70, gap = 22;
-    const total = frameW * 4 + gap * 3;
-    const startX = W / 2 - total / 2 + frameW / 2;
+  private buildHero(items: string[]): void {
+    this.heroLoop?.remove();
+    this.heroObjs.forEach(o => o.destroy());
+    this.heroObjs = [];
+    this.heroSlots = [];
+    const W = this.scale.width;
+    const n = items.length + 1;
+    const fw = n >= 5 ? 58 : 66, fh = 84, gap = n >= 5 ? 10 : 18;
+    const startX = W / 2 - (fw * n + gap * (n - 1)) / 2 + fw / 2;
 
-    for (let i = 0; i < 4; i++) {
-      const x = startX + i * (frameW + gap);
-      // Card background
-      const isQ = i === 3;
-      const bg = this.add.graphics();
-      const fill = isQ ? C.bg2 : C.white;
-      bg.fillStyle(C.shadow, 0.14);
-      bg.fillRoundedRect(x - frameW / 2 + 2, cy - frameH / 2 + 6, frameW, frameH, 14);
-      bg.fillStyle(fill, 1);
-      bg.fillRoundedRect(x - frameW / 2, cy - frameH / 2, frameW, frameH, 14);
-      if (isQ) {
-        bg.lineStyle(2.5, C.lavender, 0.85);
-        bg.strokeRoundedRect(x - frameW / 2, cy - frameH / 2, frameW, frameH, 14);
-      }
-      // Frame content (filled later by selectMode)
-      const txt = this.add.text(x, cy, '', {
-        fontFamily: F.body, fontSize: isQ ? '32px' : '36px',
-        color: isQ ? T.sub : T.main,
+    for (let i = 0; i < n; i++) {
+      const isQ = i === n - 1;
+      const g = this.add.graphics();
+      g.fillStyle(C.shadow, 0.12);
+      g.fillRoundedRect(-fw / 2 + 1, -fh / 2 + 5, fw, fh, 16);
+      g.fillStyle(isQ ? 0xfff0f6 : C.white, 1);
+      g.fillRoundedRect(-fw / 2, -fh / 2, fw, fh, 16);
+      g.lineStyle(isQ ? 3 : 2, isQ ? C.pink : C.lavender, isQ ? 0.9 : 0.45);
+      g.strokeRoundedRect(-fw / 2, -fh / 2, fw, fh, 16);
+      const t = this.add.text(0, 0, isQ ? '?' : items[i], {
+        fontFamily: isQ ? F.head : F.body, fontSize: isQ ? '40px' : '38px',
+        color: isQ ? '#f06292' : T.main, padding: { top: 6, bottom: 6 },
       }).setOrigin(0.5);
-      if (isQ) this.heroQuestion = txt;
-      else this.heroFrames.push(txt);
-
-      // Arrow connector to the right of every frame except the last
-      if (i < 3) {
-        const ax = x + frameW / 2 + gap / 2;
-        const ar = this.add.text(ax, cy, '➜', {
-          fontFamily: F.body, fontSize: '20px', color: T.sub,
-        }).setOrigin(0.5).setAlpha(0.65);
-        this.heroArrows.push(ar);
+      const c = this.add.container(startX + i * (fw + gap), HERO_Y, [g, t]);
+      this.heroObjs.push(c);
+      this.heroSlots.push(c);
+      if (isQ) {
+        this.tweens.add({ targets: t, scale: 1.15, yoyo: true, repeat: -1, duration: 650, ease: 'Sine.InOut' });
       }
     }
 
-    this.heroQuestion.setText('?');
-    // Gentle bob on the ? to draw the eye to the answer slot
-    this.tweens.add({
-      targets: this.heroQuestion,
-      scale: 1.12, yoyo: true, repeat: -1,
-      duration: 900, ease: 'Sine.InOut',
-    });
-  }
-
-  private setHeroFrames(a: string, b: string, c: string): void {
-    const triplet = [a, b, c];
-    this.heroFrames.forEach((t, i) => t.setText(triplet[i] ?? ''));
+    // Each picture hops in turn, like the beat in the game.
+    const run = () => {
+      this.heroSlots.forEach((c, i) => {
+        this.time.delayedCall(i * 380, () => {
+          this.tweens.add({ targets: c, y: HERO_Y - 12, duration: 150, yoyo: true, ease: 'Sine.Out' });
+        });
+      });
+    };
+    run();
+    this.heroLoop = this.time.addEvent({ delay: 3600, loop: true, callback: run });
   }
 
   // ─── Decoration ────────────────────────────────────────────────────────
 
   private decorateBg(W: number, H: number): void {
-    // Scattered ➜ + ✨ + 🌀 marks echo the "sequence/flow" motif of the game.
     const marks = [
-      { x: 36,      y: 178, c: '➜', s: 26, r: -8,  a: 0.10 },
-      { x: W - 38,  y: 168, c: '✨', s: 24, r: 12, a: 0.18 },
-      { x: 30,      y: 320, c: '✨', s: 20, r: 0,  a: 0.18 },
-      { x: W - 30,  y: 326, c: '🌀', s: 22, r: 0,  a: 0.12 },
-      { x: 44,      y: H - 218, c: '➜', s: 24, r: 6, a: 0.10 },
-      { x: W - 40,  y: H - 200, c: '✨', s: 22, r: 0, a: 0.15 },
+      { x: 34,     y: 168,     c: '🎵', s: 22, r: -8, a: 0.16 },
+      { x: W - 36, y: 160,     c: '✨', s: 22, r: 12, a: 0.2 },
+      { x: 30,     y: 330,     c: '✨', s: 18, r: 0,  a: 0.18 },
+      { x: W - 32, y: 336,     c: '🎶', s: 20, r: 0,  a: 0.16 },
+      { x: 40,     y: H - 180, c: '🌸', s: 22, r: 6,  a: 0.16 },
+      { x: W - 40, y: H - 176, c: '✨', s: 20, r: 0,  a: 0.18 },
     ];
     marks.forEach(m => {
       this.add.text(m.x, m.y, m.c, {
@@ -142,14 +134,14 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private sectionLabel(cx: number, cy: number, text: string): void {
-    const w = 170, h = 22;
+    const w = 176, h = 26;
     const bg = this.add.graphics();
     bg.fillStyle(C.white, 0.85);
     bg.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
     bg.lineStyle(1.5, C.lavender, 0.5);
     bg.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
     this.add.text(cx, cy, text, {
-      fontFamily: F.body, fontSize: '11px', color: T.sub, fontStyle: 'bold',
+      fontFamily: F.body, fontSize: '12px', color: T.sub, fontStyle: 'bold',
     }).setOrigin(0.5);
   }
 
@@ -161,14 +153,14 @@ export class TitleScene extends Phaser.Scene {
     onClick: () => void,
   ): Phaser.GameObjects.Container {
     const bg = this.add.graphics();
-    const iconTxt = this.add.text(0, -22, icon, {
-      fontFamily: F.body, fontSize: '32px',
+    const iconTxt = this.add.text(0, -26, icon, {
+      fontFamily: F.body, fontSize: '46px', padding: { top: 6, bottom: 6 },
     }).setOrigin(0.5);
-    const titleTxt = this.add.text(0, 12, title, {
-      fontFamily: F.head, fontSize: '17px', color: T.main,
+    const titleTxt = this.add.text(0, 24, title, {
+      fontFamily: F.head, fontSize: '22px', color: T.main,
     }).setOrigin(0.5);
-    const subTxt = this.add.text(0, 32, subtitle, {
-      fontFamily: F.body, fontSize: '10px', color: T.sub, fontStyle: 'bold',
+    const subTxt = this.add.text(0, 50, subtitle, {
+      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
     }).setOrigin(0.5);
     const container = this.add.container(cx, cy, [bg, iconTxt, titleTxt, subTxt]);
     container.setSize(w, h).setInteractive({ cursor: 'pointer' });
@@ -184,17 +176,17 @@ export class TitleScene extends Phaser.Scene {
     const { bg, titleTxt, subTxt, w, h } = c as unknown as PickerRefs;
     bg.clear();
     if (active) {
-      bg.fillStyle(C.shadow, 0.18);
-      bg.fillRoundedRect(-w / 2, -h / 2 + 4, w, h, 20);
+      bg.fillStyle(C.shadow, 0.2);
+      bg.fillRoundedRect(-w / 2, -h / 2 + 5, w, h, 24);
       bg.fillStyle(C.pink, 1);
-      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 20);
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 24);
       titleTxt.setColor(T.white);
-      subTxt.setColor('rgba(255,255,255,0.85)');
+      subTxt.setColor('rgba(255,255,255,0.9)');
     } else {
       bg.fillStyle(C.white, 1);
       bg.lineStyle(2.5, C.lavender, 0.9);
-      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 20);
-      bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 20);
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 24);
+      bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 24);
       titleTxt.setColor(T.main);
       subTxt.setColor(T.sub);
     }
@@ -202,7 +194,7 @@ export class TitleScene extends Phaser.Scene {
 
   private drawHintChip(text: string): void {
     this.hintTxt.setText(text);
-    const chipPadX = 14, chipH = 28;
+    const chipPadX = 16, chipH = 32;
     const w = this.hintTxt.width + chipPadX * 2;
     const cx = this.hintTxt.x, cy = this.hintTxt.y;
     this.hintChip.clear();
@@ -214,24 +206,25 @@ export class TitleScene extends Phaser.Scene {
 
   // ─── Mode change ───────────────────────────────────────────────────────
 
-  private selectMode(m: GameMode): void {
+  private selectMode(m: GameMode, tapped: boolean): void {
     this.mode = m;
     this.drawPickerBg(this.patternBtn, m === 'pattern');
     this.drawPickerBg(this.storyBtn,   m === 'story');
+    const btn = m === 'pattern' ? this.patternBtn : this.storyBtn;
+    if (tapped) {
+      this.tweens.add({ targets: btn, scale: 1.05, duration: 120, yoyo: true });
+      say(m === 'pattern' ? 'Patterns!' : 'Stories!');
+    }
 
     if (m === 'pattern') {
-      // Pick a random pair from a random set so the preview hints at the
-      // ABAB structure ("look, the same thing keeps coming back!").
-      const set = PATTERN_SETS[Math.floor(Math.random() * PATTERN_SETS.length)];
-      const [a, b] = set.items;
-      this.setHeroFrames(a, b, a);
-      this.drawHintChip(`${TOTAL_ROUNDS} rounds of patterns to spot 🎯`);
+      const fam = PATTERN_FAMILIES[Math.floor(Math.random() * PATTERN_FAMILIES.length)];
+      const [a, b] = fam.items;
+      this.buildHero([a.e, b.e, a.e, b.e]);
+      this.drawHintChip(`${TOTAL_ROUNDS} patterns · no timer 🎵`);
     } else {
-      // Show the first three frames of a real story so the preview teases
-      // the transformation reasoning that the mode is about.
       const story = STORIES[Math.floor(Math.random() * STORIES.length)];
-      this.setHeroFrames(story.frames[0], story.frames[1], story.frames[2]);
-      this.drawHintChip(`${TOTAL_ROUNDS} little stories that grow 🌱`);
+      this.buildHero(story.frames.map(f => f.e));
+      this.drawHintChip(`${TOTAL_ROUNDS} little stories · no timer 🌱`);
     }
   }
 }

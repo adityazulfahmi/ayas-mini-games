@@ -11,6 +11,18 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-17 — Landing page redesign with real screenshots
+
+- Cards now show a real gameplay screenshot (`public/thumbs/<game>.webp`,
+  ~9 KB each, made by `scripts/capture-thumbs.mjs` from the dev server) in a
+  per-game colour frame with a ▶ play button, instead of hand-drawn previews
+  that had drifted from the redesigned games. Re-run the script after a
+  visual change to a game.
+- 3 columns from tablet up (9 "now" games = 3×3, 3 "later" = 1 row), 2 on
+  phones with one tag per card; header pills (12 games · no timers · Voice).
+- `public/previews/*.svg` are no longer used by the landing page (the
+  adityazulfahmi.com projects tile still uses copies of four of them).
+
 ## 2026-11-17 — Spoken-instructions switch
 
 - `src/shared/voice.ts`: one on/off setting (localStorage `aya-voice`) for the

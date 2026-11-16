@@ -2,509 +2,315 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Aya's Mini Games 🌸</title>
+  <meta name="description" content="Twelve calm, toddler-friendly games for Aya: shapes, colours, animal sounds and more. Spoken prompts, no timers by default." />
+  <meta name="theme-color" content="#fce4ec" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    :root {
+      --plum: #6a1b9a; --plum-2: #7b3fa0; --violet: #9c4dcc; --lilac: #ce93d8; --pink: #f06292;
+      --card: #ffffff; --line: rgba(206,147,216,0.45);
+      --shadow: 0 10px 30px -12px rgba(106,27,154,0.28);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
     body {
       font-family: 'Nunito', sans-serif;
-      min-height: 100vh;
       min-height: 100dvh;
-      background: linear-gradient(135deg, #fce4ec 0%, #ede7f6 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px calc(60px + env(safe-area-inset-bottom));
+      color: var(--plum);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255,0.7), transparent 40%),
+        linear-gradient(160deg, #fce4ec 0%, #f3e5f5 45%, #ede7f6 100%);
+      background-attachment: scroll;
+      padding: calc(28px + env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
     }
+    .wrap { max-width: 1040px; margin: 0 auto; }
 
-    /* ── HEADER ── */
-    .header {
-      text-align: center;
-      margin-bottom: 52px;
-    }
-
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 34px; }
     .logo {
-      font-family: 'Fredoka One', cursive;
-      font-size: clamp(2.4rem, 9vw, 4rem);
-      color: #6a1b9a;
-      line-height: 1.1;
+      font-family: 'Fredoka One', cursive; font-weight: 400;
+      font-size: clamp(2.3rem, 8.5vw, 3.8rem); line-height: 1.05; color: var(--plum);
       text-shadow: 2px 3px 0 #f8bbd0, 5px 7px 0 rgba(206,147,216,0.25);
-      margin-bottom: 10px;
     }
-
-    .tagline {
-      font-size: clamp(0.95rem, 3vw, 1.1rem);
-      color: #9c4dcc;
-      font-weight: 600;
+    .tagline { margin-top: 10px; font-size: clamp(0.95rem, 3.2vw, 1.1rem); font-weight: 700; color: var(--violet); }
+    .bar { margin-top: 18px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 13px; border-radius: 999px; font-size: 0.85rem; font-weight: 800;
+      color: var(--plum-2); background: rgba(255,255,255,0.75); border: 1.5px solid var(--line);
     }
-
-    /* ── VOICE SWITCH (same setting as the 🗣️ button inside every game) ── */
-    .voice-switch {
-      margin-top: 16px;
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 16px 8px 10px; border-radius: 999px;
-      border: 2px solid rgba(206,147,216,0.55); background: rgba(255,255,255,0.85);
-      font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700; color: #7b3fa0;
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
-    }
-    .voice-switch .vs-icon { font-size: 1.2rem; }
-    .voice-switch.off { background: rgba(243,229,245,0.9); color: #9c4dcc; }
+    .voice-switch { cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+    .voice-switch.off { background: rgba(243,229,245,0.9); color: var(--violet); }
     .voice-switch:active { transform: scale(0.96); }
 
-    /* ── SHELVES (now / later) ── */
-    .shelf { width: 100%; max-width: 1120px; }
-    .shelf + .shelf { margin-top: 44px; }
-    .shelf-title {
-      font-family: 'Fredoka One', cursive;
-      font-weight: 400;
-      font-size: clamp(1.25rem, 4.5vw, 1.6rem);
-      color: #6a1b9a;
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-      margin: 0 4px 16px;
-    }
-    .shelf-title .age {
-      font-family: 'Nunito', sans-serif;
-      font-size: 0.8rem; font-weight: 700;
-      color: #9c4dcc; background: rgba(255,255,255,0.75);
-      border: 1.5px solid rgba(206,147,216,0.5);
-      padding: 3px 10px; border-radius: 999px;
-    }
+    /* ── Shelves ── */
+    .shelf + .shelf { margin-top: 40px; }
+    .shelf-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 4px 14px; }
+    .shelf-head h2 { font-family: 'Fredoka One', cursive; font-weight: 400; font-size: clamp(1.3rem, 4.6vw, 1.7rem); }
+    .shelf-head p { font-size: 0.88rem; font-weight: 700; color: var(--violet); }
 
-    /* ── GRID ── */
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      width: 100%;
-    }
-    @media (min-width: 700px)  { .games-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; } }
-    @media (min-width: 1000px) { .games-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    /* Three across from tablets up: 9 "now" games make a 3×3, 3 "later" games one row. */
+    @media (min-width: 700px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; } }
 
-    .card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    /* ── Game card: a real screenshot in a coloured frame ── */
+    .game {
+      display: flex; flex-direction: column;
+      background: var(--card); border-radius: 26px; padding: 8px;
+      text-decoration: none; color: inherit;
+      box-shadow: var(--shadow);
+      transition: transform .45s var(--ease), box-shadow .45s var(--ease);
+    }
+    .shot {
+      position: relative; border-radius: 20px; overflow: hidden;
+      background: var(--accent); padding: 10px 10px 0;
+      aspect-ratio: 4 / 4.6;
+    }
+    .shot img {
+      display: block; width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+      border-radius: 14px 14px 0 0;
+      box-shadow: 0 6px 18px -8px rgba(106,27,154,0.35);
+      transition: transform .6s var(--ease);
+    }
+    .play {
+      position: absolute; right: 12px; bottom: 12px;
+      width: 42px; height: 42px; border-radius: 50%;
+      display: grid; place-items: center; padding-left: 3px;
+      font-size: 0.95rem; color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--lilac));
+      box-shadow: 0 6px 16px -4px rgba(240,98,146,0.6), 0 0 0 3px rgba(255,255,255,0.9);
+      transition: transform .35s var(--ease);
+    }
+    .badge {
+      position: absolute; left: 14px; top: 14px;
+      padding: 5px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--lilac));
+      box-shadow: 0 4px 12px -4px rgba(240,98,146,0.6);
+    }
+    .info { padding: 12px 8px 8px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .info h3 {
+      font-family: 'Fredoka One', cursive; font-weight: 400;
+      font-size: 1.12rem; line-height: 1.2; color: var(--plum);
+      display: flex; gap: 6px; align-items: flex-start;
+    }
+    .ico { flex: none; }
+    .desc {
+      font-size: 0.88rem; line-height: 1.5; font-weight: 600; color: var(--plum-2);
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
     .tag {
-      font-size: 0.72rem; font-weight: 700; line-height: 1;
-      color: #7b3fa0; background: #f3e5f5;
-      padding: 5px 8px; border-radius: 999px; white-space: nowrap;
-    }
-    .tag.new { color: white; background: linear-gradient(135deg, #f06292, #ce93d8); }
-
-    /* ── CARD ── */
-    .game-card {
-      background: white;
-      border-radius: 28px;
-      overflow: hidden;
-      box-shadow: 0 6px 28px rgba(156, 77, 204, 0.14);
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      font-size: 0.72rem; font-weight: 800; line-height: 1; white-space: nowrap;
+      color: var(--plum-2); background: #f6ecf9; padding: 5px 8px; border-radius: 999px;
     }
 
     @media (hover: hover) {
-      .game-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 16px 40px rgba(156, 77, 204, 0.24);
-      }
+      .game:hover { transform: translateY(-6px); box-shadow: 0 22px 40px -16px rgba(106,27,154,0.35); }
+      .game:hover .shot img { transform: translateY(-4px); }
+      .game:hover .play { transform: scale(1.12); }
     }
-    .game-card:active { transform: scale(0.97); }
+    .game:active { transform: scale(0.97); }
+    .game:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
 
-    /* ── PREVIEW IMAGE AREA ── */
-    .card-image {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card-image svg,
-    .card-image img {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* ── WHO'S THAT preview ── */
-    .wt-preview {
-      /* Vignette: subtle radial highlight near the top reads as a stage spotlight */
-      background:
-        radial-gradient(ellipse at 50% 18%, rgba(255,255,255,0.55) 0%, transparent 55%),
-        linear-gradient(135deg, #fce4ec 0%, #ede7f6 100%);
-      gap: 10px;
-      padding: 18px 16px 18px;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .wt-stage {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 0 0 6px;
-    }
-
-    /* Soft pedestal beneath the silhouette */
-    .wt-stage::before {
-      content: '';
-      position: absolute;
-      left: 50%; bottom: -2px;
-      transform: translateX(-50%);
-      width: 150px; height: 14px;
-      background: radial-gradient(ellipse, rgba(206,147,216,0.45) 0%, transparent 70%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
-    .wt-char-card {
-      background: white;
-      border-radius: 16px;
-      padding: 8px 14px;
-      box-shadow: 0 6px 18px rgba(156,77,204,0.20);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      z-index: 1;
-    }
-
-    .wt-char-card img {
-      height: 78px;
-      object-fit: contain;
-      filter: brightness(0);
-    }
-
-    /* Question becomes a pink-gradient badge */
-    .wt-question {
-      width: 42px; height: 42px;
-      background: linear-gradient(135deg, #f06292, #ce93d8);
-      color: white;
-      border-radius: 50%;
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.55rem;
-      line-height: 42px;
-      text-align: center;
-      box-shadow: 0 4px 14px rgba(240,98,146,0.40);
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Decorative sparkles drifting around the stage */
-    .wt-sparkle {
-      position: absolute;
-      font-size: 0.95rem;
-      opacity: 0.85;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .wt-pills {
-      display: flex;
-      gap: 5px;
-      justify-content: center;
-      flex-wrap: nowrap;
-    }
-
-    .wt-pill {
-      background: white;
-      border-radius: 20px;
-      padding: 4px 9px;
-      font-family: 'Fredoka One', cursive;
-      font-size: 0.74rem;
-      color: #6a1b9a;
-      box-shadow: 0 2px 8px rgba(156,77,204,0.12);
-      white-space: nowrap;
-    }
-
-    .wt-pill.highlight {
-      background: linear-gradient(135deg, #f06292, #ce93d8);
-      color: white;
-      box-shadow: 0 3px 10px rgba(240,98,146,0.35);
-    }
-
-    /* ── CARD BODY ── */
-    .card-body {
-      padding: 22px 24px 26px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-    }
-
-    .card-title {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.45rem;
-      color: #6a1b9a;
-    }
-
-    .card-desc {
-      font-size: 0.9rem;
-      color: #7b3fa0;
-      font-weight: 600;
-      line-height: 1.55;
-      flex: 1;
-    }
-
-    .play-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 14px;
-      padding: 10px 24px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, #f06292, #ce93d8);
-      color: white;
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.05rem;
-      box-shadow: 0 4px 14px rgba(240, 98, 146, 0.35);
-      align-self: flex-start;
-      transition: box-shadow 0.2s, transform 0.2s;
-    }
-
-    @media (hover: hover) { .game-card:hover .play-btn {
-      box-shadow: 0 7px 20px rgba(240, 98, 146, 0.5);
-      transform: scale(1.04);
-    } }
-
-    /* Phones: compact two-up picker. The whole card is the button. */
+    /* Phones: two-up, picture first, no paragraphs. */
     @media (max-width: 699px) {
-      body { padding-top: 28px; }
-      .header { margin-bottom: 28px; }
-      .game-card { border-radius: 22px; }
-      .card-body { padding: 12px 12px 14px; gap: 7px; }
-      .card-title { font-size: 1.02rem; line-height: 1.2; }
-      .card-desc, .play-btn { display: none; }
+      body { padding-left: 12px; padding-right: 12px; }
+      header { margin-bottom: 26px; }
+      .game { border-radius: 22px; padding: 6px; }
+      .shot { border-radius: 17px; padding: 8px 8px 0; }
+      .play { width: 34px; height: 34px; font-size: 0.8rem; right: 9px; bottom: 9px; }
+      .badge { left: 10px; top: 10px; font-size: 0.68rem; padding: 4px 8px; }
+      .info { padding: 9px 6px 6px; gap: 6px; }
+      .info h3 { font-size: 0.98rem; }
+      .desc { display: none; }
       .tag { font-size: 0.66rem; padding: 4px 7px; }
-      .card-tags .tag:nth-child(n+3) { display: none; }
-      .wt-preview { padding: 8px; gap: 6px; }
-      .wt-char-card img { height: 46px; }
-      .wt-pills { display: none; }
-    }
-    @media (min-width: 700px) {
-      .card-desc {
-        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-      }
+      .tags .tag:nth-child(n+2) { display: none; }
     }
 
-    /* ── FOOTER ── */
-    footer {
-      margin-top: 56px;
-      font-size: 0.82rem;
-      color: #ce93d8;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+    footer { margin-top: 48px; text-align: center; font-size: 0.85rem; font-weight: 800; color: var(--lilac); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .game, .shot img, .play { transition: none; }
     }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <h1 class="logo">🌸 Aya's Mini Games</h1>
+      <p class="tagline">Little games for a big girl, made by Papa 💖</p>
+      <div class="bar">
+        <span class="pill">🎮 12 games</span>
+        <span class="pill">🐢 No timers by default</span>
+        <button type="button" class="pill voice-switch" id="voice-switch" aria-pressed="true">
+          <span class="vs-icon">🗣️</span><span class="vs-text">Voice: <b>On</b></span>
+        </button>
+      </div>
+    </header>
 
-  <div class="header">
-    <div class="logo">🌸 Aya's Mini Games</div>
-    <div class="tagline">Pick a game and let's have fun! 🎀</div>
-    <button type="button" class="voice-switch" id="voice-switch" aria-pressed="true">
-      <span class="vs-icon">🗣️</span><span class="vs-text">Spoken instructions: <b>On</b></span>
-    </button>
-  </div>
-
-  <!-- Cards are ordered by suitability for Aya (most → least), split into
-       "now" and "later". See docs/decisions.md D-013 before re-shuffling. -->
-  <section class="shelf">
-  <h2 class="shelf-title">⭐ Perfect for Aya now <span class="age">2½ years</span></h2>
-  <div class="games-grid">
-
-    <!-- ── PICK & POP! ── -->
-    <a class="game-card" href="./ayas-pick-pop/">
-      <div class="card-image">
-        <img src="./previews/pick-pop.svg" alt="Pick & Pop preview" />
+    <!-- Cards are ordered by suitability for Aya (most → least), split into
+         "now" and "later". See docs/decisions.md D-013 before re-shuffling.
+         Screenshots: public/thumbs/*.webp, made by scripts/capture-thumbs.mjs. -->
+    <section class="shelf" aria-labelledby="now-title">
+      <div class="shelf-head">
+        <h2 id="now-title">⭐ Perfect for Aya now</h2>
+        <p>2½ years · tap, listen, play</p>
       </div>
-      <div class="card-body">
-        <div class="card-title">🎯 Pick &amp; Pop!</div>
-        <div class="card-tags"><span class="tag">Spoken prompts</span><span class="tag">No timer</span><span class="tag">Ages 2+</span></div>
-        <div class="card-desc">Tap a bubble, hear “Find the fruit!”, and pop the right one. Fruit, animals, vehicles, music or a mix, with every item named out loud.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── SHAPE SORTER ── -->
-    <a class="game-card" href="./ayas-shape-sorter/">
-      <div class="card-image">
-        <img src="./previews/shape-sorter.svg" alt="Shape Sorter preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🧩 Shape Sorter</div>
-        <div class="card-tags"><span class="tag new">✨ New</span><span class="tag">No timer</span><span class="tag">Drag or tap</span></div>
-        <div class="card-desc">Pop friendly shapes into their holes and watch them tumble into the toy box. Seven shapes with names said out loud, and a helping hand if you get stuck.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── WHO MAKES THIS SOUND ── -->
-    <a class="game-card" href="./ayas-who-makes-sound/">
-      <div class="card-image">
-        <img src="./previews/who-makes-sound.svg" alt="Who Makes This Sound? preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔊 Who Makes This Sound?</div>
-        <div class="card-tags"><span class="tag">Real sounds</span><span class="tag">Easy 2-card mode</span><span class="tag">No timer</span></div>
-        <div class="card-desc">Hear a real animal sound, then tap who made it. “Who says moo?” prompts, happy hopping animals and gentle help when she’s stuck.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── COLOUR MATCH ── -->
-    <a class="game-card" href="./ayas-colour-match/">
-      <div class="card-image">
-        <img src="./previews/colour-match.svg" alt="Colour Match preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🎨 Colour Match</div>
-        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Says colour names</span></div>
-        <div class="card-desc">Find the colour buddy that matches! Aya hears each colour’s name (Red! Blue! Yellow!) as she plays, with a trickier Shades mode for later.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── FLIP & MATCHING ── -->
-    <a class="game-card" href="./ayas-flip-matching/">
-      <div class="card-image">
-        <img src="./previews/flip-matching.svg" alt="Flip & Matching preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🃏 Flip &amp; Match</div>
-        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Spoken names</span><span class="tag">4–20 cards</span></div>
-        <div class="card-desc">Turn the star cards over and find two the same! A quick peek, spoken names and a happy “Two kitties!” for every pair, from 4 to 20 cards.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── CONNECT THE MATCH ── -->
-    <a class="game-card" href="./ayas-connect-match/">
-      <div class="card-image">
-        <img src="./previews/connect-match.svg" alt="Connect the Match preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔗 Connect the Match</div>
-        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Drag or tap</span><span class="tag">Spoken names</span></div>
-        <div class="card-desc">Who eats what? Draw a line from each hungry friend to its favourite food: dog to bone, bunny to carrot. Every match is said out loud.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── WHO'S THAT, AYA? ── -->
-    <a class="game-card" href="./ayas-whos-that/">
-      <div class="card-image wt-preview">
-        <span class="wt-sparkle" style="top: 8px;  left: 22px;">✨</span>
-        <span class="wt-sparkle" style="top: 14px; right: 24px;">✨</span>
-        <span class="wt-sparkle" style="top: 70px; left: 12px; opacity: 0.55;">✨</span>
-        <div class="wt-stage">
-          <div class="wt-char-card">
-            <img src="./ayas-whos-that/images/bing.png" alt="mystery character" />
-          </div>
-          <div class="wt-question">?</div>
+      <div class="grid">
+      <a class="game" href="./ayas-pick-pop/" style="--accent:#ffd9e8">
+        <div class="shot">
+          <img src="./thumbs/pick-pop.webp" width="360" height="540" loading="lazy" alt="Pick &amp; Pop! game screen" />
+          <span class="play" aria-hidden="true">▶</span>
         </div>
-        <div class="wt-pills">
-          <span class="wt-pill highlight">Bing</span>
-          <span class="wt-pill">Flop</span>
-          <span class="wt-pill">Sula</span>
-          <span class="wt-pill">Pando</span>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🎯</span>Pick &amp; Pop!</h3>
+          <p class="desc">Tap a bubble, hear “Find the fruit!”, and pop the right one. Fruit, animals, vehicles, music or a mix, with every item named out loud.</p>
+          <div class="tags"><span class="tag">Spoken prompts</span><span class="tag">No timer</span><span class="tag">Ages 2+</span></div>
         </div>
+      </a>
+      <a class="game" href="./ayas-shape-sorter/" style="--accent:#ffe6c7">
+        <div class="shot">
+          <img src="./thumbs/shape-sorter.webp" width="360" height="540" loading="lazy" alt="Shape Sorter game screen" />
+          <span class="play" aria-hidden="true">▶</span><span class="badge">✨ New</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🧩</span>Shape Sorter</h3>
+          <p class="desc">Pop friendly shapes into their holes and watch them tumble into the toy box. Seven shapes with names said out loud, and a helping hand if you get stuck.</p>
+          <div class="tags"><span class="tag">No timer</span><span class="tag">Drag or tap</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-who-makes-sound/" style="--accent:#d9f0fb">
+        <div class="shot">
+          <img src="./thumbs/who-makes-sound.webp" width="360" height="540" loading="lazy" alt="Who Makes This Sound? game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🔊</span>Who Makes This Sound?</h3>
+          <p class="desc">Hear a real animal sound, then tap who made it. “Who says moo?” prompts, happy hopping animals and gentle help when she’s stuck.</p>
+          <div class="tags"><span class="tag">Real sounds</span><span class="tag">Easy 2-card mode</span><span class="tag">No timer</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-colour-match/" style="--accent:#fff3b8">
+        <div class="shot">
+          <img src="./thumbs/colour-match.webp" width="360" height="540" loading="lazy" alt="Colour Match game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🎨</span>Colour Match</h3>
+          <p class="desc">Find the colour buddy that matches! Aya hears each colour’s name (Red! Blue! Yellow!) as she plays, with a trickier Shades mode for later.</p>
+          <div class="tags"><span class="tag">No timer</span><span class="tag">Says colour names</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-flip-matching/" style="--accent:#e3e6fb">
+        <div class="shot">
+          <img src="./thumbs/flip-matching.webp" width="360" height="540" loading="lazy" alt="Flip &amp; Match game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🃏</span>Flip &amp; Match</h3>
+          <p class="desc">Turn the star cards over and find two the same! A quick peek, spoken names and a happy “Two kitties!” for every pair, from 4 to 20 cards.</p>
+          <div class="tags"><span class="tag">No timer</span><span class="tag">Spoken names</span><span class="tag">4–20 cards</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-connect-match/" style="--accent:#d6f2ee">
+        <div class="shot">
+          <img src="./thumbs/connect-match.webp" width="360" height="540" loading="lazy" alt="Connect the Match game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🔗</span>Connect the Match</h3>
+          <p class="desc">Who eats what? Draw a line from each hungry friend to its favourite food: dog to bone, bunny to carrot. Every match is said out loud.</p>
+          <div class="tags"><span class="tag">No timer</span><span class="tag">Drag or tap</span><span class="tag">Spoken names</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-whos-that/" style="--accent:#f1e0f7">
+        <div class="shot">
+          <img src="./thumbs/whos-that.webp" width="360" height="540" loading="lazy" alt="Who’s That, Aya? game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🐰</span>Who’s That, Aya?</h3>
+          <p class="desc">Spot who’s hiding in the shadow! Tap the matching picture and watch Bing &amp; friends or animals light up in colour, with every name read aloud.</p>
+          <div class="tags"><span class="tag">No timer</span><span class="tag">Picture choices</span><span class="tag">Spoken names</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-colour-hunt/" style="--accent:#ffe0e6">
+        <div class="shot">
+          <img src="./thumbs/colour-hunt.webp" width="360" height="540" loading="lazy" alt="Colour Hunt game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🔍</span>Colour Hunt</h3>
+          <p class="desc">Hear a colour, then find the thing that’s that colour! Purple grapes, a red fire truck, a pink flamingo, every find named out loud.</p>
+          <div class="tags"><span class="tag">No timer</span><span class="tag">Spoken colours</span><span class="tag">Speed mode</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-whats-next/" style="--accent:#e9e1fb">
+        <div class="shot">
+          <img src="./thumbs/whats-next.webp" width="360" height="540" loading="lazy" alt="What Comes Next? game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🔮</span>What Comes Next?</h3>
+          <p class="desc">Hear the pattern (apple, banana, apple, banana…) and tap what comes next! Or finish little stories like egg → chick → ?</p>
+          <div class="tags"><span class="tag">Spoken</span><span class="tag">No timer</span><span class="tag">Gentle hints</span></div>
+        </div>
+      </a>
       </div>
-      <div class="card-body">
-        <div class="card-title">🐰 Who’s That, Aya?</div>
-        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Picture choices</span><span class="tag">Spoken names</span></div>
-        <div class="card-desc">Spot who’s hiding in the shadow! Tap the matching picture and watch Bing &amp; friends or animals light up in colour, with every name read aloud.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
+    </section>
 
-    <!-- ── COLOUR HUNT ── -->
-    <a class="game-card" href="./ayas-colour-hunt/">
-      <div class="card-image">
-        <img src="./previews/colour-hunt.svg" alt="Colour Hunt preview" />
+    <section class="shelf" aria-labelledby="later-title">
+      <div class="shelf-head">
+        <h2 id="later-title">🌱 Grow into these</h2>
+        <p>for when she's a bit bigger</p>
       </div>
-      <div class="card-body">
-        <div class="card-title">🔍 Colour Hunt</div>
-        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Spoken colours</span><span class="tag">Speed mode</span></div>
-        <div class="card-desc">Hear a colour, then find the thing that’s that colour! Purple grapes, a red fire truck, a pink flamingo, every find named out loud.</div>
-        <span class="play-btn">Play Now 🎉</span>
+      <div class="grid">
+      <a class="game" href="./ayas-odd-one-out/" style="--accent:#e0f4e2">
+        <div class="shot">
+          <img src="./thumbs/odd-one-out.webp" width="360" height="540" loading="lazy" alt="Odd One Out game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🤔</span>Odd One Out</h3>
+          <p class="desc">Three belong together, one doesn’t. Aya hears the question, taps the odd one, and learns why: “The apple is a fruit!”</p>
+          <div class="tags"><span class="tag">No timer</span><span class="tag">Spoken prompts</span><span class="tag">2×2 / 3×3</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-tictactoe/" style="--accent:#ffebd6">
+        <div class="shot">
+          <img src="./thumbs/tictactoe.webp" width="360" height="540" loading="lazy" alt="Tic-Tac-Toe game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🐱</span>Tic-Tac-Toe</h3>
+          <p class="desc">Kitty vs Bunny! Play with gentle Papa-bot or take turns with Papa. Big bouncy pieces and a happy high five when it’s a tie.</p>
+          <div class="tags"><span class="tag">1 or 2 players</span><span class="tag">Spoken turns</span></div>
+        </div>
+      </a>
+      <a class="game" href="./ayas-crossword/" style="--accent:#dcecfc">
+        <div class="shot">
+          <img src="./thumbs/crossword.webp" width="360" height="540" loading="lazy" alt="Aya’s Crossword game screen" />
+          <span class="play" aria-hidden="true">▶</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🧩</span>Aya’s Crossword</h3>
+          <p class="desc">Hear the Bahasa hint, see the picture, and tap big letter tiles to spell the English word. Gentle letter hints and a little party for every word.</p>
+          <div class="tags"><span class="tag">Bahasa → English</span><span class="tag">Spoken hints</span><span class="tag">Reading</span></div>
+        </div>
+      </a>
       </div>
-    </a>
+    </section>
 
-    <!-- ── WHAT COMES NEXT? ── -->
-    <a class="game-card" href="./ayas-whats-next/">
-      <div class="card-image">
-        <img src="./previews/whats-next.svg" alt="What Comes Next? preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔮 What Comes Next?</div>
-        <div class="card-tags"><span class="tag">Spoken</span><span class="tag">No timer</span><span class="tag">Gentle hints</span></div>
-        <div class="card-desc">Hear the pattern (apple, banana, apple, banana…) and tap what comes next! Or finish little stories like egg → chick → ?</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
+    <footer>Dari papa Ami untuk Aya 💖</footer>
   </div>
-  </section>
-
-  <section class="shelf">
-  <h2 class="shelf-title">🌱 Grow into these <span class="age">a bit bigger</span></h2>
-  <div class="games-grid">
-
-    <!-- ── ODD ONE OUT ── -->
-    <a class="game-card" href="./ayas-odd-one-out/">
-      <div class="card-image">
-        <img src="./previews/odd-one-out.svg" alt="Odd One Out preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🤔 Odd One Out</div>
-        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Spoken prompts</span><span class="tag">2×2 / 3×3</span></div>
-        <div class="card-desc">Three belong together, one doesn’t. Aya hears the question, taps the odd one, and learns why: “The apple is a fruit!”</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── TIC-TAC-TOE ── -->
-    <a class="game-card" href="./ayas-tictactoe/">
-      <div class="card-image">
-        <img src="./previews/tictactoe.svg" alt="Tic-Tac-Toe preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🐱 Tic-Tac-Toe</div>
-        <div class="card-tags"><span class="tag">1 or 2 players</span><span class="tag">Spoken turns</span></div>
-        <div class="card-desc">Kitty vs Bunny! Play with gentle Papa-bot or take turns with Papa. Big bouncy pieces and a happy high five when it’s a tie.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── CROSSWORD ── -->
-    <a class="game-card" href="./ayas-crossword/">
-      <div class="card-image">
-        <img src="./previews/crossword.svg" alt="Crossword preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🧩 Aya’s Crossword</div>
-        <div class="card-tags"><span class="tag">Bahasa → English</span><span class="tag">Spoken hints</span><span class="tag">Reading</span></div>
-        <div class="card-desc">Hear the Bahasa hint, see the picture, and tap big letter tiles to spell the English word. Gentle letter hints and a little party for every word.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-  </div>
-  </section>
-
-  <footer>Dari papa Ami untuk Aya 💖</footer>
 
   <script>
-    // Same localStorage key as src/shared/voice.ts.
+    // Same localStorage key as src/shared/voice.ts (the 🗣️ button inside every game).
     (function () {
       var KEY = 'aya-voice', btn = document.getElementById('voice-switch');
       function on() { try { return localStorage.getItem(KEY) !== 'off'; } catch (e) { return true; } }
@@ -513,7 +319,7 @@
         btn.classList.toggle('off', !v);
         btn.setAttribute('aria-pressed', String(v));
         btn.querySelector('.vs-icon').textContent = v ? '🗣️' : '🔇';
-        btn.querySelector('.vs-text').innerHTML = 'Spoken instructions: <b>' + (v ? 'On' : 'Off') + '</b>';
+        btn.querySelector('.vs-text').innerHTML = 'Voice: <b>' + (v ? 'On' : 'Off') + '</b>';
       }
       btn.addEventListener('click', function () {
         try { localStorage.setItem(KEY, on() ? 'off' : 'on'); } catch (e) {}

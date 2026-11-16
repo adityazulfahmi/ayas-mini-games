@@ -4,41 +4,45 @@
       <stop offset="0%" style="stop-color:#fce4ec"/>
       <stop offset="100%" style="stop-color:#ede7f6"/>
     </linearGradient>
-    <linearGradient id="cm-link" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#80cbc4"/>
-      <stop offset="100%" style="stop-color:#26a69a"/>
-    </linearGradient>
   </defs>
   <rect width="320" height="180" fill="url(#bg)"/>
 
-  <!-- Completed match line: dog (60,48) → bone (260,132) -->
-  <line x1="60" y1="48" x2="260" y2="132" stroke="url(#cm-link)" stroke-width="6" stroke-linecap="round"/>
-  <line x1="60" y1="48" x2="260" y2="132" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-  <circle cx="160" cy="90" r="11" fill="white" stroke="#80cbc4" stroke-width="2"/>
-  <text x="160" y="95" font-size="13" text-anchor="middle">💚</text>
+  <!-- Matched line: dog (top-left knob) to bone (bottom-right knob), teal -->
+  <line x1="104" y1="50" x2="216" y2="130" stroke="#4db6ac" stroke-width="8" stroke-linecap="round"/>
+  <line x1="104" y1="50" x2="216" y2="130" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
 
-  <!-- In-progress dashed line: bunny (60,132) → carrot (260,48), stops at 70% -->
-  <line x1="60" y1="132" x2="200" y2="74" stroke="#f06292" stroke-width="5" stroke-linecap="round" stroke-dasharray="6 7"/>
-  <circle cx="200" cy="74" r="6" fill="#f06292"/>
-  <circle cx="200" cy="74" r="6" fill="none" stroke="#f06292" stroke-width="2" opacity="0.45"/>
+  <!-- In-progress line: bunny knob toward carrot, pink, with a finger -->
+  <line x1="104" y1="130" x2="184" y2="73" stroke="#f06292" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+  <line x1="104" y1="130" x2="184" y2="73" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  <circle cx="184" cy="73" r="8" fill="#f06292"/>
+  <circle cx="184" cy="73" r="3" fill="white"/>
 
-  <!-- Left column -->
-  <rect x="22"  y="16"  width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(128,203,196,0.32))"/>
-  <ellipse cx="38" cy="26" rx="13" ry="5" fill="white" opacity="0.85"/>
-  <text x="60" y="60" font-size="34" text-anchor="middle">🐶</text>
+  <!-- Left: dog (matched) -->
+  <rect x="34" y="18" width="70" height="64" rx="16" fill="#9c4dcc" opacity="0.08" transform="translate(2 4)"/>
+  <rect x="34" y="18" width="70" height="64" rx="16" fill="#e0f7fa" stroke="#4db6ac" stroke-width="3.5"/>
+  <text x="69" y="62" font-size="36" text-anchor="middle">🐶</text>
+  <text x="46" y="34" font-size="12" text-anchor="middle">💖</text>
+  <circle cx="104" cy="50" r="9" fill="white"/><circle cx="104" cy="50" r="6" fill="#4db6ac"/>
 
-  <rect x="22"  y="100" width="76" height="64" rx="14" fill="#fff5f8" stroke="#f06292" stroke-width="3"/>
-  <ellipse cx="38" cy="110" rx="13" ry="5" fill="white" opacity="0.85"/>
-  <text x="60" y="144" font-size="34" text-anchor="middle">🐰</text>
+  <!-- Left: bunny (selected) -->
+  <rect x="34" y="98" width="70" height="64" rx="16" fill="#9c4dcc" opacity="0.12" transform="translate(2 4)"/>
+  <rect x="34" y="98" width="70" height="64" rx="16" fill="#fce4ec" stroke="#f06292" stroke-width="4"/>
+  <text x="69" y="142" font-size="36" text-anchor="middle">🐰</text>
+  <circle cx="104" cy="130" r="9" fill="white"/><circle cx="104" cy="130" r="6" fill="#f06292"/>
 
-  <!-- Right column -->
-  <rect x="222" y="16"  width="76" height="64" rx="14" fill="white" stroke="#ce93d8" stroke-width="2.5" filter="drop-shadow(0 3px 7px rgba(156,77,204,0.13))"/>
-  <ellipse cx="238" cy="26" rx="13" ry="5" fill="white" opacity="0.7"/>
-  <text x="260" y="60" font-size="34" text-anchor="middle">🥕</text>
+  <!-- Right: carrot (target, highlighted) -->
+  <rect x="216" y="18" width="70" height="64" rx="16" fill="#9c4dcc" opacity="0.12" transform="translate(2 4)"/>
+  <rect x="216" y="18" width="70" height="64" rx="16" fill="#fff0f6" stroke="#f06292" stroke-width="3"/>
+  <text x="251" y="62" font-size="36" text-anchor="middle">🥕</text>
+  <circle cx="216" cy="50" r="9" fill="white"/><circle cx="216" cy="50" r="6" fill="#ce93d8"/>
 
-  <rect x="222" y="100" width="76" height="64" rx="14" fill="#e0f7fa" stroke="#80cbc4" stroke-width="3" filter="drop-shadow(0 4px 8px rgba(128,203,196,0.32))"/>
-  <ellipse cx="238" cy="110" rx="13" ry="5" fill="white" opacity="0.85"/>
-  <text x="260" y="144" font-size="32" text-anchor="middle">🦴</text>
+  <!-- Right: bone (matched) -->
+  <rect x="216" y="98" width="70" height="64" rx="16" fill="#9c4dcc" opacity="0.08" transform="translate(2 4)"/>
+  <rect x="216" y="98" width="70" height="64" rx="16" fill="#e0f7fa" stroke="#4db6ac" stroke-width="3.5"/>
+  <text x="251" y="142" font-size="34" text-anchor="middle">🦴</text>
+  <text x="274" y="114" font-size="12" text-anchor="middle">💖</text>
+  <circle cx="216" cy="130" r="9" fill="white"/><circle cx="216" cy="130" r="6" fill="#4db6ac"/>
 
-  <text x="116" y="40" font-size="14" fill="#80cbc4" opacity="0.85">✨</text>
+  <!-- Finger guiding the pink line -->
+  <text x="190" y="104" font-size="24" text-anchor="middle">👆</text>
 </svg>

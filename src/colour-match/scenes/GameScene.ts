@@ -1,82 +1,129 @@
 import Phaser from 'phaser';
 import { drawBg, launchConfetti } from '@shared/phaserUtils';
 import { createEndPopup } from '@shared/endPopup';
-import { C, T, F, GAME_DURATION } from '@shared/theme';
-import { sounds } from '@shared/audio';
+import { C, T, F } from '@shared/theme';
+import { sounds, playTone } from '@shared/audio';
 import { shuffle } from '@shared/utils';
 import {
-  EASY_PALETTE, HARD_RAMP, CONFETTI_EMOJIS,
-  type Difficulty,
+  EASY_PALETTE, HARD_RAMP, CONFETTI_EMOJIS, RELAXED_ROUNDS, TIMED_SECONDS, lastConfig,
+  type Difficulty, type Pace, type NamedColour,
 } from '../data';
 import { randomTarget, perturb, hsvToHex, type HSV } from '../hsv';
+import { drawBuddy, type Mood } from './buddy';
+import { say } from '../speech';
 
 const W = 420, H = 780;
 
 // Question card
-const CARD    = { x: 24, y: 92,  w: W - 48, h: 250, r: 28 };
-const SWATCH  = { w: 280, h: 128, r: 22, y: CARD.y + 98 };
-const CAPTION = { y: CARD.y + 196 };
+const CARD = { x: 24, y: 96, w: W - 48, h: 244, r: 30 };
+const TARGET = { size: 128, y: CARD.y + 100 };
+const LABEL_Y = CARD.y + CARD.h - 42;
 
-// Answer grid (2×2)
-const GRID_TOP = CARD.y + CARD.h + 44;          // y=386
-const TILE     = { w: (W - 24 * 2 - 16) / 2, h: 128, r: 22 };
-const GAP      = 16;
+// Answer grid (2×2): each cell is a generous tap area around a big buddy.
+const CELL = 176;
+const TILE_SIZE = 146;
+const GRID_GAP = 14;
+const GRID_TOP = CARD.y + CARD.h + 22;
+const COLS = [W / 2 - (CELL + GRID_GAP) / 2, W / 2 + (CELL + GRID_GAP) / 2];
+const ROWS = [GRID_TOP + CELL / 2, GRID_TOP + CELL * 1.5 + GRID_GAP];
 
-// Streak line
-const STREAK_Y = CARD.y + CARD.h + 16;
+const HINT_DELAY = 7000;
 
-const TIERS = { gold: 60, silver: 40, bronze: 20 };
+interface Option { hex: number; name?: string }
 
 interface Tile {
-  bg: Phaser.GameObjects.Graphics;
-  zone: Phaser.GameObjects.Zone;
-  hex: number;
+  c: Phaser.GameObjects.Container;
+  g: Phaser.GameObjects.Graphics;
+  x: number;
+  y: number;
+  opt: Option;
+  tried: boolean;
 }
 
 export class GameScene extends Phaser.Scene {
   private difficulty: Difficulty = 'easy';
-  private score = 0;
-  private streak = 0;
-  private timeLeft = GAME_DURATION;
-  private answering = false;
-  private targetHex = 0xffffff;
-  private hardStreak = 0;                 // only counts in hard mode
-  private lastEasyIdx = -1;
+  private pace: Pace = 'relaxed';
 
-  private scoreTxt!: Phaser.GameObjects.Text;
-  private timerTxt!: Phaser.GameObjects.Text;
-  private progressFill!: Phaser.GameObjects.Graphics;
-  private streakTxt!: Phaser.GameObjects.Text;
-  private targetSwatch!: Phaser.GameObjects.Graphics;
+  private rounds = 0;
+  private roundIndex = 0;
+  private firstTry = 0;
+  private matched = 0;
+  private missedThisRound = false;
+  private answering = false;
+  private ended = false;
+  private hardStreak = 0;
+  private timeLeft = TIMED_SECONDS;
+  private lastEasyName = '';
+
+  private target!: Option;
+  private easyQueue: NamedColour[] = [];
   private tiles: Tile[] = [];
+  private dots: Phaser.GameObjects.Graphics[] = [];
+  private foundHexes: number[] = [];
+
+  private targetC!: Phaser.GameObjects.Container;
+  private targetG!: Phaser.GameObjects.Graphics;
+  private labelC!: Phaser.GameObjects.Container;
+  private labelBg!: Phaser.GameObjects.Graphics;
+  private labelTxt!: Phaser.GameObjects.Text;
+  private shadeTxt!: Phaser.GameObjects.Text;
+  private scoreTxt!: Phaser.GameObjects.Text;
+  private timerTxt?: Phaser.GameObjects.Text;
+  private timeFill?: Phaser.GameObjects.Graphics;
+  private hand?: Phaser.GameObjects.Text;
+  private hintPulse?: Phaser.Tweens.Tween;
+  private idleTimer?: Phaser.Time.TimerEvent;
+  private timerEvent?: Phaser.Time.TimerEvent;
   private endOverlay!: ReturnType<typeof createEndPopup>;
-  private timerEvent!: Phaser.Time.TimerEvent;
 
   constructor() { super('GameScene'); }
 
-  init(data: { difficulty?: Difficulty }): void {
-    this.difficulty = data?.difficulty ?? 'easy';
+  init(data: { difficulty?: Difficulty; pace?: Pace }): void {
+    this.difficulty = data?.difficulty ?? lastConfig.difficulty;
+    this.pace = data?.pace ?? lastConfig.pace;
   }
 
   create(): void {
     drawBg(this);
-    this.score = 0;
-    this.streak = 0;
+    // D-005: reset everything that accumulates across visits.
+    this.tiles = [];
+    this.dots = [];
+    this.foundHexes = [];
+    this.easyQueue = [];
+    this.hand = undefined;
+    this.hintPulse = undefined;
+    this.idleTimer = undefined;
+    this.timerEvent = undefined;
+    this.timerTxt = undefined;
+    this.timeFill = undefined;
+
+    this.roundIndex = 0;
+    this.firstTry = 0;
+    this.matched = 0;
     this.hardStreak = 0;
-    this.timeLeft = GAME_DURATION;
-    this.answering = false;
-    this.lastEasyIdx = -1;
+    this.answering = true;
+    this.ended = false;
+    this.timeLeft = TIMED_SECONDS;
+    this.lastEasyName = '';
+    this.rounds = this.pace === 'relaxed' ? RELAXED_ROUNDS[this.difficulty] : 0;
+    // D-006: queue the correct colours so a relaxed easy game shows each colour once.
+    if (this.difficulty === 'easy') this.easyQueue = shuffle(EASY_PALETTE);
 
     this.buildHeader();
     this.buildQuestionCard();
-    this.buildStreakLine();
     this.buildAnswerGrid();
-    this.buildEndOverlay();
 
-    this.timerEvent = this.time.addEvent({
-      delay: 1000, callback: this.tick, callbackScope: this,
-      repeat: GAME_DURATION - 1,
+    this.endOverlay = createEndPopup(this, W, H, {
+      onPlayAgain: () => this.scene.restart({ difficulty: this.difficulty, pace: this.pace }),
+      onHome:      () => this.scene.start('TitleScene'),
+      onAllGames:  () => { window.location.href = '../'; },
     });
+
+    if (this.pace === 'timed') {
+      this.timerEvent = this.time.addEvent({
+        delay: 1000, callback: this.tick, callbackScope: this, repeat: TIMED_SECONDS - 1,
+      });
+    }
 
     this.nextQuestion();
   }
@@ -84,170 +131,231 @@ export class GameScene extends Phaser.Scene {
   // ─── Header ─────────────────────────────────────────────────────────────
 
   private buildHeader(): void {
-    const modeDot = this.difficulty === 'hard' ? '🔥' : '🌱';
-    this.add.text(24, 34, `🎨 Colour Match ${modeDot}`, {
+    this.add.text(22, 34, '🎨 Colour Match', {
       fontFamily: F.head, fontSize: '18px', color: T.main,
     }).setOrigin(0, 0.5);
 
-    this.pill(W - 178, 34, 88, 34);
-    this.scoreTxt = this.add.text(W - 178, 34, '⭐ 0', {
-      fontFamily: F.head, fontSize: '16px', color: T.main,
-    }).setOrigin(0.5);
+    if (this.pace === 'relaxed') {
+      this.pill(W - 66, 34, 100);
+      this.scoreTxt = this.add.text(W - 66, 34, '', { fontFamily: F.head, fontSize: '16px', color: T.main }).setOrigin(0.5);
 
-    this.pill(W - 74, 34, 100, 34);
-    this.timerTxt = this.add.text(W - 74, 34, `⏱ ${GAME_DURATION}s`, {
-      fontFamily: F.head, fontSize: '16px', color: T.main,
-    }).setOrigin(0.5);
+      // One dot per round; each fills with the colour Aya found.
+      const n = this.rounds, gap = 30;
+      const startX = W / 2 - ((n - 1) * gap) / 2;
+      this.dots = Array.from({ length: n }, (_, i) => this.add.graphics().setPosition(startX + i * gap, 74));
+      this.renderDots();
+    } else {
+      this.pill(W - 160, 34, 76);
+      this.scoreTxt = this.add.text(W - 160, 34, '', { fontFamily: F.head, fontSize: '16px', color: T.main }).setOrigin(0.5);
+      this.pill(W - 66, 34, 92);
+      this.timerTxt = this.add.text(W - 66, 34, `⏰ ${TIMED_SECONDS}`, { fontFamily: F.head, fontSize: '16px', color: T.main }).setOrigin(0.5);
 
-    // progress bar
-    const track = this.add.graphics();
-    track.fillStyle(0xce93d8, 0.25);
-    track.fillRoundedRect(24, 62, W - 48, 6, 3);
-    this.progressFill = this.add.graphics();
-    this.drawProgress(1);
+      const track = this.add.graphics();
+      track.fillStyle(C.lavender, 0.25);
+      track.fillRoundedRect(24, 70, W - 48, 8, 4);
+      this.timeFill = this.add.graphics();
+      this.drawTimeBar(1);
+    }
+    this.updateScore();
   }
 
-  private pill(cx: number, cy: number, w: number, h: number): void {
+  private pill(cx: number, cy: number, w: number): void {
+    const h = 36;
     const g = this.add.graphics();
-    g.fillStyle(0xffffff, 1);
+    g.fillStyle(C.white, 1);
     g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
-    g.lineStyle(1.5, C.lavender, 0.35);
+    g.lineStyle(1.5, C.lavender, 0.45);
     g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
   }
 
-  private drawProgress(ratio: number): void {
-    this.progressFill.clear();
-    this.progressFill.fillStyle(C.pink, 1);
-    this.progressFill.fillRoundedRect(24, 62, Math.max(0, (W - 48) * ratio), 6, 3);
+  private updateScore(): void {
+    this.scoreTxt.setText(this.pace === 'relaxed' ? `⭐ ${this.firstTry}` : `⭐ ${this.matched}`);
+  }
+
+  private renderDots(): void {
+    this.dots.forEach((g, i) => {
+      g.clear();
+      if (i < this.foundHexes.length) {
+        g.fillStyle(this.foundHexes[i], 1);
+        g.fillCircle(0, 0, 10);
+        g.lineStyle(2.5, C.white, 1);
+        g.strokeCircle(0, 0, 10);
+      } else if (i === this.roundIndex) {
+        g.fillStyle(C.pink, 0.2);
+        g.fillCircle(0, 0, 12);
+        g.lineStyle(2.5, C.pink, 1);
+        g.strokeCircle(0, 0, 8);
+      } else {
+        g.fillStyle(C.white, 0.9);
+        g.fillCircle(0, 0, 8);
+        g.lineStyle(2, 0xe1bee7, 1);
+        g.strokeCircle(0, 0, 8);
+      }
+    });
+  }
+
+  private drawTimeBar(ratio: number): void {
+    if (!this.timeFill) return;
+    this.timeFill.clear();
+    this.timeFill.fillStyle(ratio > 0.34 ? C.pink : 0xffb74d, 1);
+    this.timeFill.fillRoundedRect(24, 70, Math.max(8, (W - 48) * ratio), 8, 4);
   }
 
   // ─── Question card ─────────────────────────────────────────────────────
 
   private buildQuestionCard(): void {
     const card = this.add.graphics();
+    card.fillStyle(C.shadow, 0.12);
+    card.fillRoundedRect(CARD.x + 2, CARD.y + 8, CARD.w, CARD.h, CARD.r);
     card.fillStyle(C.white, 1);
     card.fillRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, CARD.r);
+    card.lineStyle(2, C.lavender, 0.45);
+    card.strokeRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, CARD.r);
 
-    this.add.text(W / 2, CARD.y + 28, 'MATCH THIS COLOUR', {
-      fontFamily: F.body, fontSize: '12px', color: T.sub,
-      fontStyle: 'bold', letterSpacing: 1.5,
+    this.targetG = this.add.graphics();
+    this.targetC = this.add.container(W / 2, TARGET.y, [this.targetG]);
+    this.targetC.setSize(TARGET.size + 30, TARGET.size + 30).setInteractive({ cursor: 'pointer' });
+    this.targetC.on('pointerdown', () => this.repeatPrompt());
+
+    // Little speaker button: tapping it (or the buddy) says the colour again.
+    const spk = this.add.graphics();
+    const sx = CARD.x + CARD.w - 38, sy = CARD.y + 38;
+    spk.fillStyle(C.bg1, 1);
+    spk.fillCircle(sx, sy, 24);
+    this.add.text(sx, sy, '🔊', { fontSize: '22px' }).setOrigin(0.5);
+    this.add.zone(sx, sy, 64, 64).setInteractive({ cursor: 'pointer' })
+      .on('pointerdown', () => this.repeatPrompt());
+
+    // Colour name pill (easy) — filled with the colour itself.
+    this.labelBg = this.add.graphics();
+    this.labelTxt = this.add.text(0, 0, '', {
+      fontFamily: F.head, fontSize: '28px', color: T.white,
     }).setOrigin(0.5);
+    this.labelC = this.add.container(W / 2, LABEL_Y, [this.labelBg, this.labelTxt]);
 
-    this.targetSwatch = this.add.graphics();
-
-    this.add.text(W / 2, CAPTION.y, 'Tap the matching swatch below', {
-      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
-    }).setOrigin(0.5);
+    // Shades prompt (hard).
+    this.shadeTxt = this.add.text(W / 2, LABEL_Y, 'Find the same one!', {
+      fontFamily: F.head, fontSize: '24px', color: T.main,
+    }).setOrigin(0.5).setVisible(false);
   }
 
-  private drawTarget(hex: number): void {
-    this.targetSwatch.clear();
-    this.targetSwatch.fillStyle(hex, 1);
-    this.targetSwatch.fillRoundedRect(W / 2 - SWATCH.w / 2, SWATCH.y - SWATCH.h / 2, SWATCH.w, SWATCH.h, SWATCH.r);
-    this.targetSwatch.lineStyle(3, 0xffffff, 0.7);
-    this.targetSwatch.strokeRoundedRect(W / 2 - SWATCH.w / 2, SWATCH.y - SWATCH.h / 2, SWATCH.w, SWATCH.h, SWATCH.r);
-  }
-
-  // ─── Streak ribbon ─────────────────────────────────────────────────────
-
-  private buildStreakLine(): void {
-    this.streakTxt = this.add.text(W / 2, STREAK_Y, '', {
-      fontFamily: F.head, fontSize: '14px', color: T.sub,
-    }).setOrigin(0.5);
+  private drawLabel(c: NamedColour): void {
+    this.labelTxt.setText(c.name).setColor(c.ink);
+    const w = Math.max(150, this.labelTxt.width + 64), h = 50;
+    this.labelBg.clear();
+    this.labelBg.fillStyle(c.hex, 1);
+    this.labelBg.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2);
+    this.labelBg.lineStyle(3, C.white, 1);
+    this.labelBg.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2);
   }
 
   // ─── Answer grid ───────────────────────────────────────────────────────
 
   private buildAnswerGrid(): void {
-    this.tiles = [0, 1, 2, 3].map(i => {
-      const col = i % 2, row = Math.floor(i / 2);
-      const cx = 24 + col * (TILE.w + GAP) + TILE.w / 2;
-      const cy = GRID_TOP + row * (TILE.h + GAP) + TILE.h / 2;
+    for (let i = 0; i < 4; i++) {
+      const x = COLS[i % 2], y = ROWS[Math.floor(i / 2)];
+      const g = this.add.graphics();
+      const c = this.add.container(x, y, [g]);
+      c.setSize(CELL, CELL).setInteractive({ cursor: 'pointer' });
+      const tile: Tile = { c, g, x, y, opt: { hex: 0xffffff }, tried: false };
+      c.on('pointerdown', () => this.onAnswer(tile));
+      this.tiles.push(tile);
+    }
 
-      const bg = this.add.graphics().setPosition(cx, cy);
-      this.drawTile(bg, 0xffffff, 'idle');
-
-      const zone = this.add.zone(cx, cy, TILE.w, TILE.h).setInteractive({ cursor: 'pointer' });
-      zone.on('pointerdown', () => this.onAnswer(i));
-      zone.on('pointerover', () => {
-        if (!this.answering) this.drawTile(bg, this.tiles[i].hex, 'hover');
-      });
-      zone.on('pointerout', () => {
-        if (!this.answering) this.drawTile(bg, this.tiles[i].hex, 'idle');
-      });
-
-      return { bg, zone, hex: 0xffffff };
-    });
+    if (this.pace === 'relaxed') {
+      this.add.text(W / 2, H - 26, 'Tap the buddy with the same colour', {
+        fontFamily: F.body, fontSize: '14px', color: T.sub, fontStyle: 'bold',
+      }).setOrigin(0.5).setAlpha(0.8);
+    }
   }
 
-  private drawTile(
-    g: Phaser.GameObjects.Graphics,
-    fill: number,
-    state: 'idle' | 'hover' | 'correct' | 'wrong',
-  ): void {
-    g.clear();
-    const w = TILE.w, h = TILE.h, r = TILE.r;
-    // frame
-    let border = 0xffffff;
-    let borderAlpha = 0.9;
-    let shadow = false;
-    switch (state) {
-      case 'hover':   border = 0xf06292; borderAlpha = 1; break;
-      case 'correct': border = 0x66bb6a; borderAlpha = 1; shadow = true; break;
-      case 'wrong':   border = 0xef5350; borderAlpha = 1; break;
-    }
-    if (shadow) {
-      g.fillStyle(0x66bb6a, 0.18);
-      g.fillRoundedRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8, r + 4);
-    }
-    g.fillStyle(fill, 1);
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
-    g.lineStyle(4, border, borderAlpha);
-    g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
+  private drawTile(t: Tile, mood: Mood = 'smile', glow = false): void {
+    drawBuddy(t.g, TILE_SIZE, t.opt.hex, mood, glow);
   }
 
   // ─── Round logic ───────────────────────────────────────────────────────
 
   private nextQuestion(): void {
-    this.answering = false;
+    if (this.ended) return;
+    this.missedThisRound = false;
+    this.clearHint();
 
-    const options = this.difficulty === 'hard'
+    const { correct, distractors } = this.difficulty === 'hard'
       ? this.generateHardOptions()
       : this.generateEasyOptions();
+    this.target = correct;
 
-    this.targetHex = options.correct;
-    this.drawTarget(this.targetHex);
+    // Target buddy pops in.
+    drawBuddy(this.targetG, TARGET.size, correct.hex, 'smile');
+    this.targetC.setScale(0.6).setAngle(0);
+    this.tweens.add({ targets: this.targetC, scale: 1, duration: 360, ease: 'Back.Out' });
 
-    const ordered = shuffle([options.correct, ...options.distractors]);
+    if (this.difficulty === 'easy') {
+      const named = EASY_PALETTE.find(c => c.hex === correct.hex)!;
+      this.drawLabel(named);
+      this.labelC.setVisible(true).setScale(0.7);
+      this.tweens.add({ targets: this.labelC, scale: 1, duration: 300, delay: 120, ease: 'Back.Out' });
+      this.shadeTxt.setVisible(false);
+    } else {
+      this.labelC.setVisible(false);
+      this.shadeTxt.setVisible(true);
+    }
+
+    const ordered = shuffle([correct, ...distractors]);
     this.tiles.forEach((t, i) => {
-      t.hex = ordered[i];
-      this.drawTile(t.bg, t.hex, 'idle');
-      t.zone.setInteractive({ cursor: 'pointer' });
+      t.opt = ordered[i];
+      t.tried = false;
+      this.drawTile(t);
+      t.c.setAlpha(1).setScale(0).setAngle(0).setPosition(t.x, t.y);
+      this.tweens.add({ targets: t.c, scale: 1, duration: 340, delay: 160 + i * 70, ease: 'Back.Out' });
     });
+
+    // Accept taps once the tiles have landed.
+    this.time.delayedCall(420, () => { if (!this.ended) this.answering = false; });
+    this.repeatPrompt();
+    if (this.pace === 'relaxed') this.armIdleHint();
+    this.renderDots();
   }
 
-  private generateEasyOptions(): { correct: number; distractors: number[] } {
-    // Pick a correct colour that isn't the same as last round, then 3 distractors
-    // from the remaining anchor palette.
-    let idx: number;
-    do { idx = Math.floor(Math.random() * EASY_PALETTE.length); }
-    while (idx === this.lastEasyIdx && EASY_PALETTE.length > 1);
-    this.lastEasyIdx = idx;
-
-    const correct = EASY_PALETTE[idx];
-    const rest = EASY_PALETTE.filter((_, i) => i !== idx);
-    const distractors = shuffle(rest).slice(0, 3);
-    return { correct, distractors };
+  private repeatPrompt(): void {
+    if (this.ended || !this.target) return;
+    this.tweens.add({
+      targets: this.targetC, angle: { from: -8, to: 8 }, yoyo: true, repeat: 1, duration: 110,
+      onComplete: () => this.targetC.setAngle(0),
+    });
+    if (this.target.name) say(this.pace === 'timed' ? `${this.target.name}!` : `Find ${this.target.name}!`);
+    else say(this.pace === 'timed' ? 'Find it!' : 'Find the same colour!');
   }
 
-  private generateHardOptions(): { correct: number; distractors: number[] } {
+  private generateEasyOptions(): { correct: Option; distractors: Option[] } {
+    let pick: NamedColour;
+    if (this.pace === 'relaxed') {
+      pick = this.easyQueue[this.roundIndex % this.easyQueue.length];
+    } else {
+      // Timed: endless rounds, just never the same colour twice in a row.
+      do { pick = EASY_PALETTE[Math.floor(Math.random() * EASY_PALETTE.length)]; }
+      while (pick.name === this.lastEasyName);
+    }
+    this.lastEasyName = pick.name;
+    const others = shuffle(EASY_PALETTE.filter(c => c.name !== pick.name)).slice(0, 3);
+    return {
+      correct: { hex: pick.hex, name: pick.name },
+      distractors: others.map(c => ({ hex: c.hex, name: c.name })),
+    };
+  }
+
+  private generateHardOptions(): { correct: Option; distractors: Option[] } {
     const target: HSV = randomTarget();
     const range = this.currentHardRange();
-    const distractors = [perturb(target, range), perturb(target, range), perturb(target, range)];
-    return {
-      correct: hsvToHex(target),
-      distractors: distractors.map(hsvToHex),
-    };
+    const hexes = new Set<number>([hsvToHex(target)]);
+    const distractors: Option[] = [];
+    while (distractors.length < 3) {
+      const hex = hsvToHex(perturb(target, range));
+      if (hexes.has(hex)) continue;
+      hexes.add(hex);
+      distractors.push({ hex });
+    }
+    return { correct: { hex: hsvToHex(target) }, distractors };
   }
 
   /** Shrink wiggle-room by `hardStreak * perStep`, floored. */
@@ -260,89 +368,168 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  private onAnswer(idx: number): void {
-    if (this.answering) return;
+  private onAnswer(tile: Tile): void {
+    if (this.answering || this.ended || tile.tried) return;
+    this.clearHint();
+    if (tile.opt.hex === this.target.hex) this.onCorrect(tile);
+    else this.onWrong(tile);
+  }
+
+  /** D-007: a wrong tap never ends the round; that buddy just says "oops" and steps back. */
+  private onWrong(tile: Tile): void {
+    tile.tried = true;
+    this.missedThisRound = true;
+    if (this.difficulty === 'hard') this.hardStreak = 0;
+    playTone(330, 0.16, 'sine', 0.08);
+    playTone(294, 0.2, 'sine', 0.07, 0.13);
+
+    this.drawTile(tile, 'oops');
+    this.tweens.add({
+      targets: tile.c, angle: { from: -9, to: 9 }, yoyo: true, repeat: 2, duration: 80,
+      onComplete: () => {
+        tile.c.setAngle(0);
+        this.drawTile(tile);
+        this.tweens.add({ targets: tile.c, alpha: 0.35, scale: 0.88, duration: 260 });
+      },
+    });
+
+    if (tile.opt.name && this.target.name) say(`That's ${tile.opt.name}. Find ${this.target.name}!`);
+    else if (this.pace === 'relaxed') say('Almost! Try another one.');
+
+    if (this.pace === 'relaxed') this.armIdleHint();
+  }
+
+  private onCorrect(tile: Tile): void {
     this.answering = true;
+    this.idleTimer?.remove();
+    this.matched++;
+    if (!this.missedThisRound) this.firstTry++;
+    if (this.difficulty === 'hard') this.hardStreak++;
+    this.updateScore();
 
-    const tile = this.tiles[idx];
-    const isCorrect = tile.hex === this.targetHex;
-    this.tiles.forEach(t => t.zone.disableInteractive());
+    sounds.correct();
+    say(this.target.name ? `${this.target.name}! Yay!` : 'Yes! Same colour!');
 
-    if (isCorrect) {
-      this.drawTile(tile.bg, tile.hex, 'correct');
-      this.tweens.add({
-        targets: tile.bg, scale: { from: 1, to: 1.06 },
-        yoyo: true, duration: 180, ease: 'Sine.InOut',
-      });
-      this.streak++;
-      if (this.difficulty === 'hard') this.hardStreak++;
-      this.score += this.streak >= 3 ? 15 : 10;
-      this.scoreTxt.setText(`⭐ ${this.score}`);
+    this.drawTile(tile, 'happy', true);
+    drawBuddy(this.targetG, TARGET.size, this.target.hex, 'happy');
+    this.tweens.add({ targets: tile.c, scale: { from: 1, to: 1.12 }, yoyo: true, duration: 200, ease: 'Sine.Out' });
+    this.tweens.add({ targets: this.targetC, y: TARGET.y - 16, yoyo: true, duration: 200, ease: 'Sine.Out' });
+    this.ring(tile.x, tile.y, this.target.hex);
+    this.sparkles(tile.x, tile.y);
+    this.tiles.forEach(t => {
+      if (t !== tile) this.tweens.add({ targets: t.c, alpha: 0.25, scale: 0.85, duration: 240 });
+    });
 
-      if (this.streak >= 3) {
-        sounds.streak();
-        this.streakTxt.setText(`🔥 ${this.streak} in a row!  +15`).setColor('#f06292');
-      } else if (this.streak === 2) {
-        sounds.correct();
-        this.streakTxt.setText('✨ One more for a streak!').setColor(T.sub);
-      } else {
-        sounds.correct();
-        this.streakTxt.setText('').setColor(T.sub);
-      }
-
-      this.time.delayedCall(700, () => this.nextQuestion());
+    if (this.pace === 'relaxed') {
+      this.foundHexes.push(this.target.hex);
+      this.roundIndex++;
+      this.renderDots();
+      const dot = this.dots[this.roundIndex - 1];
+      if (dot) this.tweens.add({ targets: dot, scale: { from: 1.8, to: 1 }, duration: 380, ease: 'Back.Out' });
+      const done = this.roundIndex >= this.rounds;
+      this.time.delayedCall(done ? 1300 : 1500, () => (done ? this.endGame() : this.nextQuestion()));
     } else {
-      this.drawTile(tile.bg, tile.hex, 'wrong');
-      this.streak = 0;
-      if (this.difficulty === 'hard') this.hardStreak = 0;   // reset ramp
-      sounds.wrong();
-      this.streakTxt.setText('').setColor(T.sub);
+      this.time.delayedCall(800, () => this.nextQuestion());
+    }
+  }
 
-      // Highlight the correct tile
-      this.tiles.forEach(t => {
-        if (t.hex === this.targetHex) this.drawTile(t.bg, t.hex, 'correct');
+  // ─── Hints & effects ───────────────────────────────────────────────────
+
+  /** After a pause, the right buddy gently pulses and a little hand points at it. */
+  private armIdleHint(): void {
+    this.idleTimer?.remove();
+    this.idleTimer = this.time.delayedCall(HINT_DELAY, () => {
+      if (this.ended || this.answering) return;
+      const t = this.tiles.find(x => x.opt.hex === this.target.hex);
+      if (!t) return;
+      this.clearHint();
+      this.hand = this.add.text(t.x + 44, t.y + 58, '👆', { fontSize: '46px' }).setOrigin(0.5).setDepth(20);
+      this.tweens.add({ targets: this.hand, y: t.y + 42, yoyo: true, repeat: -1, duration: 420, ease: 'Sine.InOut' });
+      this.hintPulse = this.tweens.add({ targets: t.c, scale: 1.07, yoyo: true, repeat: -1, duration: 520, ease: 'Sine.InOut' });
+      this.repeatPrompt();
+    });
+  }
+
+  private clearHint(): void {
+    this.hand?.destroy();
+    this.hand = undefined;
+    if (this.hintPulse) {
+      const targets = this.hintPulse.targets as Phaser.GameObjects.Container[];
+      this.hintPulse.remove();
+      targets.forEach(c => c.setScale(1));
+      this.hintPulse = undefined;
+    }
+  }
+
+  private ring(x: number, y: number, color: number): void {
+    const g = this.add.graphics().setDepth(5);
+    const s = { r: TILE_SIZE / 2, a: 0.85 };
+    this.tweens.add({
+      targets: s, r: TILE_SIZE * 0.95, a: 0, duration: 620, ease: 'Sine.Out',
+      onUpdate: () => { g.clear(); g.lineStyle(6, color, s.a); g.strokeCircle(x, y, s.r); },
+      onComplete: () => g.destroy(),
+    });
+  }
+
+  private sparkles(x: number, y: number): void {
+    const emojis = ['✨', '⭐', '🌟', '💖'];
+    for (let i = 0; i < 7; i++) {
+      const a = (Math.PI * 2 * i) / 7 + Math.random() * 0.4;
+      const d = 80 + Math.random() * 30;
+      const e = this.add.text(x, y, emojis[i % emojis.length], { fontSize: '26px' }).setOrigin(0.5).setDepth(15);
+      this.tweens.add({
+        targets: e, x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, alpha: 0, duration: 750, ease: 'Sine.Out',
+        onComplete: () => e.destroy(),
       });
-      this.tweens.add({ targets: tile.bg, x: tile.bg.x - 6, yoyo: true, repeat: 3, duration: 55 });
-
-      this.time.delayedCall(1000, () => this.nextQuestion());
     }
   }
 
   // ─── Timer / end ───────────────────────────────────────────────────────
 
   private tick(): void {
+    if (this.ended) return;
     this.timeLeft--;
-    this.timerTxt.setText(`⏱ ${this.timeLeft}s`);
-    if (this.timeLeft <= 10) this.timerTxt.setColor(T.red);
-    this.drawProgress(this.timeLeft / GAME_DURATION);
+    this.timerTxt?.setText(`⏰ ${this.timeLeft}`);
+    if (this.timeLeft <= 5) this.timerTxt?.setColor('#ef6c00');
+    this.drawTimeBar(this.timeLeft / TIMED_SECONDS);
     if (this.timeLeft <= 0) this.endGame();
   }
 
-  private buildEndOverlay(): void {
-    this.endOverlay = createEndPopup(this, W, H, {
-      onPlayAgain: () => this.scene.restart({ difficulty: this.difficulty }),
-      onHome:      () => this.scene.start('TitleScene'),
-      onAllGames:  () => { window.location.href = '../'; },
-    });
-  }
-
   private endGame(): void {
-    this.timerEvent.remove();
-    this.tiles.forEach(t => t.zone.disableInteractive());
+    if (this.ended) return;
+    this.ended = true;
+    this.answering = true;
+    this.clearHint();
+    this.idleTimer?.remove();
+    this.timerEvent?.remove();
+    this.tiles.forEach(t => t.c.disableInteractive());
+    this.targetC.disableInteractive();
     sounds.end();
+    launchConfetti(this, CONFETTI_EMOJIS);
 
-    const s = this.score;
-    let emoji: string, title: string, subtitle: string, stars: number;
-    if (s >= TIERS.gold)        { emoji = '🏆'; title = 'Colour Master!';    subtitle = 'Aya sees every shade! 🌈✨';         stars = 3; }
-    else if (s >= TIERS.silver) { emoji = '🌟'; title = 'Brilliant, Aya!';   subtitle = "You're a colour superstar! 🎨";      stars = 3; }
-    else if (s >= TIERS.bronze) { emoji = '🎀'; title = 'Well done, Aya!';   subtitle = 'Great matching! 💖';                 stars = 2; }
-    else                        { emoji = '🌸'; title = 'Nice try, Aya!';    subtitle = "Let's match more colours! 🌺";       stars = 1; }
-
-    this.endOverlay.show({
-      emoji, title, subtitle,
-      score: { value: s, label: `Points · ${this.difficulty}` },
-      stars: { earned: stars },
-    });
-    if (s >= TIERS.silver) launchConfetti(this, CONFETTI_EMOJIS);
+    if (this.pace === 'relaxed') {
+      const ratio = this.firstTry / this.rounds;
+      const stars = ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1;
+      const easy = this.difficulty === 'easy';
+      say(easy ? 'You found all the colours, Aya!' : 'You matched them all, Aya!');
+      this.endOverlay.show({
+        emoji: stars === 3 ? '🌈' : '🎨',
+        title: stars === 3 ? 'Colour star!' : 'Lovely matching!',
+        subtitle: easy ? 'You found every colour, Aya! 💖' : 'Such sharp eyes, Aya! 💖',
+        score: { value: `${this.firstTry}/${this.rounds}`, label: 'First-try matches' },
+        stars: { earned: stars, total: 3 },
+      });
+    } else {
+      const n = this.matched;
+      const stars = n >= 12 ? 3 : n >= 7 ? 2 : 1;
+      say(`${n} colours! Well done, Aya!`);
+      this.endOverlay.show({
+        emoji: stars === 3 ? '🏆' : '🌟',
+        title: stars === 3 ? 'Super speedy!' : 'Well done, Aya!',
+        subtitle: n === 1 ? 'You matched 1 colour! 🎨' : `You matched ${n} colours! 🎨`,
+        score: { value: n, label: `Matches in ${TIMED_SECONDS}s` },
+        stars: { earned: stars, total: 3 },
+      });
+    }
   }
 }

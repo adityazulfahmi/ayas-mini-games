@@ -143,9 +143,13 @@ export function generatePuzzle(
   minWords = 3,
   maxWords = 5,
   attempts = 60,
+  preferredMin = minWords,
 ): Puzzle {
+  // First half of the attempts holds out for a fuller puzzle
+  // (`preferredMin` words); the rest accept anything ≥ `minWords`.
   for (let n = 0; n < attempts; n++) {
-    const result = tryOnce(pool, minWords, maxWords);
+    const need = n < attempts / 2 ? Math.max(minWords, preferredMin) : minWords;
+    const result = tryOnce(pool, need, maxWords);
     if (result) return result;
   }
   // Deterministic fallback so the game never boots empty even if the
@@ -183,8 +187,16 @@ function tryOnce(pool: CrosswordWord[], minWords: number, maxWords: number): Puz
 
   // Assign display labels by scan order (top→bottom, left→right) so
   // the user reads 1, 2, 3… intuitively.
-  placements.sort((a, b) => (a.row - b.row) || (a.col - b.col));
-  placements.forEach((p, i) => { p.label = i + 1; });
+  // Two words that start in the same cell (one across, one down) share
+  // a number, like a real crossword. Across before down on ties.
+  placements.sort((a, b) =>
+    (a.row - b.row) || (a.col - b.col) || (a.dir === 'across' ? -1 : 1));
+  const startNums = new Map<string, number>();
+  placements.forEach(p => {
+    const key = `${p.row},${p.col}`;
+    if (!startNums.has(key)) startNums.set(key, startNums.size + 1);
+    p.label = startNums.get(key)!;
+  });
 
   return { letters: grid.letters, placements };
 }

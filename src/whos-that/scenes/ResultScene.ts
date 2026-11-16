@@ -2,20 +2,22 @@ import Phaser from 'phaser';
 import { drawBg, launchConfetti } from '@shared/phaserUtils';
 import { createEndPopup } from '@shared/endPopup';
 import { sounds } from '@shared/audio';
+import { say } from '../speech';
 import { CONFETTI_EMOJIS, type Difficulty, type GameMode } from '../data';
 
 interface ResultData { score: number; total: number; difficulty: Difficulty; gameMode?: GameMode }
 
 /**
- * Tier ranges are computed from the incoming `total` rather than hard-coded
- * round counts, so the popup stays correct if round counts change later.
+ * Every game ends in a celebration — she found all of them, every time
+ * (wrong taps never end a round, D-007). The stars and score reflect how
+ * many she spotted on the first try, for Papa watching along.
  */
 function tierFor(score: number, total: number): { emoji: string; title: string; msg: string; stars: number } {
   const ratio = total === 0 ? 0 : score / total;
-  if (ratio >= 1)     return { emoji: '🎉', title: 'Perfect score!',  msg: `You got all ${total}! Amazing, Aya! 🌟`,       stars: 3 };
-  if (ratio >= 0.7)   return { emoji: '🌟', title: 'Great job!',      msg: `You got ${score} of ${total} — brilliant! 🎀`,   stars: 3 };
-  if (ratio >= 0.4)   return { emoji: '🌸', title: 'Nice try!',       msg: `${score} of ${total} — you're getting there! 💖`, stars: 2 };
-  return                     { emoji: '💪', title: 'Keep trying!',    msg: `You got ${score} of ${total}. Practice makes perfect!`, stars: 1 };
+  if (ratio >= 1)   return { emoji: '🎉', title: 'Perfect, Aya!',     msg: `You knew every one straight away! 🌟`, stars: 3 };
+  if (ratio >= 0.6) return { emoji: '🌟', title: 'Great job!',        msg: `You found all ${total} — so clever! 🎀`, stars: 3 };
+  if (ratio >= 0.2) return { emoji: '🌸', title: 'You found them!',   msg: `All ${total} found! Let's play again 💖`, stars: 2 };
+  return                   { emoji: '💖', title: 'You found them!',   msg: `All ${total} found! Let's play again 💖`, stars: 1 };
 }
 
 export class ResultScene extends Phaser.Scene {
@@ -40,13 +42,13 @@ export class ResultScene extends Phaser.Scene {
       emoji: tier.emoji,
       title: tier.title,
       subtitle: tier.msg,
-      score: { value: `${score}/${total}`, label: `Score · ${difficulty}` },
+      score: { value: `${score}/${total}`, label: `first try · ${difficulty === 'hard' ? 'quick' : 'relaxed'}` },
       stars: { earned: tier.stars, total: 3 },
     });
 
-    if (score === total && total > 0) {
-      sounds.win();
-      launchConfetti(this, CONFETTI_EMOJIS);
-    }
+    // Always celebrate — she found every one of them.
+    sounds.win();
+    launchConfetti(this, CONFETTI_EMOJIS);
+    say(score === total ? 'Perfect! You found them all!' : 'Hooray! You found them all!');
   }
 }

@@ -11,6 +11,29 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-17 — Every game reworked for Aya at 2½
+
+One agent per game assessed and improved it (branches `improve/<game>`, merged).
+Common themes: spoken prompts and names (local `speech.ts`/`voice.ts` per game),
+no-timer defaults with the old timed mode kept as an option, gentle wrong
+answers that never end a round (D-007), idle hints (👆 hand), clearer emoji,
+bigger targets, and new landing previews.
+
+- **Pick & Pop!** one-tap start, Mix mode, pop effects + tray, per-item distractor exclusions.
+- **Shape Sorter** toy box with a window, 7 shapes (moon, diamond), 2/3/4-hole boxes, drop-to-nearest fix.
+- **Colour Match** 7 bright "colour buddies", Relaxed/Timed × Colours/Shades.
+- **Who Makes This Sound?** Little Ears (2 cards) / Big Ears (4), "Who says moo?", animal reacts.
+- **Colour Hunt** relaxed 10 rounds + Speed Hunt, curated unambiguous emoji, no look-alike distractors.
+- **What Comes Next?** patterns play on a beat with speech, gentle ramp, 6 toddler stories.
+- **Flip & Match** star-buddy card backs, 2×2 → 4×5 ladder (6×6 removed), peek, no clock.
+- **Odd One Out** relaxed default, spoken question and reason, curated groups.
+- **Connect the Match** "who eats what" easy set, drag or tap, no-timer rounds + 45 s race.
+- **Who's That, Aya?** picture answers, Relaxed/Quick, colour reveal, images 23 MB → 1.4 MB.
+- **Tic-Tac-Toe** gentle Papa-bot for solo play, 420×780, win line + cheerful ties.
+- **Crossword** 420×780, clue numbers/direction, id-ID + en-US speech, letter hints, 97 concrete words.
+- Shared: end popup shows unearned stars as a faded ⭐ instead of 🌑. Landing: Connect the
+  Match and Who's That moved to "Perfect for Aya now"; new card texts and tags.
+
 ## 2026-11-16 — Landing shelves + Who Makes This Sound? polish
 
 - **Landing page**: games split into "Perfect for Aya now" (2½) and

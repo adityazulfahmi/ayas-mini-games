@@ -270,6 +270,8 @@
       .card-body { padding: 12px 12px 14px; gap: 7px; }
       .card-title { font-size: 1.02rem; line-height: 1.2; }
       .card-desc, .play-btn { display: none; }
+      .tag { font-size: 0.66rem; padding: 4px 7px; }
+      .card-tags .tag:nth-child(n+3) { display: none; }
       .wt-preview { padding: 8px; gap: 6px; }
       .wt-char-card img { height: 46px; }
       .wt-pills { display: none; }
@@ -298,8 +300,7 @@
   </div>
 
   <!-- Cards are ordered by suitability for Aya (most → least), split into
-       "now" and "later" at the first timed/abstract game.
-       See docs/decisions.md D-013 before re-shuffling. -->
+       "now" and "later". See docs/decisions.md D-013 before re-shuffling. -->
   <section class="shelf">
   <h2 class="shelf-title">⭐ Perfect for Aya now <span class="age">2½ years</span></h2>
   <div class="games-grid">
@@ -311,8 +312,8 @@
       </div>
       <div class="card-body">
         <div class="card-title">🎯 Pick &amp; Pop!</div>
-        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Categories</span></div>
-        <div class="card-desc">Pick your topic — fruit, animal, vehicle, or musical instrument — and pop the matching one in a row of mixed-up things. Distractors come from very different categories so the answer always pops out. 🫧</div>
+        <div class="card-tags"><span class="tag">Spoken prompts</span><span class="tag">No timer</span><span class="tag">Ages 2+</span></div>
+        <div class="card-desc">Tap a bubble, hear “Find the fruit!”, and pop the right one. Fruit, animals, vehicles, music or a mix, with every item named out loud.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
@@ -324,21 +325,8 @@
       </div>
       <div class="card-body">
         <div class="card-title">🧩 Shape Sorter</div>
-        <div class="card-tags"><span class="tag new">✨ New</span><span class="tag">No timer</span><span class="tag">Talks</span></div>
-        <div class="card-desc">Every shape has a home! Drag the circle, square, triangle, star or heart into its matching hole, or just tap the hole. Shapes are said out loud. No timer. 🏠</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── COLOUR MATCH ── -->
-    <a class="game-card" href="./ayas-colour-match/">
-      <div class="card-image">
-        <img src="./previews/colour-match.svg" alt="Colour Match preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🎨 Colour Match</div>
-        <div class="card-tags"><span class="tag">Colours</span><span class="tag">30 s</span></div>
-        <div class="card-desc">A colour appears — tap the swatch that matches. Easy: 10 bright hues. Hard: subtle shades that get trickier with every streak. 30 seconds.</div>
+        <div class="card-tags"><span class="tag new">✨ New</span><span class="tag">No timer</span><span class="tag">Drag or tap</span></div>
+        <div class="card-desc">Pop friendly shapes into their holes and watch them tumble into the toy box. Seven shapes with names said out loud, and a helping hand if you get stuck.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
@@ -350,34 +338,21 @@
       </div>
       <div class="card-body">
         <div class="card-title">🔊 Who Makes This Sound?</div>
-        <div class="card-tags"><span class="tag">🔊 Sounds</span><span class="tag">No timer</span></div>
-        <div class="card-desc">Tap the speaker to hear an animal sound, then tap the right animal from four big choices. 5 rounds, 10 friendly animals, toddler-easy. 🎧</div>
+        <div class="card-tags"><span class="tag">Real sounds</span><span class="tag">Easy 2-card mode</span><span class="tag">No timer</span></div>
+        <div class="card-desc">Hear a real animal sound, then tap who made it. “Who says moo?” prompts, happy hopping animals and gentle help when she’s stuck.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
 
-    <!-- ── COLOUR HUNT ── -->
-    <a class="game-card" href="./ayas-colour-hunt/">
+    <!-- ── COLOUR MATCH ── -->
+    <a class="game-card" href="./ayas-colour-match/">
       <div class="card-image">
-        <img src="./previews/colour-hunt.svg" alt="Colour Hunt preview" />
+        <img src="./previews/colour-match.svg" alt="Colour Match preview" />
       </div>
       <div class="card-body">
-        <div class="card-title">🔍 Colour Hunt</div>
-        <div class="card-tags"><span class="tag">Colours</span><span class="tag">30 s</span></div>
-        <div class="card-desc">A colour pops up — find the emoji that wears it. 30 seconds, 8 colours, streak bonuses for fast streaks. 🌈</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-    <!-- ── WHAT COMES NEXT? ── -->
-    <a class="game-card" href="./ayas-whats-next/">
-      <div class="card-image">
-        <img src="./previews/whats-next.svg" alt="What Comes Next? preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🔮 What Comes Next?</div>
-        <div class="card-tags"><span class="tag">Patterns</span><span class="tag">No timer</span></div>
-        <div class="card-desc">Two modes: spot the next item in a colour pattern, or pick what comes next in a tiny growing-up story. 5 rounds of brain-stretchy fun. 🌱</div>
+        <div class="card-title">🎨 Colour Match</div>
+        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Says colour names</span></div>
+        <div class="card-desc">Find the colour buddy that matches! Aya hears each colour’s name (Red! Blue! Yellow!) as she plays, with a trickier Shades mode for later.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
@@ -388,29 +363,9 @@
         <img src="./previews/flip-matching.svg" alt="Flip & Matching preview" />
       </div>
       <div class="card-body">
-        <div class="card-title">🃏 Flip &amp; Matching</div>
-        <div class="card-tags"><span class="tag">Memory</span><span class="tag">2×2 → 6×6</span></div>
-        <div class="card-desc">Flip cards and find every matching pair. Pick your grid: 2×2, 4×4, 4×6, or a brain-stretching 6×6.</div>
-        <span class="play-btn">Play Now 🎉</span>
-      </div>
-    </a>
-
-  </div>
-  </section>
-
-  <section class="shelf">
-  <h2 class="shelf-title">🌱 Grow into these <span class="age">a bit bigger</span></h2>
-  <div class="games-grid">
-
-    <!-- ── ODD ONE OUT ── -->
-    <a class="game-card" href="./ayas-odd-one-out/">
-      <div class="card-image">
-        <img src="./previews/odd-one-out.svg" alt="Odd One Out preview" />
-      </div>
-      <div class="card-body">
-        <div class="card-title">🤔 Odd One Out</div>
-        <div class="card-tags"><span class="tag">Thinking</span><span class="tag">30 s</span></div>
-        <div class="card-desc">Three things belong together — one doesn't. Easy shows the category (animals, fruits, vehicles…); Hard hides it. 30 seconds. 🔍</div>
+        <div class="card-title">🃏 Flip &amp; Match</div>
+        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Spoken names</span><span class="tag">4–20 cards</span></div>
+        <div class="card-desc">Turn the star cards over and find two the same! A quick peek, spoken names and a happy “Two kitties!” for every pair, from 4 to 20 cards.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
@@ -422,8 +377,8 @@
       </div>
       <div class="card-body">
         <div class="card-title">🔗 Connect the Match</div>
-        <div class="card-tags"><span class="tag">Pairs</span><span class="tag">30 s</span></div>
-        <div class="card-desc">Tap a friend on the left, then its pair on the right, to draw a match line. Rounds of 3 pairs refill automatically for 30 seconds of matching. 💞</div>
+        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Drag or tap</span><span class="tag">Spoken names</span></div>
+        <div class="card-desc">Who eats what? Draw a line from each hungry friend to its favourite food: dog to bone, bunny to carrot. Every match is said out loud.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
@@ -448,9 +403,55 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="card-title">🐰 Who's That, Aya?</div>
-        <div class="card-tags"><span class="tag">Bing</span><span class="tag">Timer</span></div>
-        <div class="card-desc">Two modes: guess the Bing character or the animal from a dark silhouette. Easy (3 choices · 12s) or Hard (4 choices · 8s). 5 rounds.</div>
+        <div class="card-title">🐰 Who’s That, Aya?</div>
+        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Picture choices</span><span class="tag">Spoken names</span></div>
+        <div class="card-desc">Spot who’s hiding in the shadow! Tap the matching picture and watch Bing &amp; friends or animals light up in colour, with every name read aloud.</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── COLOUR HUNT ── -->
+    <a class="game-card" href="./ayas-colour-hunt/">
+      <div class="card-image">
+        <img src="./previews/colour-hunt.svg" alt="Colour Hunt preview" />
+      </div>
+      <div class="card-body">
+        <div class="card-title">🔍 Colour Hunt</div>
+        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Spoken colours</span><span class="tag">Speed mode</span></div>
+        <div class="card-desc">Hear a colour, then find the thing that’s that colour! Purple grapes, a red fire truck, a pink flamingo, every find named out loud.</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+    <!-- ── WHAT COMES NEXT? ── -->
+    <a class="game-card" href="./ayas-whats-next/">
+      <div class="card-image">
+        <img src="./previews/whats-next.svg" alt="What Comes Next? preview" />
+      </div>
+      <div class="card-body">
+        <div class="card-title">🔮 What Comes Next?</div>
+        <div class="card-tags"><span class="tag">Spoken</span><span class="tag">No timer</span><span class="tag">Gentle hints</span></div>
+        <div class="card-desc">Hear the pattern (apple, banana, apple, banana…) and tap what comes next! Or finish little stories like egg → chick → ?</div>
+        <span class="play-btn">Play Now 🎉</span>
+      </div>
+    </a>
+
+  </div>
+  </section>
+
+  <section class="shelf">
+  <h2 class="shelf-title">🌱 Grow into these <span class="age">a bit bigger</span></h2>
+  <div class="games-grid">
+
+    <!-- ── ODD ONE OUT ── -->
+    <a class="game-card" href="./ayas-odd-one-out/">
+      <div class="card-image">
+        <img src="./previews/odd-one-out.svg" alt="Odd One Out preview" />
+      </div>
+      <div class="card-body">
+        <div class="card-title">🤔 Odd One Out</div>
+        <div class="card-tags"><span class="tag">No timer</span><span class="tag">Spoken prompts</span><span class="tag">2×2 / 3×3</span></div>
+        <div class="card-desc">Three belong together, one doesn’t. Aya hears the question, taps the odd one, and learns why: “The apple is a fruit!”</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
@@ -462,8 +463,8 @@
       </div>
       <div class="card-body">
         <div class="card-title">🐱 Tic-Tac-Toe</div>
-        <div class="card-tags"><span class="tag">2 players</span></div>
-        <div class="card-desc">Two players take turns — 🐱 Cat vs 🐰 Bunny. Enter your names and get three in a row to win. Score carries across rounds.</div>
+        <div class="card-tags"><span class="tag">1 or 2 players</span><span class="tag">Spoken turns</span></div>
+        <div class="card-desc">Kitty vs Bunny! Play with gentle Papa-bot or take turns with Papa. Big bouncy pieces and a happy high five when it’s a tie.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
@@ -474,15 +475,14 @@
         <img src="./previews/crossword.svg" alt="Crossword preview" />
       </div>
       <div class="card-body">
-        <div class="card-title">🧩 Crossword</div>
-        <div class="card-tags"><span class="tag">Reading</span><span class="tag">Bahasa → English</span></div>
-        <div class="card-desc">A mini 5×5 crossword that bridges Bahasa and English: read the Indonesian hint, tap the scrambled letters to spell the English answer. Built around simple, kid-friendly words. 🌈</div>
+        <div class="card-title">🧩 Aya’s Crossword</div>
+        <div class="card-tags"><span class="tag">Bahasa → English</span><span class="tag">Spoken hints</span><span class="tag">Reading</span></div>
+        <div class="card-desc">Hear the Bahasa hint, see the picture, and tap big letter tiles to spell the English word. Gentle letter hints and a little party for every word.</div>
         <span class="play-btn">Play Now 🎉</span>
       </div>
     </a>
 
   </div>
-
   </section>
 
   <footer>Dari papa Ami untuk Aya 💖</footer>

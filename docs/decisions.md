@@ -303,6 +303,13 @@ in scene code.
 
 ## D-013 — Landing-page games sorted by 2yo suitability
 
+> Updated 2026-11-17: after the per-game rework most games have a no-timer
+> default and spoken prompts. "Perfect for Aya now": Pick & Pop, Shape Sorter,
+> Who Makes This Sound?, Colour Match, Flip & Match, Connect the Match, Who's
+> That?, Colour Hunt, What Comes Next?. "Grow into these": Odd One Out,
+> Tic-Tac-Toe (now has a solo Papa-bot), Crossword (needs reading). The list
+> below is the historical ranking.
+>
 > Updated 2026-11-16: Aya is now 2½. Shape Sorter added at position 2
 > (shape naming + matching is the core skill at this age, no reading, no timer).
 >

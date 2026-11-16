@@ -187,7 +187,8 @@ export function createEndPopup(
       const total = data.stars.total ?? 3;
       stars.forEach((s, i) => {
         if (i < total) {
-          s.setText(i < data.stars!.earned ? '⭐' : '🌑').setVisible(true);
+          // Unearned stars are a faded star, not 🌑 (which reads as a dark ball to a toddler).
+          s.setText('⭐').setAlpha(i < data.stars!.earned ? 1 : 0.22).setVisible(true);
         } else {
           s.setVisible(false);
         }

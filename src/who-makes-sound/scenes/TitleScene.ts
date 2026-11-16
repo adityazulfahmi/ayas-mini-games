@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
-import { drawBg, primaryBtn, bounceLoop } from '@shared/phaserUtils';
+import { drawBg, bounceLoop } from '@shared/phaserUtils';
 import { C, T, F } from '@shared/theme';
-import { ANIMALS } from '../data';
+import { ANIMALS, MODES, type Mode } from '../data';
 import { drawSpeaker } from './speaker';
 import { preloadSounds, unlockAudio } from '../sound';
+import { unlockSpeech } from '../speech';
 
 export class TitleScene extends Phaser.Scene {
   constructor() { super('TitleScene'); }
@@ -27,7 +28,7 @@ export class TitleScene extends Phaser.Scene {
       shadow: { offsetX: 2, offsetY: 3, color: '#f8bbd0', fill: true },
     }).setOrigin(0.5);
 
-    this.add.text(W / 2, 208, 'Listen with your ears,\nthen tap the right animal! 🎧', {
+    this.add.text(W / 2, 208, 'Listen to the animal,\nthen tap who made the sound! 🎧', {
       fontFamily: F.body, fontSize: '14px', color: T.sub,
       align: 'center', fontStyle: 'bold',
       lineSpacing: 4,
@@ -78,24 +79,67 @@ export class TitleScene extends Phaser.Scene {
     });
     bounceLoop(this, animals);
 
-    // Small pill-shaped tagline chip — feels more polished than plain text.
-    const chipY = 540;
-    const chipW = 220, chipH = 30;
-    const chip = this.add.graphics();
-    chip.fillStyle(C.white, 0.85);
-    chip.fillRoundedRect(W / 2 - chipW / 2, chipY - chipH / 2, chipW, chipH, chipH / 2);
-    chip.lineStyle(1.5, C.lavender, 0.5);
-    chip.strokeRoundedRect(W / 2 - chipW / 2, chipY - chipH / 2, chipW, chipH, chipH / 2);
-    this.add.text(W / 2, chipY, `${ANIMALS.length} animals · 5 rounds · 🐾`, {
-      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
-    }).setOrigin(0.5);
+    // Two modes: Little Ears (2 big cards) is the toddler default and comes
+    // first; Big Ears is the classic 4-card game.
+    MODES.forEach((m, i) => this.modeButton(W / 2, 588 + i * 100, m, i === 0));
+  }
 
-    primaryBtn(this, W / 2, H - 110, 340, 66, "Let's Listen! 🎶", () => {
-      // iOS only starts audio after a user gesture: unlock it on this tap so
-      // the first animal plays straight away when the game scene opens.
+  private modeButton(cx: number, cy: number, mode: Mode, primary: boolean): void {
+    const w = 340, h = 86, r = 26;
+    const shadow = this.add.graphics();
+    shadow.fillStyle(C.shadow, 0.16);
+    shadow.fillRoundedRect(-w / 2, -h / 2 + 6, w, h, r);
+    const bg = this.add.graphics();
+    if (primary) {
+      bg.fillStyle(C.pink, 1);
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, r);
+    } else {
+      bg.fillStyle(C.white, 1);
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, r);
+      bg.lineStyle(3, C.lavender, 1);
+      bg.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
+    }
+    const badge = this.add.graphics();
+    badge.fillStyle(primary ? C.white : C.mintBg, primary ? 0.95 : 1);
+    badge.fillCircle(-w / 2 + 50, 0, 31);
+    const emoji = this.add.text(-w / 2 + 50, 2, mode.emoji, {
+      fontFamily: F.body, fontSize: '38px',
+    }).setOrigin(0.5);
+    const label = this.add.text(-w / 2 + 98, -12, mode.label, {
+      fontFamily: F.head, fontSize: '26px', color: primary ? T.white : T.main,
+    }).setOrigin(0, 0.5);
+    const blurb = this.add.text(-w / 2 + 99, 18, mode.blurb, {
+      fontFamily: F.body, fontSize: '14px', fontStyle: 'bold', color: primary ? '#fff0f6' : T.sub,
+    }).setOrigin(0, 0.5);
+    // Little preview of how many cards this mode shows.
+    const dots = this.add.graphics();
+    const n = mode.choices, ds = 13, dg = 5, rows = n / 2;
+    const gx = w / 2 - 30 - (2 * ds + dg) / 2;
+    const gy = -(rows * ds + (rows - 1) * dg) / 2;
+    dots.fillStyle(primary ? C.white : C.lavender, primary ? 0.9 : 0.8);
+    for (let k = 0; k < n; k++) {
+      dots.fillRoundedRect(gx + (k % 2) * (ds + dg), gy + Math.floor(k / 2) * (ds + dg), ds, ds, 4);
+    }
+
+    const c = this.add.container(cx, cy, [shadow, bg, badge, emoji, label, blurb, dots]);
+    c.setSize(w, h).setInteractive({ cursor: 'pointer' });
+    c.on('pointerover', () => this.tweens.add({ targets: c, scale: 1.03, duration: 100 }));
+    c.on('pointerout',  () => this.tweens.add({ targets: c, scale: 1, duration: 100 }));
+    c.on('pointerdown', () => {
+      // iOS only starts audio/speech after a user gesture: unlock both on this
+      // tap so the first animal plays straight away when the game opens.
       unlockAudio();
-      this.scene.start('GameScene');
+      unlockSpeech();
+      c.disableInteractive();
+      this.tweens.killTweensOf(c);
+      this.tweens.add({
+        targets: c, scale: 0.95, yoyo: true, duration: 90,
+        onComplete: () => this.scene.start('GameScene', { choices: mode.choices }),
+      });
     });
+    if (primary) {
+      this.tweens.add({ targets: c, scale: { from: 1, to: 1.03 }, yoyo: true, repeat: -1, duration: 900, ease: 'Sine.InOut' });
+    }
   }
 
   private decorateBg(W: number, H: number): void {

@@ -1,39 +1,39 @@
-import cowSrc     from '../../ayas-who-makes-sound/sounds/cow.ogg';
-import dogSrc     from '../../ayas-who-makes-sound/sounds/dog.ogg';
-import catSrc     from '../../ayas-who-makes-sound/sounds/cat.ogg';
-import duckSrc    from '../../ayas-who-makes-sound/sounds/duck.ogg';
-import sheepSrc   from '../../ayas-who-makes-sound/sounds/sheep.ogg';
-import horseSrc   from '../../ayas-who-makes-sound/sounds/horse.ogg';
-import pigSrc     from '../../ayas-who-makes-sound/sounds/pig.ogg';
-import roosterSrc from '../../ayas-who-makes-sound/sounds/rooster.ogg';
-import lionSrc    from '../../ayas-who-makes-sound/sounds/lion.ogg';
-import frogSrc    from '../../ayas-who-makes-sound/sounds/frog.ogg';
+import cowSrc from '../../ayas-who-makes-sound/sounds/cow.mp3';
+import dogSrc from '../../ayas-who-makes-sound/sounds/dog.mp3';
+import catSrc from '../../ayas-who-makes-sound/sounds/cat.mp3';
+import duckSrc from '../../ayas-who-makes-sound/sounds/duck.mp3';
+import sheepSrc from '../../ayas-who-makes-sound/sounds/sheep.mp3';
+import horseSrc from '../../ayas-who-makes-sound/sounds/horse.mp3';
+import pigSrc from '../../ayas-who-makes-sound/sounds/pig.mp3';
+import roosterSrc from '../../ayas-who-makes-sound/sounds/rooster.mp3';
+import lionSrc from '../../ayas-who-makes-sound/sounds/lion.mp3';
+import frogSrc from '../../ayas-who-makes-sound/sounds/frog.mp3';
 
 export interface Animal {
   name: string;
   emoji: string;
-  /** Real-animal recording (Ogg Vorbis). See sounds/CREDITS.md for sources. */
-  src: string;
   /**
-   * Max playback duration in ms. The asset itself may be longer; we cut
-   * playback short so every round stays snappy for a 2-year-old.
+   * Real-animal recording, trimmed to start right on the sound (scripts/trim-sounds.mjs).
+   * See sounds/CREDITS.md for sources.
    */
-  clipMs: number;
-  /** Fallback text spoken via speech-synth when the browser can't play Ogg. */
+  src: string;
+  /** Spoken via speech-synth if the recording can't play. */
   fallback: string;
+  /** Shown after a correct answer: "Dog says Woof!" */
+  says: string;
 }
 
 export const ANIMALS: Animal[] = [
-  { name: 'Cow',     emoji: '🐮', src: cowSrc,     clipMs: 2500, fallback: 'mooo mooo' },
-  { name: 'Dog',     emoji: '🐶', src: dogSrc,     clipMs: 2000, fallback: 'woof woof' },
-  { name: 'Cat',     emoji: '🐱', src: catSrc,     clipMs: 1500, fallback: 'meow' },
-  { name: 'Duck',    emoji: '🦆', src: duckSrc,    clipMs: 2500, fallback: 'quack quack' },
-  { name: 'Sheep',   emoji: '🐑', src: sheepSrc,   clipMs: 1500, fallback: 'baaa baaa' },
-  { name: 'Horse',   emoji: '🐴', src: horseSrc,   clipMs: 3000, fallback: 'neigh' },
-  { name: 'Pig',     emoji: '🐷', src: pigSrc,     clipMs: 1500, fallback: 'oink oink' },
-  { name: 'Rooster', emoji: '🐓', src: roosterSrc, clipMs: 2500, fallback: 'cock a doodle doo' },
-  { name: 'Lion',    emoji: '🦁', src: lionSrc,    clipMs: 2500, fallback: 'roarrr' },
-  { name: 'Frog',    emoji: '🐸', src: frogSrc,    clipMs: 2000, fallback: 'ribbit ribbit' },
+  { name: 'Cow',     emoji: '🐮', src: cowSrc,      fallback: 'mooo mooo', says: 'Moo' },
+  { name: 'Dog',     emoji: '🐶', src: dogSrc,      fallback: 'woof woof', says: 'Woof' },
+  { name: 'Cat',     emoji: '🐱', src: catSrc,      fallback: 'meow', says: 'Meow' },
+  { name: 'Duck',    emoji: '🦆', src: duckSrc,     fallback: 'quack quack', says: 'Quack' },
+  { name: 'Sheep',   emoji: '🐑', src: sheepSrc,    fallback: 'baaa baaa', says: 'Baa' },
+  { name: 'Horse',   emoji: '🐴', src: horseSrc,    fallback: 'neigh', says: 'Neigh' },
+  { name: 'Pig',     emoji: '🐷', src: pigSrc,      fallback: 'oink oink', says: 'Oink' },
+  { name: 'Rooster', emoji: '🐓', src: roosterSrc, fallback: 'cock a doodle doo', says: 'Cock-a-doodle-doo' },
+  { name: 'Lion',    emoji: '🦁', src: lionSrc,     fallback: 'roarrr', says: 'Roar' },
+  { name: 'Frog',    emoji: '🐸', src: frogSrc,     fallback: 'ribbit ribbit', says: 'Ribbit' },
 ];
 
 export const TOTAL_ROUNDS = 5;

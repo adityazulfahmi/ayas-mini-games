@@ -2,8 +2,10 @@
 
 All recordings below are sourced from [Wikimedia Commons](https://commons.wikimedia.org)
 under the CC-BY-SA, CC-BY, or Public Domain / CC0 terms indicated.
-Clips have been trimmed at Ogg page boundaries to reduce file size — no
-re-encoding.
+The originals (already shortened at Ogg page boundaries) live in `original/`.
+The game plays `*.mp3` versions made by `scripts/trim-sounds.mjs`: leading
+silence and background lead-in removed, cut after the first call, faded, and
+loudness-matched. File names in the table refer to `original/`.
 
 | File | Source (Commons) | License |
 |------|------------------|---------|

@@ -11,6 +11,21 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-16 — Landing shelves + Who Makes This Sound? polish
+
+- **Landing page**: games split into "Perfect for Aya now" (2½) and
+  "Grow into these"; phones get a compact 2-up grid (title + tags, no
+  paragraphs), tablets 3-up, desktop 4-up. Hover lift only on real
+  pointers. Each card has short tags (No timer, 30 s, Sounds, …).
+- **Who Makes This Sound?**: recordings re-cut by `scripts/trim-sounds.mjs`
+  (originals in `sounds/original/`) so each starts on the animal's call
+  (duck/rooster had ~1 s of lead-in, cow 0.7 s), loudness-matched MP3s.
+  Playback moved to pre-decoded Web Audio buffers (`src/who-makes-sound/sound.ts`)
+  so taps play instantly; very short calls play twice ("oink oink").
+  Layout: bigger cards with the animal's name, roomier speaker/caption,
+  caption guides the round (Listen… → Who makes this sound? →
+  "🐶 Dog says Woof!") and the sound replays after a correct answer.
+
 ## 2026-11-16 — Shape Sorter + aya.adityazulfahmi.com
 
 - **Shape Sorter** (`ayas-shape-sorter/`): drag (or tap-to-place) five

@@ -3,6 +3,7 @@ import { drawBg, primaryBtn, bounceLoop } from '@shared/phaserUtils';
 import { C, T, F } from '@shared/theme';
 import { ANIMALS } from '../data';
 import { drawSpeaker } from './speaker';
+import { preloadSounds, unlockAudio } from '../sound';
 
 export class TitleScene extends Phaser.Scene {
   constructor() { super('TitleScene'); }
@@ -10,6 +11,8 @@ export class TitleScene extends Phaser.Scene {
   create(): void {
     const { width: W, height: H } = this.scale;
     drawBg(this);
+    // Fetch + decode every sound while the title is showing, so the first cue is instant.
+    preloadSounds(ANIMALS);
 
     // Soft floating music-note decorations add atmosphere without competing
     // with the speaker — low alpha so they read as background texture.
@@ -88,9 +91,9 @@ export class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     primaryBtn(this, W / 2, H - 110, 340, 66, "Let's Listen! 🎶", () => {
-      // Tapping primes the speech synth — iOS Safari needs a user gesture
-      // before any utterance will be spoken. The first real cue fires inside
-      // GameScene on the first speaker tap.
+      // iOS only starts audio after a user gesture: unlock it on this tap so
+      // the first animal plays straight away when the game scene opens.
+      unlockAudio();
       this.scene.start('GameScene');
     });
   }

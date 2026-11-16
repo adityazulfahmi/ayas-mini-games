@@ -2,23 +2,26 @@ import Phaser from 'phaser';
 import { drawBg, launchConfetti } from '@shared/phaserUtils';
 import { createEndPopup } from '@shared/endPopup';
 import { C, T, F } from '@shared/theme';
-import { sounds, playTone } from '@shared/audio';
+import { sounds } from '@shared/audio';
 import { shuffle } from '@shared/utils';
 import { ANIMALS, CONFETTI_EMOJIS, OPTIONS_PER_ROUND, TOTAL_ROUNDS, type Animal } from '../data';
 import { drawSpeaker } from './speaker';
+import { playAnimal, preloadSounds, stopSound, unlockAudio } from '../sound';
 
 const W = 420, H = 780;
 
 const SPEAKER_CX = W / 2;
-const SPEAKER_CY = 232;
-const SPEAKER_R  = 78;
+const SPEAKER_CY = 206;
+const SPEAKER_R  = 72;
+const CAPTION_Y  = SPEAKER_CY + SPEAKER_R + 34;
 
-const CARD_SIZE   = 148;
-const CARD_RADIUS = 24;
-const EMOJI_SIZE  = 80;
-const CARD_CX_L   = 126;
-const CARD_CX_R   = W - 126;
-const CARD_ROW_Y  = [452, 614];
+const CARD_SIZE   = 154;
+const CARD_RADIUS = 26;
+const EMOJI_SIZE  = 78;
+const CARD_GAP    = 16;
+const CARD_CX_L   = W / 2 - CARD_SIZE / 2 - CARD_GAP / 2;
+const CARD_CX_R   = W / 2 + CARD_SIZE / 2 + CARD_GAP / 2;
+const CARD_ROW_Y  = [468, 468 + CARD_SIZE + CARD_GAP];
 
 interface AnimalCard {
   animal: Animal;
@@ -27,6 +30,8 @@ interface AnimalCard {
   shadow: Phaser.GameObjects.Graphics;
   bg: Phaser.GameObjects.Graphics;
   txt: Phaser.GameObjects.Text;
+  /** Animal name under the emoji, so a grown-up can say it along. */
+  label: Phaser.GameObjects.Text;
   zone: Phaser.GameObjects.Zone;
   isLocked: boolean;
 }
@@ -62,6 +67,10 @@ export class GameScene extends Phaser.Scene {
     this.cards = [];
     this.progressDots = [];
     this.roundAnimals = shuffle(ANIMALS).slice(0, TOTAL_ROUNDS);
+    preloadSounds(ANIMALS);
+    // Any tap anywhere (re)unlocks audio on iOS.
+    this.input.on('pointerdown', unlockAudio);
+    this.events.once('shutdown', stopSound);
 
     this.buildHeader();
     this.buildSpeaker();
@@ -142,13 +151,13 @@ export class GameScene extends Phaser.Scene {
     // the 78px bubble.
     this.speakerIcon = drawSpeaker(this, SPEAKER_CX, SPEAKER_CY, 0.9);
 
-    this.speakerCaption = this.add.text(SPEAKER_CX, SPEAKER_CY + SPEAKER_R + 26, 'Tap to listen', {
-      fontFamily: F.head, fontSize: '17px', color: T.main,
+    this.speakerCaption = this.add.text(SPEAKER_CX, CAPTION_Y, 'Listen… 👂', {
+      fontFamily: F.head, fontSize: '20px', color: T.main,
     }).setOrigin(0.5);
 
     // Small "tap again to replay" hint sits under the caption — the speaker
     // is tappable every round, not just on first load, and kids need a cue.
-    this.replayHint = this.buildReplayHint(SPEAKER_CX, SPEAKER_CY + SPEAKER_R + 48);
+    this.replayHint = this.buildReplayHint(SPEAKER_CX, CAPTION_Y + 30);
 
     const zone = this.add.zone(SPEAKER_CX, SPEAKER_CY, SPEAKER_R * 2, SPEAKER_R * 2)
       .setInteractive({ cursor: 'pointer' });
@@ -163,13 +172,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   private buildReplayHint(cx: number, cy: number): Phaser.GameObjects.Container {
-    const w = 148, h = 24;
+    const w = 216, h = 28;
     const bg = this.add.graphics();
     bg.fillStyle(C.white, 0.75);
     bg.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2);
     bg.lineStyle(1.5, C.lavender, 0.55);
     bg.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2);
-    const txt = this.add.text(0, 0, '↻  tap again to replay', {
+    const txt = this.add.text(0, 0, '↻  tap the speaker to hear again', {
       fontFamily: F.body, fontSize: '12px', color: T.sub, fontStyle: 'bold',
     }).setOrigin(0.5);
     return this.add.container(cx, cy, [bg, txt]);
@@ -228,14 +237,17 @@ export class GameScene extends Phaser.Scene {
       shadow.fillRoundedRect(-CARD_SIZE / 2, -CARD_SIZE / 2, CARD_SIZE, CARD_SIZE, CARD_RADIUS);
 
       const bg = this.add.graphics().setPosition(cx, cy);
-      const txt = this.add.text(cx, cy, '', {
+      const txt = this.add.text(cx, cy - 12, '', {
         fontFamily: F.body, fontSize: `${EMOJI_SIZE}px`,
+      }).setOrigin(0.5);
+      const label = this.add.text(cx, cy + CARD_SIZE / 2 - 24, '', {
+        fontFamily: F.head, fontSize: '16px', color: T.sub,
       }).setOrigin(0.5);
       const zone = this.add.zone(cx, cy, CARD_SIZE, CARD_SIZE)
         .setInteractive({ cursor: 'pointer' });
 
       const card: AnimalCard = {
-        animal: ANIMALS[0], cx, cy, shadow, bg, txt, zone, isLocked: false,
+        animal: ANIMALS[0], cx, cy, shadow, bg, txt, label, zone, isLocked: false,
       };
       this.paintCard(card, 'idle');
 
@@ -289,11 +301,12 @@ export class GameScene extends Phaser.Scene {
     this.cards.forEach((card, i) => {
       card.animal = this.options[i];
       card.txt.setText(card.animal.emoji);
+      card.label.setText(card.animal.name);
       card.isLocked = false;
-      card.bg.scale = 1; card.txt.scale = 1;
-      card.bg.x = card.cx; card.txt.x = card.cx;
+      card.bg.scale = 1; card.txt.scale = 1; card.label.scale = 1;
+      card.bg.x = card.cx; card.txt.x = card.cx; card.label.x = card.cx;
       // Reset alpha — the previous round's celebrate() dimmed the non-winners
-      card.bg.alpha = 1; card.txt.alpha = 1;
+      card.bg.alpha = 1; card.txt.alpha = 1; card.label.alpha = 1;
       card.shadow.alpha = 1;
       this.paintCard(card, 'idle');
       card.zone.setInteractive({ cursor: 'pointer' });
@@ -303,14 +316,24 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(260, () => this.playCue());
   }
 
-  private playCue(): void {
+  private cueId = 0;
+
+  private async playCue(): Promise<void> {
     if (!this.currentAnimal) return;
-    playAnimalSound(this.currentAnimal);
-    // Ripples every 260ms for the clip's duration so the speaker visibly
-    // says "I'm playing right now"
-    const total = this.currentAnimal.clipMs;
+    unlockAudio();
+    const id = ++this.cueId;
+    const answered = this.answered;
+    if (!answered) this.speakerCaption.setText('Listen… 👂');
+    const total = await playAnimal(this.currentAnimal);
+    if (id !== this.cueId || !this.scene.isActive()) return;
+    // Ripples for the clip's duration so the speaker visibly says "I'm playing right now".
     for (let t = 0; t < total; t += 260) {
       this.time.delayedCall(t, () => this.rippleSpeaker());
+    }
+    if (!answered) {
+      this.time.delayedCall(total + 150, () => {
+        if (id === this.cueId && !this.answered) this.speakerCaption.setText('Who makes this sound?');
+      });
     }
   }
 
@@ -327,7 +350,11 @@ export class GameScene extends Phaser.Scene {
       card.isLocked = true;
       this.celebrate(card);
       sounds.match();
-      this.time.delayedCall(950, () => this.nextRound());
+      const a = card.animal;
+      this.speakerCaption.setText(`${a.emoji} ${a.name} says ${a.says}!`);
+      // Hear it once more now that she knows who it was.
+      this.time.delayedCall(420, () => void this.playCue());
+      this.time.delayedCall(2100, () => this.nextRound());
     } else {
       // Wrong — soft red flash + shake, then reset this card.
       this.paintCard(card, 'wrong');
@@ -343,13 +370,13 @@ export class GameScene extends Phaser.Scene {
     // Bounce the correct card and dim everything else so the winner is the
     // clear focus during the short celebration window.
     this.tweens.add({
-      targets: [card.bg, card.txt],
+      targets: [card.bg, card.txt, card.label],
       scale: { from: 1, to: 1.14 },
       yoyo: true, duration: 200, ease: 'Sine.Out',
     });
     this.cards.forEach(c => {
       if (c === card) return;
-      this.tweens.add({ targets: [c.bg, c.txt, c.shadow], alpha: 0.35, duration: 180 });
+      this.tweens.add({ targets: [c.bg, c.txt, c.label, c.shadow], alpha: 0.35, duration: 180 });
     });
     this.spawnSparkles(card.cx, card.cy);
   }
@@ -379,10 +406,10 @@ export class GameScene extends Phaser.Scene {
   private shake(card: AnimalCard): void {
     const baseX = card.cx;
     this.tweens.add({
-      targets: [card.bg, card.txt],
+      targets: [card.bg, card.txt, card.label],
       x: { from: baseX - 6, to: baseX + 6 },
       yoyo: true, repeat: 3, duration: 55,
-      onComplete: () => { card.bg.x = baseX; card.txt.x = baseX; },
+      onComplete: () => { card.bg.x = baseX; card.txt.x = baseX; card.label.x = baseX; },
     });
   }
 
@@ -416,60 +443,4 @@ function tierFor(score: number, total: number): { emoji: string; title: string; 
   if (ratio >= 0.7) return { emoji: '🌟', title: 'Great job!',   subtitle: `${score} of ${total} — brilliant! 🎀`,    stars: 3 };
   if (ratio >= 0.4) return { emoji: '🌸', title: 'Nice try!',    subtitle: `${score} of ${total} — keep listening 💖`, stars: 2 };
   return              { emoji: '💪', title: 'Keep trying!', subtitle: `You got ${score} of ${total}. Try again!`, stars: 1 };
-}
-
-/**
- * Play the animal's real-world recording if the browser can decode it,
- * otherwise fall back to speech-synth saying the cue text, and if that's
- * unavailable too, a single soft tone so the player always gets feedback.
- */
-const audioCache = new Map<string, HTMLAudioElement>();
-let activeAudio: HTMLAudioElement | null = null;
-let activeTimeout: number | null = null;
-
-function playAnimalSound(animal: Animal): void {
-  // Cut any in-flight playback from the previous cue
-  if (activeAudio) { activeAudio.pause(); activeAudio.currentTime = 0; activeAudio = null; }
-  if (activeTimeout !== null) { window.clearTimeout(activeTimeout); activeTimeout = null; }
-
-  const canPlay = typeof Audio !== 'undefined'
-    && !!document.createElement('audio').canPlayType('audio/ogg; codecs="vorbis"');
-  if (!canPlay) { speakFallback(animal.fallback); return; }
-
-  let a = audioCache.get(animal.src);
-  if (!a) {
-    a = new Audio(animal.src);
-    a.preload = 'auto';
-    audioCache.set(animal.src, a);
-  }
-  a.currentTime = 0;
-  const p = a.play();
-  if (p && typeof p.catch === 'function') p.catch(() => speakFallback(animal.fallback));
-  activeAudio = a;
-  activeTimeout = window.setTimeout(() => {
-    if (activeAudio === a) {
-      a!.pause();
-      a!.currentTime = 0;
-      activeAudio = null;
-    }
-  }, animal.clipMs);
-}
-
-function speakFallback(text: string): void {
-  try {
-    const synth = window.speechSynthesis;
-    if (!synth || typeof SpeechSynthesisUtterance === 'undefined') {
-      playTone(520, 0.2, 'sine', 0.14);
-      return;
-    }
-    synth.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.85;
-    u.pitch = 1.25;
-    u.volume = 1;
-    u.lang = 'en-US';
-    synth.speak(u);
-  } catch {
-    playTone(520, 0.2, 'sine', 0.14);
-  }
 }

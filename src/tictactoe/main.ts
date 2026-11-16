@@ -3,5 +3,5 @@ import { TitleScene } from './scenes/TitleScene';
 import { GameScene } from './scenes/GameScene';
 
 waitForFonts().then(() =>
-  createGame(440, 720, [TitleScene, GameScene], { dom: { createContainer: true } }),
+  createGame(420, 780, [TitleScene, GameScene], { dom: { createContainer: true } }),
 );

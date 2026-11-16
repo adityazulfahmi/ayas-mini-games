@@ -23,6 +23,7 @@ export default defineConfig({
         pickPop:      resolve(__dirname, 'ayas-pick-pop/index.html'),
         crossword:    resolve(__dirname, 'ayas-crossword/index.html'),
         shapeSorter:  resolve(__dirname, 'ayas-shape-sorter/index.html'),
+        sortIt:       resolve(__dirname, 'ayas-sort-it/index.html'),
       },
     },
   },

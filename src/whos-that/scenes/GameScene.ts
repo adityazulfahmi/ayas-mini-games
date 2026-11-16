@@ -5,62 +5,87 @@ import { sounds } from '@shared/audio';
 import { shuffle } from '@shared/utils';
 import {
   ANIMALS, CHARACTERS, MODE,
-  type Animal, type Character, type Difficulty, type GameMode,
+  type Difficulty, type GameMode,
 } from '../data';
+import { say, stopSpeech, unlockAudio } from '../speech';
 
-const W = 420, H = 800;
+const W = 420;
 
-const CARD    = { x: 20, y: 96, w: W - 40, h: 380, r: 28 };
-const SILH    = { y: CARD.y + 190, w: 180, h: 230 };
-const BAR_INSET = 40;
-const BAR       = { x: CARD.x + BAR_INSET, y: CARD.y + CARD.h - 36, w: CARD.w - BAR_INSET * 2, h: 10 };
-const STREAK_Y = CARD.y + CARD.h + 22;
+const CARD = { x: 20, y: 92, w: W - 40, h: 384, r: 30 };
+const FIG  = { y: CARD.y + 206, w: 196, h: 294 };   // 2:3 like the PNGs
+const PROMPT_Y = CARD.y + 34;
+const BAR  = { x: CARD.x + 48, y: CARD.y + CARD.h - 26, w: CARD.w - 96, h: 10 };
+const BANNER_Y = CARD.y + CARD.h;
 
-interface OptionBtn {
-  bg: Phaser.GameObjects.Graphics;
-  dot: Phaser.GameObjects.Graphics;
-  icon: Phaser.GameObjects.Text;
-  txt: Phaser.GameObjects.Text;
-  zone: Phaser.GameObjects.Zone;
-  y: number;
+/** Relaxed mode: re-ask + nudge the right picture after this long idle. */
+const IDLE_HINT_MS = 9_000;
+/** How long the coloured reveal stays up before the next round. */
+const REVEAL_MS = 2_700;
+
+const MINT_DEEP = 0x4db6ac;
+
+type TileState = 'idle' | 'correct' | 'wrong' | 'hint';
+
+interface Item {
   key: string;
-  dotR: number;
+  name: string;
+  /** What we say: "Molly" or "a Dog". */
+  spoken: string;
+  emoji?: string;
+  group?: string;
 }
 
-interface RoundItem {
-  /** Unique id used to match the chosen option against the correct answer. */
-  key: string;
-  /** Display name shown next to the emoji dot in option buttons. */
-  label: string;
-  /** Optional emoji prefix (animal mode) for the left side of option rows. */
-  emoji?: string;
+interface Tile {
+  item: Item;
+  w: number; h: number;
+  container: Phaser.GameObjects.Container;
+  bg: Phaser.GameObjects.Graphics;
+  badge: Phaser.GameObjects.Text;
+  zone: Phaser.GameObjects.Zone;
+  state: TileState;
 }
 
 type ModeConfig = (typeof MODE)[Difficulty];
+
+function article(name: string): string {
+  return /^[AEIOU]/.test(name) ? `an ${name}` : `a ${name}`;
+}
 
 export class GameScene extends Phaser.Scene {
   private difficulty: Difficulty = 'easy';
   private gameMode: GameMode = 'bing';
   private mode: ModeConfig = MODE.easy;
 
-  private roundItems: RoundItem[] = [];
-  private questionIndex = 0;
+  private roundItems: Item[] = [];
+  private roundIndex = 0;
   private score = 0;
-  private streak = 0;
   private answered = false;
+  private firstTry = true;
+  private beatClock = true;
+  private wrongCount = 0;
+  /** Per finished round: true = first-try star, false = found after a try. */
+  private results: boolean[] = [];
 
   private scoreTxt!: Phaser.GameObjects.Text;
-  private roundBadge!: Phaser.GameObjects.Container;
-  private roundBadgeTxt!: Phaser.GameObjects.Text;
-  private silhouetteImg!: Phaser.GameObjects.Image;
-  private silhouetteEmoji!: Phaser.GameObjects.Text;
-  private spotlight!: Phaser.GameObjects.Graphics;
-  private countdownBar!: Phaser.GameObjects.Graphics;
-  private countdownTween?: Phaser.Tweens.Tween;
-  private countdownTimer?: Phaser.Time.TimerEvent;
   private progressDots: Phaser.GameObjects.Graphics[] = [];
-  private streakTxt!: Phaser.GameObjects.Text;
-  private optionBtns: OptionBtn[] = [];
+  private tiles: Tile[] = [];
+
+  private figure!: Phaser.GameObjects.Container;
+  private silImg!: Phaser.GameObjects.Image;
+  private colImg!: Phaser.GameObjects.Image;
+  private silEmoji!: Phaser.GameObjects.Text;
+  private colEmoji!: Phaser.GameObjects.Text;
+  private glow!: Phaser.GameObjects.Graphics;
+
+  private prompt!: Phaser.GameObjects.Container;
+  private banner!: Phaser.GameObjects.Container;
+  private bannerBg!: Phaser.GameObjects.Graphics;
+  private bannerTxt!: Phaser.GameObjects.Text;
+
+  private barTrack?: Phaser.GameObjects.Graphics;
+  private bar?: Phaser.GameObjects.Graphics;
+  private barTween?: Phaser.Tweens.Tween;
+  private idleTimer?: Phaser.Time.TimerEvent;
 
   constructor() { super('GameScene'); }
 
@@ -71,89 +96,81 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    CHARACTERS.forEach(c => this.load.image(c.key, c.url));
+    CHARACTERS.forEach(c => { if (!this.textures.exists(c.key)) this.load.image(c.key, c.url); });
   }
 
   create(): void {
     drawBg(this);
-    this.score = 0;
-    this.streak = 0;
-    this.questionIndex = 0;
-
-    const pool: RoundItem[] = this.gameMode === 'bing'
-      ? CHARACTERS.map((c: Character) => ({ key: c.key, label: c.name }))
-      : ANIMALS.map((a: Animal) => ({ key: a.name, label: a.name, emoji: a.emoji }));
-    this.roundItems = shuffle(pool).slice(0, this.mode.rounds);
-
-    // Scene is reused across scene.start() — clear arrays populated in
-    // build* so stale objects from a previous run don't leak.
-    this.optionBtns = [];
+    // D-005: scene instances are reused — reset everything we push into.
+    this.tiles = [];
     this.progressDots = [];
+    this.results = [];
+    this.roundIndex = 0;
+    this.score = 0;
+    this.barTween = undefined;
+    this.idleTimer = undefined;
+    this.barTrack = undefined;
+    this.bar = undefined;
+
+    // D-006: one shuffled queue of correct answers, no repeats per game.
+    this.roundItems = shuffle(this.pool).slice(0, this.mode.rounds);
+
+    this.input.on('pointerdown', unlockAudio);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => stopSpeech());
 
     this.buildHeader();
     this.buildCard();
-    this.buildStreakLine();
-    this.buildOptions();
-
-    this.loadQuestion();
+    this.loadRound();
   }
 
-  private get allItems(): RoundItem[] {
+  private get pool(): Item[] {
     return this.gameMode === 'bing'
-      ? CHARACTERS.map(c => ({ key: c.key, label: c.name }))
-      : ANIMALS.map(a => ({ key: a.name, label: a.name, emoji: a.emoji }));
+      ? CHARACTERS.map(c => ({ key: c.key, name: c.name, spoken: c.name }))
+      : ANIMALS.map(a => ({
+          key: a.name, name: a.name, spoken: article(a.name), emoji: a.emoji, group: a.group,
+        }));
   }
 
   // ─── Header ─────────────────────────────────────────────────────────────
 
   private buildHeader(): void {
-    const modeDot = this.difficulty === 'hard' ? '🔥' : '🌱';
-    const titleIcon = this.gameMode === 'animal' ? '🐾' : '🐰';
-    this.add.text(22, 32, `${titleIcon} Who's That? ${modeDot}`, {
+    const icon = this.gameMode === 'animal' ? '🐾' : '🐰';
+    const pace = this.mode.roundMs > 0 ? '⏱️' : '🐢';
+    this.add.text(22, 36, `${icon} Who's That? ${pace}`, {
+      fontFamily: F.head, fontSize: '18px', color: T.main,
+    }).setOrigin(0, 0.5).setPadding(2);
+
+    const g = this.add.graphics();
+    g.fillStyle(C.white, 1);
+    g.fillRoundedRect(W - 22 - 84, 36 - 18, 84, 36, 18);
+    g.lineStyle(1.5, C.lavender, 0.45);
+    g.strokeRoundedRect(W - 22 - 84, 36 - 18, 84, 36, 18);
+    this.scoreTxt = this.add.text(W - 22 - 42, 36, '⭐ 0', {
       fontFamily: F.head, fontSize: '17px', color: T.main,
-    }).setOrigin(0, 0.5);
+    }).setOrigin(0.5).setPadding(2);
 
-    // Score pill
-    this.pill(W - 70, 32, 104, 32);
-    this.scoreTxt = this.add.text(W - 70, 32, `⭐ 0/${this.mode.rounds}`, {
-      fontFamily: F.head, fontSize: '15px', color: T.main,
-    }).setOrigin(0.5);
-
-    // Progress dots (center-aligned under the title row)
     const n = this.mode.rounds;
-    const dotGap = 14;
-    const dotW = 12;
-    const totalW = n * dotW + (n - 1) * dotGap;
-    const startX = W / 2 - totalW / 2 + dotW / 2;
+    const gap = 26;
+    const startX = W / 2 - ((n - 1) * gap) / 2;
     this.progressDots = Array.from({ length: n }, (_, i) =>
-      this.add.graphics().setPosition(startX + i * (dotW + dotGap), 64),
+      this.add.graphics().setPosition(startX + i * gap, 72),
     );
   }
 
-  private pill(cx: number, cy: number, w: number, h: number): void {
-    const g = this.add.graphics();
-    g.fillStyle(0xffffff, 1);
-    g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
-    g.lineStyle(1.5, C.lavender, 0.4);
-    g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
-  }
-
   private renderDots(): void {
-    // Active dot is pink (brand accent) — the previous lavender-on-lavender
-    // combo blended into the inactive dots.
     this.progressDots.forEach((g, i) => {
       g.clear();
-      if (i < this.questionIndex) {
-        g.fillStyle(C.pink, 1);
-        g.fillCircle(0, 0, 5);
-      } else if (i === this.questionIndex) {
+      if (i < this.results.length) {
+        g.fillStyle(this.results[i] ? C.pink : MINT_DEEP, 1);
+        g.fillCircle(0, 0, 7);
+      } else if (i === this.roundIndex) {
         g.fillStyle(C.pink, 0.22);
-        g.fillCircle(0, 0, 11);
+        g.fillCircle(0, 0, 12);
         g.fillStyle(C.pink, 1);
         g.fillCircle(0, 0, 6);
       } else {
         g.fillStyle(0xe1bee7, 1);
-        g.fillCircle(0, 0, 5);
+        g.fillCircle(0, 0, 6);
       }
     });
   }
@@ -161,347 +178,447 @@ export class GameScene extends Phaser.Scene {
   // ─── Silhouette card ───────────────────────────────────────────────────
 
   private buildCard(): void {
-    // Card base with a soft drop shadow — the previous flat white card felt
-    // like a placeholder; a lifted shadow lets it read as the primary focal
-    // surface.
     const shadow = this.add.graphics();
     shadow.fillStyle(C.shadow, 0.12);
     shadow.fillRoundedRect(CARD.x, CARD.y + 8, CARD.w, CARD.h, CARD.r);
+    const card = this.add.graphics();
+    card.fillStyle(C.white, 1);
+    card.fillRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, CARD.r);
 
-    const g = this.add.graphics();
-    g.fillStyle(C.white, 1);
-    g.fillRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, CARD.r);
+    // Spotlight stage behind the figure.
+    const stage = this.add.graphics();
+    stage.fillStyle(C.lavender, 0.13);
+    stage.fillCircle(W / 2, FIG.y - 6, 138);
+    stage.fillStyle(C.bg1, 0.95);
+    stage.fillCircle(W / 2, FIG.y - 6, 112);
+    stage.fillStyle(C.shadow, 0.14);
+    stage.fillEllipse(W / 2, FIG.y + FIG.h / 2 - 16, 170, 22);
 
-    // Spotlight — two stacked soft ellipses behind the silhouette, so the
-    // figure appears to stand on a lit stage instead of floating.
-    this.spotlight = this.add.graphics();
-    this.drawSpotlight();
+    // Warm glow that blooms behind the figure on a correct answer.
+    this.glow = this.add.graphics().setPosition(W / 2, FIG.y - 6).setAlpha(0);
+    this.glow.fillStyle(0xfff59d, 0.55);
+    this.glow.fillCircle(0, 0, 138);
+    this.glow.fillStyle(0xffffff, 0.75);
+    this.glow.fillCircle(0, 0, 100);
 
-    // Round pill badge — replaces the plain "ROUND X OF Y" text. A chip at
-    // the top of the card floats half-over the card edge so it reads as a
-    // "tag" marking this round.
-    this.roundBadge = this.buildRoundBadge(W / 2, CARD.y);
+    // The figure: a dark silhouette with the full-colour copy stacked on top
+    // at alpha 0. The reveal cross-fades between them.
+    const firstKey = CHARACTERS[0].key;
+    this.silImg = this.add.image(0, 0, firstKey).setDisplaySize(FIG.w, FIG.h);
+    this.colImg = this.add.image(0, 0, firstKey).setDisplaySize(FIG.w, FIG.h).setAlpha(0);
+    this.silEmoji = this.add.text(0, 0, '', { fontFamily: F.body, fontSize: '170px' })
+      .setOrigin(0.5).setPadding(10);
+    this.colEmoji = this.add.text(0, 0, '', { fontFamily: F.body, fontSize: '170px' })
+      .setOrigin(0.5).setPadding(10).setAlpha(0);
+    const isBing = this.gameMode === 'bing';
+    this.silImg.setVisible(isBing);
+    this.colImg.setVisible(isBing);
+    this.silEmoji.setVisible(!isBing);
+    this.colEmoji.setVisible(!isBing);
+    this.figure = this.add.container(W / 2, FIG.y, [this.silImg, this.colImg, this.silEmoji, this.colEmoji]);
 
-    // Both silhouette renderers exist simultaneously; we only show the one
-    // matching the current mode.
-    this.silhouetteImg = this.add.image(W / 2, SILH.y, CHARACTERS[0].key).setDisplaySize(SILH.w, SILH.h);
-    this.silhouetteEmoji = this.add.text(W / 2, SILH.y, '', {
-      fontFamily: F.body, fontSize: '180px',
-    }).setOrigin(0.5);
-    this.silhouetteImg.setVisible(this.gameMode === 'bing');
-    this.silhouetteEmoji.setVisible(this.gameMode === 'animal');
+    // Tapping the shadow asks the question again (and wiggles it).
+    const figZone = this.add.zone(W / 2, FIG.y, FIG.w + 20, FIG.h).setInteractive({ cursor: 'pointer' });
+    figZone.on('pointerdown', () => {
+      if (this.answered) return;
+      this.askPrompt();
+      this.wiggleFigure();
+    });
 
-    // Countdown track + fill — simple pink→red bar, no extra chrome.
-    this.add.graphics()
-      .fillStyle(0xf3e5f5, 1)
-      .fillRoundedRect(BAR.x, BAR.y, BAR.w, BAR.h, BAR.h / 2);
-    this.countdownBar = this.add.graphics();
-    this.drawCountdown(1);
+    this.prompt = this.buildPrompt();
+
+    if (this.mode.roundMs > 0) {
+      this.barTrack = this.add.graphics();
+      this.barTrack.fillStyle(0xf3e5f5, 1);
+      this.barTrack.fillRoundedRect(BAR.x, BAR.y, BAR.w, BAR.h, BAR.h / 2);
+      this.bar = this.add.graphics();
+    }
+
+    // Name banner — pops up over the card's bottom edge on reveal.
+    this.bannerBg = this.add.graphics();
+    this.bannerTxt = this.add.text(0, -1, '', {
+      fontFamily: F.head, fontSize: '28px', color: T.white,
+    }).setOrigin(0.5).setPadding(4);
+    this.banner = this.add.container(W / 2, BANNER_Y, [this.bannerBg, this.bannerTxt])
+      .setDepth(5).setVisible(false);
   }
 
-  private drawSpotlight(): void {
-    const g = this.spotlight;
-    g.clear();
-    // Outer soft glow
-    g.fillStyle(C.lavender, 0.14);
-    g.fillEllipse(W / 2, SILH.y + 10, 260, 260);
-    // Inner warm plate
-    g.fillStyle(C.bg1, 0.9);
-    g.fillEllipse(W / 2, SILH.y + 10, 200, 210);
-    // Ground shadow directly beneath the figure
-    g.fillStyle(C.shadow, 0.16);
-    g.fillEllipse(W / 2, SILH.y + 108, 160, 22);
-  }
-
-  private buildRoundBadge(cx: number, cy: number): Phaser.GameObjects.Container {
-    const w = 132, h = 30;
+  private buildPrompt(): Phaser.GameObjects.Container {
+    const label = this.gameMode === 'bing' ? "Who's that?  🔊" : 'Which animal?  🔊';
+    const txt = this.add.text(0, 0, label, {
+      fontFamily: F.head, fontSize: '19px', color: T.main,
+    }).setOrigin(0.5).setPadding(4);
+    const w = txt.width + 32, h = 42;
     const bg = this.add.graphics();
-    bg.fillStyle(C.pink, 1);
+    bg.fillStyle(C.bg1, 1);
     bg.fillRoundedRect(-w / 2, -h / 2, w, h, h / 2);
-    bg.lineStyle(3, C.white, 1);
+    bg.lineStyle(2, C.lavender, 0.55);
     bg.strokeRoundedRect(-w / 2, -h / 2, w, h, h / 2);
-    this.roundBadgeTxt = this.add.text(0, 0, '', {
-      fontFamily: F.head, fontSize: '13px', color: T.white,
-    }).setOrigin(0.5);
-    const c = this.add.container(cx, cy, [bg, this.roundBadgeTxt]);
-    c.setDepth(2);
+    const c = this.add.container(W / 2, PROMPT_Y, [bg, txt]).setDepth(3);
+    c.setSize(w, h).setInteractive({ cursor: 'pointer' });
+    c.on('pointerdown', () => { if (!this.answered) this.askPrompt(); });
     return c;
   }
 
-  private drawCountdown(ratio: number): void {
-    this.countdownBar.clear();
-    const w = Math.max(0, BAR.w * ratio);
-    if (w <= 0) return;
-    const colour = ratio > 0.4 ? C.pink : 0xe53935;
-    this.countdownBar.fillStyle(colour, 1);
-    this.countdownBar.fillRoundedRect(BAR.x, BAR.y, w, BAR.h, BAR.h / 2);
+  private askPrompt(): void {
+    say(this.gameMode === 'bing' ? "Who's that?" : 'Which animal is it?');
+    this.tweens.add({ targets: this.prompt, scale: { from: 1, to: 1.08 }, yoyo: true, duration: 160 });
   }
 
-  // ─── Streak ribbon ─────────────────────────────────────────────────────
-
-  private buildStreakLine(): void {
-    this.streakTxt = this.add.text(W / 2, STREAK_Y, '', {
-      fontFamily: F.head, fontSize: '14px', color: T.sub,
-    }).setOrigin(0.5);
+  private wiggleFigure(): void {
+    this.tweens.killTweensOf(this.figure);
+    this.figure.setAngle(0).setScale(1).setAlpha(1);
+    this.tweens.add({
+      targets: this.figure, angle: { from: -5, to: 5 },
+      yoyo: true, repeat: 1, duration: 120, ease: 'Sine.InOut',
+      onComplete: () => this.figure.setAngle(0),
+    });
   }
 
-  // ─── Options (stacked buttons, count depends on difficulty) ────────────
+  // ─── Picture choices ───────────────────────────────────────────────────
 
-  private buildOptions(): void {
-    const n = this.mode.optionCount;
-    const btnW = 340;
-    // Animal mode makes the emoji the hero — Aya is 2 and picks by image,
-    // so buttons (and the emoji inside them) are sized up aggressively.
-    // Bing mode keeps the tighter layout since the name is the key signal.
-    const isAnimal = this.gameMode === 'animal';
-    const btnH = isAnimal
-      ? (n >= 4 ? 60 : 70)
-      : (n >= 4 ? 50 : 60);
-    const gap = isAnimal
-      ? (n >= 4 ? 8 : 12)
-      : (n >= 4 ? 10 : 12);
-    const dotR = isAnimal
-      ? (n >= 4 ? 24 : 28)
-      : 18;
-    const iconSize = isAnimal
-      ? (n >= 4 ? '38px' : '44px')
-      : '26px';
-    const txtSize = isAnimal
-      ? (n >= 4 ? '20px' : '22px')
-      : '18px';
-    // Tighten the card-to-options gap for animal mode so the bigger
-    // buttons still fit comfortably above the safe-area.
-    const cardGap = isAnimal ? 40 : 62;
-    const dotCx   = isAnimal ? 42 : 34;
-    const startY  = (CARD.y + CARD.h + cardGap) + btnH / 2;
+  private buildTiles(options: Item[]): void {
+    this.tiles.forEach(t => { t.container.destroy(); t.zone.destroy(); });
+    this.tiles = [];
 
-    for (let i = 0; i < n; i++) {
-      const cx = W / 2;
-      const cy = startY + i * (btnH + gap);
-
-      const bg = this.add.graphics().setPosition(cx, cy);
-      // Left-side circular "dot" — emoji in animal mode, numbered index in
-      // bing mode. In animal mode the dot is sized up so the emoji inside
-      // reads instantly from across a small phone.
-      const dot = this.add.graphics().setPosition(cx - btnW / 2 + dotCx, cy);
-      const icon = this.add.text(cx - btnW / 2 + dotCx, cy, '', {
-        fontFamily: F.body, fontSize: iconSize, color: T.main,
-      }).setOrigin(0.5);
-      // Name text is centered within the horizontal space that remains
-      // to the right of the dot — gives the button a balanced feel without
-      // having to guess at label width.
-      const dotRightEdge = (cx - btnW / 2 + dotCx) + dotR;
-      const txtX = (dotRightEdge + (cx + btnW / 2 - 16)) / 2;
-      const txt = this.add.text(txtX, cy, '', {
-        fontFamily: F.head, fontSize: txtSize, color: T.main,
-      }).setOrigin(0.5);
-
-      const zone = this.add.zone(cx, cy, btnW, btnH).setInteractive({ cursor: 'pointer' });
-      zone.on('pointerover', () => { if (!this.answered) this.drawOptionBg(bg, btnW, btnH, 'hover'); });
-      zone.on('pointerout',  () => { if (!this.answered) this.drawOptionBg(bg, btnW, btnH, 'idle'); });
-      zone.on('pointerdown', () => this.onAnswer(i));
-
-      this.drawOptionBg(bg, btnW, btnH, 'idle');
-      this.optionBtns.push({ bg, dot, icon, txt, zone, y: cy, key: '', dotR });
-      // keep btnW/btnH references for redraws
-      (bg as unknown as { _w: number; _h: number })._w = btnW;
-      (bg as unknown as { _w: number; _h: number })._h = btnH;
+    const n = options.length;
+    const slots: { cx: number; cy: number; w: number; h: number }[] = [];
+    if (n <= 3) {
+      // One row of tall tiles.
+      const w = 122, h = 224, gap = 12;
+      const startX = W / 2 - (n * w + (n - 1) * gap) / 2 + w / 2;
+      for (let i = 0; i < n; i++) slots.push({ cx: startX + i * (w + gap), cy: 638, w, h });
+    } else {
+      // 2×2 grid.
+      const w = 186, h = 136, gx = 12, gy = 12;
+      const top = 504;
+      for (let i = 0; i < n; i++) {
+        const col = i % 2, row = Math.floor(i / 2);
+        slots.push({
+          cx: W / 2 + (col === 0 ? -(w + gx) / 2 : (w + gx) / 2),
+          cy: top + h / 2 + row * (h + gy),
+          w, h,
+        });
+      }
     }
+
+    options.forEach((item, i) => {
+      const { cx, cy, w, h } = slots[i];
+      const tall = h > 180;
+      const bg = this.add.graphics();
+      const labelY = h / 2 - (tall ? 24 : 18);
+      const picY = tall ? -14 : -12;
+      let pic: Phaser.GameObjects.Image | Phaser.GameObjects.Text;
+      if (item.emoji) {
+        pic = this.add.text(0, picY, item.emoji, {
+          fontFamily: F.body, fontSize: tall ? '78px' : '70px',
+        }).setOrigin(0.5).setPadding(6);
+      } else {
+        const ph = tall ? 160 : 108;
+        pic = this.add.image(0, picY, item.key).setDisplaySize(ph * 2 / 3, ph);
+      }
+      const label = this.add.text(0, labelY, item.name, {
+        fontFamily: F.head, fontSize: tall ? '18px' : '17px', color: T.main,
+      }).setOrigin(0.5).setPadding(2);
+      const badge = this.add.text(w / 2 - 20, -h / 2 + 20, '✅', { fontSize: '24px' })
+        .setOrigin(0.5).setPadding(4).setVisible(false);
+
+      const container = this.add.container(cx, cy, [bg, pic, label, badge]);
+      const zone = this.add.zone(cx, cy, w + 6, h + 6).setInteractive({ cursor: 'pointer' });
+      const tile: Tile = { item, w, h, container, bg, badge, zone, state: 'idle' };
+      zone.on('pointerdown', () => this.onPick(tile));
+      this.paintTile(tile, 'idle');
+      this.tiles.push(tile);
+
+      // Pop in, staggered.
+      container.setScale(0.6).setAlpha(0);
+      this.tweens.add({
+        targets: container, scale: 1, alpha: 1,
+        delay: 120 + i * 90, duration: 320, ease: 'Back.Out',
+      });
+    });
   }
 
-  private drawOptionBg(
-    g: Phaser.GameObjects.Graphics,
-    w: number, h: number,
-    state: 'idle' | 'hover' | 'correct' | 'wrong',
-  ): void {
+  private paintTile(t: Tile, state: TileState): void {
+    t.state = state;
+    const g = t.bg;
+    const { w, h } = t;
+    const r = 24;
     g.clear();
-    // Soft shadow under every option — gives the column a stacked,
-    // tactile feel instead of looking like thin outlined boxes.
-    g.fillStyle(C.shadow, 0.10);
-    g.fillRoundedRect(-w / 2, -h / 2 + 4, w, h, 20);
+    if (state !== 'wrong') {
+      g.fillStyle(C.shadow, 0.12);
+      g.fillRoundedRect(-w / 2, -h / 2 + 5, w, h, r);
+    }
     switch (state) {
       case 'idle':
         g.fillStyle(C.white, 1);
-        g.lineStyle(2.5, 0xe1bee7, 1);
+        g.lineStyle(3, 0xe1bee7, 1);
         break;
-      case 'hover':
+      case 'hint':
         g.fillStyle(C.cream, 1);
-        g.lineStyle(2.5, C.pink, 1);
+        g.lineStyle(4, C.pink, 1);
         break;
       case 'correct':
-        g.fillStyle(0xe8f5e9, 1);
-        g.lineStyle(3, 0x66bb6a, 1);
+        g.fillStyle(C.mintBg, 1);
+        g.lineStyle(4, MINT_DEEP, 1);
         break;
       case 'wrong':
-        g.fillStyle(0xffebee, 1);
-        g.lineStyle(3, 0xef5350, 1);
+        g.fillStyle(0xf6f0f8, 1);
+        g.lineStyle(2, 0xe8dcef, 1);
         break;
     }
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 20);
-    g.strokeRoundedRect(-w / 2, -h / 2, w, h, 20);
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
+    t.badge.setVisible(state === 'correct');
   }
 
-  private drawOptionDot(
-    g: Phaser.GameObjects.Graphics,
-    r: number,
-    state: 'idle' | 'hover' | 'correct' | 'wrong',
-  ): void {
-    g.clear();
-    let fill: number = C.bg1;
-    if (state === 'correct') fill = 0xc8e6c9;
-    else if (state === 'wrong') fill = 0xffcdd2;
-    else if (state === 'hover') fill = 0xfce4ec;
-    g.fillStyle(fill, 1);
-    g.fillCircle(0, 0, r);
-    g.lineStyle(1.5, C.lavender, 0.5);
-    g.strokeCircle(0, 0, r);
-  }
+  // ─── Round flow ────────────────────────────────────────────────────────
 
-  private paintOption(i: number, state: 'idle' | 'hover' | 'correct' | 'wrong'): void {
-    const btn = this.optionBtns[i];
-    const { _w: w, _h: h } = btn.bg as unknown as { _w: number; _h: number };
-    this.drawOptionBg(btn.bg, w, h, state);
-    this.drawOptionDot(btn.dot, btn.dotR, state);
-  }
-
-  // ─── Round logic ───────────────────────────────────────────────────────
-
-  private loadQuestion(): void {
+  private loadRound(): void {
     this.answered = false;
-    this.stopCountdown();
-
-    const item = this.roundItems[this.questionIndex];
-    this.roundBadgeTxt.setText(`ROUND ${this.questionIndex + 1} / ${this.mode.rounds}`);
+    this.firstTry = true;
+    this.beatClock = true;
+    this.wrongCount = 0;
     this.renderDots();
 
-    // Show the mode-appropriate silhouette renderer.
-    if (this.gameMode === 'bing') {
-      this.silhouetteImg.setTexture(item.key).setDisplaySize(SILH.w, SILH.h);
-      this.silhouetteImg.setTint(this.mode.tintFill).setTintMode(Phaser.TintModes.FILL);
+    const item = this.roundItems[this.roundIndex];
+
+    // Silhouette + hidden colour copy.
+    if (item.emoji) {
+      this.silEmoji.setText(item.emoji).setAlpha(1);
+      this.silEmoji.setTint(this.mode.tintFill).setTintMode(Phaser.TintModes.FILL);
+      this.colEmoji.setText(item.emoji).setAlpha(0);
     } else {
-      this.silhouetteEmoji.setText(item.emoji ?? item.label);
-      this.silhouetteEmoji.setTint(this.mode.tintFill).setTintMode(Phaser.TintModes.FILL);
+      this.silImg.setTexture(item.key).setDisplaySize(FIG.w, FIG.h).setAlpha(1);
+      this.silImg.setTint(this.mode.tintFill).setTintMode(Phaser.TintModes.FILL);
+      this.colImg.setTexture(item.key).setDisplaySize(FIG.w, FIG.h).setAlpha(0);
     }
+    this.glow.setAlpha(0);
+    this.banner.setVisible(false);
+    this.prompt.setVisible(true).setAlpha(1);
 
-    // Build options: correct + N-1 distractors pulled from the same pool.
-    const wrong = shuffle(this.allItems.filter(c => c.key !== item.key))
-      .slice(0, this.mode.optionCount - 1);
-    const options = shuffle([item, ...wrong]);
+    this.tweens.killTweensOf(this.figure);
+    this.figure.setAngle(0).setScale(0.5).setAlpha(0).setY(FIG.y);
+    this.tweens.add({ targets: this.figure, scale: 1, alpha: 1, duration: 420, ease: 'Back.Out' });
 
-    this.optionBtns.forEach((btn, i) => {
-      const opt = options[i];
-      btn.key = opt.key;
-      if (this.gameMode === 'animal') {
-        btn.icon.setText(opt.emoji ?? '');
-        btn.txt.setText(opt.label);
-      } else {
-        // Bing mode: no emoji available for each character, use a
-        // numbered indicator so the left-side dot still reads as a
-        // structural element rather than an empty circle.
-        btn.icon.setText(`${i + 1}`);
-        btn.icon.setStyle({ fontFamily: F.head, fontSize: '16px', color: T.sub });
-        btn.txt.setText(opt.label);
-      }
-      this.paintOption(i, 'idle');
-      btn.zone.setInteractive({ cursor: 'pointer' });
-    });
+    // Distractors: random, but never a look-alike of the answer or of each other.
+    const usedGroups = new Set<string>(item.group ? [item.group] : []);
+    const wrong: Item[] = [];
+    for (const cand of shuffle(this.pool)) {
+      if (wrong.length >= this.mode.optionCount - 1) break;
+      if (cand.key === item.key) continue;
+      if (cand.group && usedGroups.has(cand.group)) continue;
+      if (cand.group) usedGroups.add(cand.group);
+      wrong.push(cand);
+    }
+    this.buildTiles(shuffle([item, ...wrong]));
 
-    this.startCountdown(item.key);
+    this.time.delayedCall(350, () => { if (!this.answered) this.askPrompt(); });
+    this.startClock();
+    this.armIdleHint();
   }
 
-  private startCountdown(correctKey: string): void {
-    this.drawCountdown(1);
+  private startClock(): void {
+    if (!this.bar || this.mode.roundMs <= 0) return;
+    this.barTrack?.setAlpha(1);
+    this.bar.setAlpha(1);
     const state = { ratio: 1 };
-    this.countdownTween = this.tweens.add({
+    this.drawBar(1);
+    this.barTween = this.tweens.add({
       targets: state, ratio: 0, duration: this.mode.roundMs, ease: 'Linear',
-      onUpdate: () => this.drawCountdown(state.ratio),
+      onUpdate: () => this.drawBar(state.ratio),
+      onComplete: () => this.onClockOut(),
     });
-    this.countdownTimer = this.time.delayedCall(this.mode.roundMs, () => this.onTimeout(correctKey));
   }
 
-  private stopCountdown(): void {
-    this.countdownTween?.stop();
-    this.countdownTimer?.remove();
-    this.countdownTween = undefined;
-    this.countdownTimer = undefined;
+  private drawBar(ratio: number): void {
+    if (!this.bar) return;
+    this.bar.clear();
+    const w = BAR.w * ratio;
+    if (w < BAR.h) return;
+    this.bar.fillStyle(ratio > 0.3 ? C.pink : 0xffb74d, 1);
+    this.bar.fillRoundedRect(BAR.x, BAR.y, w, BAR.h, BAR.h / 2);
   }
 
-  private onAnswer(idx: number): void {
+  private stopClock(): void {
+    this.barTween?.stop();
+    this.barTween = undefined;
+  }
+
+  /** Clock ran out: no star this round, but the round keeps going (D-007). */
+  private onClockOut(): void {
+    this.barTween = undefined;
     if (this.answered) return;
+    this.beatClock = false;
+    this.tweens.add({ targets: [this.bar, this.barTrack], alpha: 0, duration: 300 });
+    this.showHint();
+  }
+
+  private armIdleHint(): void {
+    this.idleTimer?.remove();
+    this.idleTimer = undefined;
+    // Quick mode nudges when the clock runs out instead.
+    if (this.mode.roundMs > 0) return;
+    this.idleTimer = this.time.delayedCall(IDLE_HINT_MS, () => {
+      if (this.answered) return;
+      this.askPrompt();
+      this.wiggleFigure();
+      this.showHint();
+    });
+  }
+
+  /** Softly point at the right picture. */
+  private showHint(): void {
+    if (this.answered) return;
+    const t = this.tiles.find(x => x.item.key === this.roundItems[this.roundIndex].key);
+    if (!t) return;
+    this.paintTile(t, 'hint');
+    this.tweens.add({
+      targets: t.container, scale: { from: 1, to: 1.07 },
+      yoyo: true, repeat: 3, duration: 260, ease: 'Sine.InOut',
+    });
+  }
+
+  private onPick(t: Tile): void {
+    if (this.answered || t.state === 'wrong') return;
+    unlockAudio();
+    const answer = this.roundItems[this.roundIndex];
+    if (t.item.key === answer.key) this.onCorrect(t, answer);
+    else this.onWrong(t);
+  }
+
+  private onWrong(t: Tile): void {
+    this.firstTry = false;
+    this.wrongCount++;
+    sounds.wrong();
+    say(`That's ${t.item.spoken}. Try again!`);
+    this.paintTile(t, 'wrong');
+    t.zone.disableInteractive();
+    // A gentle "no-no" shake, then it settles faded so it's out of the way.
+    this.tweens.add({
+      targets: t.container, angle: { from: -6, to: 6 },
+      yoyo: true, repeat: 1, duration: 90,
+      onComplete: () => {
+        t.container.setAngle(0);
+        this.tweens.add({ targets: t.container, alpha: 0.45, scale: 0.94, duration: 250 });
+      },
+    });
+    this.wiggleFigure();
+    this.armIdleHint();
+    // With four pictures, two misses earns a nudge.
+    if (this.wrongCount >= 2) this.time.delayedCall(700, () => this.showHint());
+  }
+
+  private onCorrect(t: Tile, answer: Item): void {
     this.answered = true;
-    this.stopCountdown();
-    this.disableOptions();
+    this.stopClock();
+    this.idleTimer?.remove();
+    this.tiles.forEach(x => x.zone.disableInteractive());
 
-    const chosen = this.optionBtns[idx];
-    const correctKey = this.roundItems[this.questionIndex].key;
-
-    if (this.gameMode === 'bing') this.silhouetteImg.clearTint();
-    else                          this.silhouetteEmoji.clearTint();
-
-    if (chosen.key === correctKey) {
-      this.paintOption(idx, 'correct');
-      this.tweens.add({ targets: chosen.bg, scaleX: 1.04, scaleY: 1.04, yoyo: true, duration: 170 });
-      this.streak++;
+    const star = this.firstTry && this.beatClock;
+    if (star) {
       this.score++;
-      this.scoreTxt.setText(`⭐ ${this.score}/${this.mode.rounds}`);
-
-      if (this.streak >= 3) {
-        sounds.streak();
-        this.streakTxt.setText(`🔥 ${this.streak} in a row!`).setColor('#f06292');
-      } else if (this.streak === 2) {
-        sounds.correct();
-        this.streakTxt.setText('✨ One more for a streak!').setColor(T.sub);
-      } else {
-        sounds.correct();
-        this.streakTxt.setText('').setColor(T.sub);
-      }
-    } else {
-      this.paintOption(idx, 'wrong');
-      this.tweens.add({ targets: chosen.bg, x: chosen.bg.x - 5, yoyo: true, repeat: 3, duration: 55 });
-      this.highlightCorrect(correctKey);
-      this.streak = 0;
-      this.streakTxt.setText('').setColor(T.sub);
-      sounds.wrong();
+      this.scoreTxt.setText(`⭐ ${this.score}`);
+      this.tweens.add({ targets: this.scoreTxt, scale: { from: 1.5, to: 1 }, duration: 400, ease: 'Back.Out' });
     }
+    this.results.push(star);
 
-    this.time.delayedCall(950, () => this.nextQuestion());
+    // Winner glows + bounces, the rest step back.
+    this.tweens.killTweensOf(t.container);
+    t.container.setScale(1).setAlpha(1);
+    this.paintTile(t, 'correct');
+    this.tweens.add({ targets: t.container, scale: 1.08, yoyo: true, duration: 220, ease: 'Sine.Out' });
+    this.tiles.forEach(x => {
+      if (x !== t) this.tweens.add({ targets: x.container, alpha: 0.3, duration: 250 });
+    });
+    if (this.bar) this.tweens.add({ targets: [this.bar, this.barTrack], alpha: 0, duration: 200 });
+
+    this.reveal(answer);
+
+    if (star && this.results.length >= 3 && this.results.slice(-3).every(Boolean)) sounds.streak();
+    else sounds.correct();
+    say(`Yay! It's ${answer.spoken}!`);
+
+    this.time.delayedCall(REVEAL_MS, () => this.nextRound());
   }
 
-  private onTimeout(correctKey: string): void {
-    if (this.answered) return;
-    this.answered = true;
-    this.disableOptions();
-    if (this.gameMode === 'bing') this.silhouetteImg.clearTint();
-    else                          this.silhouetteEmoji.clearTint();
-    this.highlightCorrect(correctKey);
-    this.streak = 0;
-    this.streakTxt.setText("⏰ Time's up!").setColor(T.sub);
-    sounds.timeout();
-    this.time.delayedCall(950, () => this.nextQuestion());
-  }
+  /** The silhouette fills with colour, pops, sparkles, and gets its name. */
+  private reveal(answer: Item): void {
+    const sil = answer.emoji ? this.silEmoji : this.silImg;
+    const col = answer.emoji ? this.colEmoji : this.colImg;
 
-  private highlightCorrect(correctKey: string): void {
-    this.optionBtns.forEach((btn, i) => {
-      if (btn.key === correctKey) this.paintOption(i, 'correct');
+    this.tweens.add({ targets: this.prompt, alpha: 0, duration: 200 });
+    this.tweens.add({ targets: col, alpha: 1, duration: 550, ease: 'Sine.Out' });
+    this.tweens.add({ targets: sil, alpha: 0, duration: 550, ease: 'Sine.In' });
+    this.tweens.add({ targets: this.glow, alpha: 1, duration: 400 });
+    this.tweens.killTweensOf(this.figure);
+    this.figure.setAngle(0).setScale(1).setAlpha(1).setY(FIG.y);
+    this.tweens.add({
+      targets: this.figure, scale: { from: 1, to: 1.12 },
+      yoyo: true, duration: 300, ease: 'Sine.Out', delay: 150,
+    });
+    this.tweens.add({
+      targets: this.figure, y: FIG.y - 14,
+      yoyo: true, repeat: 1, duration: 240, ease: 'Sine.Out', delay: 800,
+    });
+    this.sparkles();
+
+    // Name banner.
+    this.bannerTxt.setText(`It's ${answer.emoji ? answer.spoken : answer.name}!`);
+    const bw = this.bannerTxt.width + 48, bh = 56;
+    this.bannerBg.clear();
+    this.bannerBg.fillStyle(C.shadow, 0.2);
+    this.bannerBg.fillRoundedRect(-bw / 2, -bh / 2 + 5, bw, bh, bh / 2);
+    this.bannerBg.fillStyle(C.pink, 1);
+    this.bannerBg.fillRoundedRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
+    this.bannerBg.lineStyle(4, C.white, 1);
+    this.bannerBg.strokeRoundedRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
+    this.banner.setVisible(true).setScale(0).setAngle(-4);
+    this.tweens.add({
+      targets: this.banner, scale: 1, angle: 0,
+      delay: 250, duration: 420, ease: 'Back.Out',
     });
   }
 
-  private disableOptions(): void {
-    this.optionBtns.forEach(btn => btn.zone.disableInteractive());
+  private sparkles(): void {
+    const marks = ['✨', '⭐', '💖', '🌟', '✨', '🌸', '⭐', '✨', '💖', '🌟'];
+    const cy = FIG.y - 10;
+    marks.forEach((m, i) => {
+      const a = (i / marks.length) * Math.PI * 2 + Math.random() * 0.3;
+      const s = this.add.text(W / 2, cy, m, { fontSize: `${22 + (i % 3) * 6}px` })
+        .setOrigin(0.5).setPadding(4).setDepth(4).setScale(0.3);
+      const dist = 125 + Math.random() * 35;
+      this.tweens.add({
+        targets: s,
+        x: W / 2 + Math.cos(a) * dist,
+        y: cy + Math.sin(a) * dist,
+        scale: 1, duration: 650, ease: 'Cubic.Out',
+        onComplete: () => this.tweens.add({
+          targets: s, alpha: 0, scale: 0.6, duration: 500, delay: 350,
+          onComplete: () => s.destroy(),
+        }),
+      });
+    });
   }
 
-  private nextQuestion(): void {
-    this.questionIndex++;
-    if (this.questionIndex >= this.mode.rounds) {
-      this.stopCountdown();
+  private nextRound(): void {
+    this.roundIndex++;
+    if (this.roundIndex >= this.mode.rounds) {
       this.scene.start('ResultScene', {
         score: this.score,
         total: this.mode.rounds,
         difficulty: this.difficulty,
         gameMode: this.gameMode,
       });
-    } else {
-      this.loadQuestion();
+      return;
     }
+    // Clear the stage, then bring on the next shadow.
+    this.tweens.add({ targets: this.banner, scale: 0, duration: 180, ease: 'Back.In' });
+    this.tweens.add({ targets: this.glow, alpha: 0, duration: 200 });
+    this.tiles.forEach(t => this.tweens.add({ targets: t.container, alpha: 0, scale: 0.8, duration: 200 }));
+    this.tweens.add({
+      targets: this.figure, scale: 0.6, alpha: 0, duration: 220, ease: 'Sine.In',
+      onComplete: () => this.loadRound(),
+    });
   }
 }

@@ -27,48 +27,56 @@ export const CHARACTERS: Character[] = [
   { name: 'Nicky',   key: 'nicky',   url: nickyImg   },
 ];
 
-export interface Animal { name: string; emoji: string; }
+/**
+ * `group` marks look-alike silhouettes (four-legged walkers, birds). A round
+ * never offers two pictures from the same group, so the shapes on screen are
+ * always clearly different for a 2-year-old.
+ * Full-body emoji are used wherever possible: a dark *face* (dog, cat, pig,
+ * tiger…) is just a round blob, but a full body has a readable outline.
+ */
+export interface Animal { name: string; emoji: string; group?: string; }
 
 export const ANIMALS: Animal[] = [
-  { name: 'Dog',       emoji: '🐶' },
-  { name: 'Cat',       emoji: '🐱' },
-  { name: 'Rabbit',    emoji: '🐰' },
-  { name: 'Panda',     emoji: '🐼' },
-  { name: 'Lion',      emoji: '🦁' },
-  { name: 'Tiger',     emoji: '🐯' },
-  { name: 'Frog',      emoji: '🐸' },
-  { name: 'Fox',       emoji: '🦊' },
-  { name: 'Penguin',   emoji: '🐧' },
-  { name: 'Unicorn',   emoji: '🦄' },
-  { name: 'Pig',       emoji: '🐷' },
-  { name: 'Butterfly', emoji: '🦋' },
-  { name: 'Turtle',    emoji: '🐢' },
+  { name: 'Dog',       emoji: '🐕', group: 'walker' },
+  { name: 'Cat',       emoji: '🐈', group: 'walker' },
+  { name: 'Pig',       emoji: '🐖', group: 'walker' },
+  { name: 'Horse',     emoji: '🐎', group: 'walker' },
+  { name: 'Rabbit',    emoji: '🐇' },
   { name: 'Elephant',  emoji: '🐘' },
   { name: 'Giraffe',   emoji: '🦒' },
-  { name: 'Owl',       emoji: '🦉' },
+  { name: 'Turtle',    emoji: '🐢' },
+  { name: 'Butterfly', emoji: '🦋' },
   { name: 'Dinosaur',  emoji: '🦖' },
-  { name: 'Monkey',    emoji: '🐵' },
+  { name: 'Monkey',    emoji: '🐒' },
+  { name: 'Penguin',   emoji: '🐧', group: 'bird' },
+  { name: 'Owl',       emoji: '🦉', group: 'bird' },
+  { name: 'Duck',      emoji: '🦆', group: 'bird' },
+  { name: 'Snail',     emoji: '🐌' },
+  { name: 'Crab',      emoji: '🦀' },
+  { name: 'Whale',     emoji: '🐳' },
+  { name: 'Lion',      emoji: '🦁' },
+  { name: 'Unicorn',   emoji: '🦄' },
 ];
 
 export const CONFETTI_EMOJIS = ['🌸', '⭐', '🎀', '✨', '🌟', '💖', '🎊', '🐰'];
 
 /**
- * Per-difficulty round shape. Easy rounds give more time, fewer options, and
- * a slightly brighter silhouette so a child can read the contour; Hard is
- * harder on every axis. Score is the raw count of correct answers out of
- * `rounds`, so difficulty only affects the round mechanics, not the scale.
+ * Two paces. Relaxed (default) has no clock at all: 3 big picture choices
+ * and as many tries as she needs. Quick adds a 4th picture and a gentle
+ * "beat the clock" bar — running out of time never ends the round (D-007),
+ * it just means that round's star isn't a first-try star.
  */
 export const MODE = {
   easy: {
     rounds: 5,
     optionCount: 3,
-    roundMs: 12_000,
-    tintFill: 0x3d2552,
+    roundMs: 0,
+    tintFill: 0x4a2c6e,
   },
   hard: {
     rounds: 5,
     optionCount: 4,
-    roundMs: 8_000,
-    tintFill: 0x15091f,
+    roundMs: 10_000,
+    tintFill: 0x2d1b3d,
   },
 } as const;

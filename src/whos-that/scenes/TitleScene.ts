@@ -1,140 +1,178 @@
 import Phaser from 'phaser';
 import { drawBg, primaryBtn } from '@shared/phaserUtils';
 import { C, T, F } from '@shared/theme';
+import { shuffle } from '@shared/utils';
 import { ANIMALS, CHARACTERS, MODE, type Difficulty, type GameMode } from '../data';
+import { say, unlockAudio } from '../speech';
+
+const HERO_Y = 262;
+const HERO = { w: 136, h: 204 };
+
+interface PickerRefs {
+  bg: Phaser.GameObjects.Graphics;
+  titleTxt: Phaser.GameObjects.Text;
+  subTxt?: Phaser.GameObjects.Text;
+  w: number; h: number;
+}
+
+type Picker = Phaser.GameObjects.Container & PickerRefs;
 
 export class TitleScene extends Phaser.Scene {
   private difficulty: Difficulty = 'easy';
   private gameMode: GameMode = 'bing';
-  private easyBtn!: Phaser.GameObjects.Container;
-  private hardBtn!: Phaser.GameObjects.Container;
-  private bingModeBtn!: Phaser.GameObjects.Container;
-  private animalModeBtn!: Phaser.GameObjects.Container;
-  private heroBing!: Phaser.GameObjects.Image;
-  private heroAnimal!: Phaser.GameObjects.Text;
-  private heroPedestal!: Phaser.GameObjects.Graphics;
-  private subtitleTxt!: Phaser.GameObjects.Text;
-  private hintTxt!: Phaser.GameObjects.Text;
-  private hintChip!: Phaser.GameObjects.Graphics;
+  private easyBtn!: Picker;
+  private hardBtn!: Picker;
+  private bingModeBtn!: Picker;
+  private animalModeBtn!: Picker;
+
+  private hero!: Phaser.GameObjects.Container;
+  private heroSilImg!: Phaser.GameObjects.Image;
+  private heroColImg!: Phaser.GameObjects.Image;
+  private heroSilEmoji!: Phaser.GameObjects.Text;
+  private heroColEmoji!: Phaser.GameObjects.Text;
+  private heroQueue: string[] = [];
+  private heroLoop?: Phaser.Time.TimerEvent;
 
   constructor() { super('TitleScene'); }
 
   preload(): void {
-    CHARACTERS.forEach(c => this.load.image(c.key, c.url));
+    CHARACTERS.forEach(c => { if (!this.textures.exists(c.key)) this.load.image(c.key, c.url); });
   }
 
   create(): void {
     const { width: W, height: H } = this.scale;
     drawBg(this);
     this.decorateBg(W, H);
+    this.heroQueue = [];
+    this.heroLoop = undefined;
+    this.input.on('pointerdown', unlockAudio);
 
-    this.add.text(W / 2, 96, "🐰 Who's That, Aya?", {
-      fontFamily: F.head, fontSize: '32px', color: T.main, align: 'center',
+    this.add.text(W / 2, 78, "Who's That, Aya?", {
+      fontFamily: F.head, fontSize: '36px', color: T.main, align: 'center',
       shadow: { offsetX: 2, offsetY: 3, color: '#f8bbd0', fill: true },
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setPadding(4);
 
-    this.subtitleTxt = this.add.text(W / 2, 142, '', {
-      fontFamily: F.body, fontSize: '14px', color: T.sub,
-      align: 'center', fontStyle: 'bold',
-      lineSpacing: 3,
-    }).setOrigin(0.5);
+    this.add.text(W / 2, 120, 'Who is hiding in the shadow? 🔦', {
+      fontFamily: F.body, fontSize: '15px', color: T.sub, fontStyle: 'bold',
+    }).setOrigin(0.5).setPadding(2);
 
-    // Soft pedestal grounds the silhouette so it doesn't float on a blank
-    // canvas — two stacked ellipses read as a spotlight beneath the figure.
-    this.heroPedestal = this.add.graphics();
-    this.drawPedestal(W / 2, 322);
+    this.buildHero(W);
 
-    // Hero silhouette — Bing image OR darkened animal emoji, swapped on mode change
-    this.heroBing = this.add.image(W / 2, 250, 'bing').setDisplaySize(120, 155);
-    this.heroBing.setTint(0x2d1b3d).setTintMode(Phaser.TintModes.FILL);
-    this.heroAnimal = this.add.text(W / 2, 250, '🐼', {
-      fontFamily: F.body, fontSize: '120px',
-    }).setOrigin(0.5);
-    this.heroAnimal.setTint(0x2d1b3d).setTintMode(Phaser.TintModes.FILL);
+    // Game picker — pictures, not words.
+    this.sectionLabel(W / 2, 410, 'WHO TO FIND');
+    const tileW = 178, gap = 14;
+    const lx = W / 2 - tileW / 2 - gap / 2, rx = W / 2 + tileW / 2 + gap / 2;
+    this.bingModeBtn = this.buildModeTile(lx, 476, tileW, 104, 'bing', 'Bing & friends');
+    this.animalModeBtn = this.buildModeTile(rx, 476, tileW, 104, 'animal', 'Animals');
 
-    this.tweens.add({
-      targets: [this.heroBing, this.heroAnimal],
-      scale: '+=0.06', yoyo: true, repeat: -1, duration: 1250, ease: 'Sine.InOut',
-    });
-
-    // Mode picker — section chip instead of plain all-caps label
-    this.sectionLabel(W / 2, 368, 'CHOOSE GAME');
-
-    const modeW = 150, modeH = 62, modeGap = 16;
-    this.bingModeBtn = this.buildPickerBtn(
-      W / 2 - modeW / 2 - modeGap / 2, 412, modeW, modeH,
-      '🐰 Bing', 'Guess the friend',
-      () => this.selectMode('bing'),
-    );
-    this.animalModeBtn = this.buildPickerBtn(
-      W / 2 + modeW / 2 + modeGap / 2, 412, modeW, modeH,
-      '🐾 Animal', 'Guess the emoji',
-      () => this.selectMode('animal'),
-    );
-
-    // Difficulty picker
-    this.sectionLabel(W / 2, 486, 'CHOOSE DIFFICULTY');
-
-    const diffW = 150, diffH = 62, diffGap = 16;
+    // Pace picker. Relaxed (no clock) is the default.
+    this.sectionLabel(W / 2, 558, 'HOW TO PLAY');
     this.easyBtn = this.buildPickerBtn(
-      W / 2 - diffW / 2 - diffGap / 2, 530, diffW, diffH,
-      'Easy',
-      `${MODE.easy.optionCount} choices · ${MODE.easy.roundMs / 1000}s`,
-      () => this.selectDifficulty('easy'),
+      lx, 610, tileW, 70, '🐢 Relaxed', `${MODE.easy.optionCount} pictures · no timer`,
+      () => this.selectDifficulty('easy', true),
     );
     this.hardBtn = this.buildPickerBtn(
-      W / 2 + diffW / 2 + diffGap / 2, 530, diffW, diffH,
-      'Hard',
-      `${MODE.hard.optionCount} choices · ${MODE.hard.roundMs / 1000}s`,
-      () => this.selectDifficulty('hard'),
+      rx, 610, tileW, 70, '⏱️ Quick', `${MODE.hard.optionCount} pictures · ${MODE.hard.roundMs / 1000}s timer`,
+      () => this.selectDifficulty('hard', true),
     );
 
-    // Hint chip — a small pill wraps the hint so it reads as a footer, not
-    // orphaned text floating above the CTA.
-    this.hintChip = this.add.graphics();
-    this.hintTxt = this.add.text(W / 2, 616, '', {
-      fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
-    }).setOrigin(0.5);
+    this.selectMode(this.gameMode, false);
+    this.selectDifficulty(this.difficulty, false);
 
-    this.selectMode('bing');
-    this.selectDifficulty('easy');
-
-    primaryBtn(this, W / 2, H - 90, 340, 62, "Let's Guess! 🎉", () => {
+    primaryBtn(this, W / 2, H - 82, 340, 66, "Let's Play! 🎉", () => {
       this.scene.start('GameScene', { difficulty: this.difficulty, gameMode: this.gameMode });
     });
   }
 
-  private decorateBg(W: number, H: number): void {
-    // Scattered magnifying-glass + paw marks echo the "detective/who's that"
-    // motif without competing with the hero silhouette.
-    const marks = [
-      { x: 42,      y: 180, c: '🔍', s: 28, r: -14, a: 0.12 },
-      { x: W - 48,  y: 160, c: '🐾', s: 30, r: 12,  a: 0.12 },
-      { x: 34,      y: H - 220, c: '🐾', s: 26, r: -8, a: 0.10 },
-      { x: W - 42,  y: H - 240, c: '🔍', s: 26, r: 6, a: 0.10 },
-      { x: 32,      y: 326, c: '✨', s: 22, r: 0, a: 0.18 },
-      { x: W - 34,  y: 326, c: '✨', s: 22, r: 0, a: 0.18 },
-    ];
-    marks.forEach(m => {
-      this.add.text(m.x, m.y, m.c, {
-        fontFamily: F.body, fontSize: `${m.s}px`,
-      }).setOrigin(0.5).setAlpha(m.a).setRotation(m.r * Math.PI / 180);
+  // ─── Hero: a shadow that keeps lighting up into a friend ──────────────
+
+  private buildHero(W: number): void {
+    const stage = this.add.graphics();
+    stage.fillStyle(C.lavender, 0.14);
+    stage.fillCircle(W / 2, HERO_Y - 4, 120);
+    stage.fillStyle(C.white, 0.85);
+    stage.fillCircle(W / 2, HERO_Y - 4, 96);
+    stage.fillStyle(C.shadow, 0.14);
+    stage.fillEllipse(W / 2, HERO_Y + HERO.h / 2 - 10, 150, 20);
+
+    const k = CHARACTERS[0].key;
+    this.heroSilImg = this.add.image(0, 0, k).setDisplaySize(HERO.w, HERO.h);
+    this.heroColImg = this.add.image(0, 0, k).setDisplaySize(HERO.w, HERO.h).setAlpha(0);
+    this.heroSilEmoji = this.add.text(0, 0, '', { fontFamily: F.body, fontSize: '128px' })
+      .setOrigin(0.5).setPadding(10);
+    this.heroColEmoji = this.add.text(0, 0, '', { fontFamily: F.body, fontSize: '128px' })
+      .setOrigin(0.5).setPadding(10).setAlpha(0);
+    this.hero = this.add.container(W / 2, HERO_Y, [
+      this.heroSilImg, this.heroColImg, this.heroSilEmoji, this.heroColEmoji,
+    ]);
+    this.tweens.add({
+      targets: this.hero, y: HERO_Y - 6, yoyo: true, repeat: -1, duration: 1300, ease: 'Sine.InOut',
     });
   }
 
-  private drawPedestal(cx: number, cy: number): void {
-    const g = this.heroPedestal;
-    g.clear();
-    g.fillStyle(C.lavender, 0.16);
-    g.fillEllipse(cx, cy, 220, 34);
-    g.fillStyle(C.lavender, 0.28);
-    g.fillEllipse(cx, cy, 160, 22);
+  private nextHero(): string {
+    if (this.heroQueue.length === 0) {
+      this.heroQueue = this.gameMode === 'bing'
+        ? shuffle(CHARACTERS.map(c => c.key))
+        : shuffle(ANIMALS.map(a => a.emoji));
+    }
+    return this.heroQueue.shift()!;
+  }
+
+  /** Show a fresh silhouette, then light it up, then repeat. */
+  private startHeroLoop(): void {
+    this.heroLoop?.remove();
+    this.heroQueue = [];
+    const isBing = this.gameMode === 'bing';
+    this.heroSilImg.setVisible(isBing);
+    this.heroColImg.setVisible(isBing);
+    this.heroSilEmoji.setVisible(!isBing);
+    this.heroColEmoji.setVisible(!isBing);
+
+    const step = () => {
+      const v = this.nextHero();
+      const sil = isBing ? this.heroSilImg : this.heroSilEmoji;
+      const col = isBing ? this.heroColImg : this.heroColEmoji;
+      this.tweens.killTweensOf([sil, col]);
+      if (isBing) {
+        this.heroSilImg.setTexture(v).setDisplaySize(HERO.w, HERO.h);
+        this.heroColImg.setTexture(v).setDisplaySize(HERO.w, HERO.h);
+      } else {
+        this.heroSilEmoji.setText(v);
+        this.heroColEmoji.setText(v);
+      }
+      sil.setTint(0x4a2c6e).setTintMode(Phaser.TintModes.FILL);
+      col.setAlpha(0);
+      sil.setAlpha(0);
+      this.tweens.add({ targets: sil, alpha: 1, duration: 250 });
+      // Hold the shadow, then fill with colour, hold, fade back for the next.
+      this.tweens.add({ targets: col, alpha: 1, delay: 1400, duration: 500 });
+      this.tweens.add({ targets: sil, alpha: 0, delay: 1400, duration: 500 });
+      this.tweens.add({ targets: col, alpha: 0, delay: 3150, duration: 250 });
+    };
+    step();
+    this.heroLoop = this.time.addEvent({ delay: 3400, loop: true, callback: step });
+  }
+
+  // ─── Pickers ──────────────────────────────────────────────────────────
+
+  private decorateBg(W: number, H: number): void {
+    const marks = [
+      { x: 40,     y: 190,     c: '🔍', s: 28, r: -14, a: 0.13 },
+      { x: W - 44, y: 176,     c: '🐾', s: 30, r: 12,  a: 0.13 },
+      { x: 34,     y: H - 250, c: '🐾', s: 26, r: -8,  a: 0.10 },
+      { x: W - 40, y: H - 270, c: '✨', s: 24, r: 6,   a: 0.16 },
+      { x: 46,     y: 330,     c: '✨', s: 22, r: 0,   a: 0.18 },
+      { x: W - 50, y: 340,     c: '⭐', s: 22, r: 0,   a: 0.16 },
+    ];
+    marks.forEach(m => {
+      this.add.text(m.x, m.y, m.c, { fontFamily: F.body, fontSize: `${m.s}px` })
+        .setOrigin(0.5).setPadding(4).setAlpha(m.a).setRotation(m.r * Math.PI / 180);
+    });
   }
 
   private sectionLabel(cx: number, cy: number, text: string): void {
-    // A small pill chip gives sections a polished, labeled feel — plain
-    // all-caps text looked like placeholder content.
-    const w = 170, h = 22;
+    const w = 150, h = 24;
     const bg = this.add.graphics();
     bg.fillStyle(C.white, 0.85);
     bg.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
@@ -145,91 +183,112 @@ export class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5);
   }
 
+  private buildModeTile(
+    cx: number, cy: number, w: number, h: number, mode: GameMode, title: string,
+  ): Picker {
+    const bg = this.add.graphics();
+    const parts: Phaser.GameObjects.GameObject[] = [bg];
+    if (mode === 'bing') {
+      // A little group of three friends.
+      const keys = ['flop', 'bing', 'sula'];
+      keys.forEach((k, i) => {
+        const big = i === 1;
+        const ph = big ? 74 : 60;
+        parts.push(this.add.image((i - 1) * 40, big ? -14 : -8, k).setDisplaySize(ph * 2 / 3, ph));
+      });
+    } else {
+      ['🐘', '🦒', '🐢'].forEach((e, i) => {
+        parts.push(this.add.text((i - 1) * 44, -14, e, {
+          fontFamily: F.body, fontSize: i === 1 ? '46px' : '36px',
+        }).setOrigin(0.5).setPadding(4));
+      });
+    }
+    const titleTxt = this.add.text(0, h / 2 - 20, title, {
+      fontFamily: F.head, fontSize: '17px', color: T.main,
+    }).setOrigin(0.5).setPadding(2);
+    parts.push(titleTxt);
+    const c = this.add.container(cx, cy, parts) as Picker;
+    Object.assign(c, { bg, titleTxt, w, h });
+    c.setSize(w, h).setInteractive({ cursor: 'pointer' });
+    c.on('pointerdown', () => this.selectMode(mode, true));
+    return c;
+  }
+
   private buildPickerBtn(
     cx: number, cy: number, w: number, h: number,
     title: string, subtitle: string,
     onClick: () => void,
-  ): Phaser.GameObjects.Container {
+  ): Picker {
     const bg = this.add.graphics();
-    const titleTxt = this.add.text(0, -10, title, {
-      fontFamily: F.head, fontSize: '18px', color: T.main,
+    const titleTxt = this.add.text(0, -11, title, {
+      fontFamily: F.head, fontSize: '19px', color: T.main,
+    }).setOrigin(0.5).setPadding(2);
+    const subTxt = this.add.text(0, 15, subtitle, {
+      fontFamily: F.body, fontSize: '11px', color: T.sub, fontStyle: 'bold',
     }).setOrigin(0.5);
-    const subTxt = this.add.text(0, 14, subtitle, {
-      fontFamily: F.body, fontSize: '10px', color: T.sub, fontStyle: 'bold',
-    }).setOrigin(0.5);
-    const container = this.add.container(cx, cy, [bg, titleTxt, subTxt]);
-    container.setSize(w, h).setInteractive({ cursor: 'pointer' });
-    container.on('pointerdown', onClick);
-
-    const refs = container as unknown as PickerRefs;
-    refs.bg = bg; refs.titleTxt = titleTxt; refs.subTxt = subTxt; refs.w = w; refs.h = h;
-    return container;
+    const c = this.add.container(cx, cy, [bg, titleTxt, subTxt]) as Picker;
+    Object.assign(c, { bg, titleTxt, subTxt, w, h });
+    c.setSize(w, h).setInteractive({ cursor: 'pointer' });
+    c.on('pointerdown', onClick);
+    return c;
   }
 
-  private drawPickerBg(c: Phaser.GameObjects.Container, active: boolean): void {
-    const { bg, titleTxt, subTxt, w, h } = c as unknown as PickerRefs;
+  private drawPickerBg(c: Picker, active: boolean): void {
+    const { bg, titleTxt, subTxt, w, h } = c;
     bg.clear();
     if (active) {
-      // Subtle lift shadow + pink fill — the active state should feel
-      // distinctly pressed in.
       bg.fillStyle(C.shadow, 0.18);
-      bg.fillRoundedRect(-w / 2, -h / 2 + 4, w, h, 18);
+      bg.fillRoundedRect(-w / 2, -h / 2 + 5, w, h, 22);
       bg.fillStyle(C.pink, 1);
-      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 18);
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 22);
       titleTxt.setColor(T.white);
-      subTxt.setColor('rgba(255,255,255,0.85)');
+      subTxt?.setColor('rgba(255,255,255,0.9)');
     } else {
       bg.fillStyle(C.white, 1);
       bg.lineStyle(2.5, C.lavender, 0.9);
-      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 18);
-      bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 18);
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 22);
+      bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 22);
       titleTxt.setColor(T.main);
-      subTxt.setColor(T.sub);
+      subTxt?.setColor(T.sub);
     }
   }
 
-  private drawHintChip(text: string): void {
-    this.hintTxt.setText(text);
-    const chipPadX = 14, chipH = 28;
-    const w = this.hintTxt.width + chipPadX * 2;
-    const cx = this.hintTxt.x, cy = this.hintTxt.y;
-    this.hintChip.clear();
-    this.hintChip.fillStyle(C.white, 0.7);
-    this.hintChip.fillRoundedRect(cx - w / 2, cy - chipH / 2, w, chipH, chipH / 2);
-    this.hintChip.lineStyle(1.5, C.lavender, 0.5);
-    this.hintChip.strokeRoundedRect(cx - w / 2, cy - chipH / 2, w, chipH, chipH / 2);
+  /** Mode tiles keep a white face (pictures need contrast) and get a pink frame. */
+  private drawModeBg(c: Picker, active: boolean): void {
+    const { bg, titleTxt, w, h } = c;
+    bg.clear();
+    bg.fillStyle(C.shadow, active ? 0.18 : 0.08);
+    bg.fillRoundedRect(-w / 2, -h / 2 + 5, w, h, 24);
+    bg.fillStyle(active ? C.cream : C.white, 1);
+    bg.fillRoundedRect(-w / 2, -h / 2, w, h, 24);
+    bg.lineStyle(active ? 4 : 2.5, active ? C.pink : C.lavender, active ? 1 : 0.6);
+    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 24);
+    titleTxt.setColor(active ? '#d81b60' : T.main);
   }
 
-  private selectDifficulty(d: Difficulty): void {
+  private bump(c: Picker): void {
+    this.tweens.add({ targets: c, scale: { from: 0.94, to: 1 }, duration: 220, ease: 'Back.Out' });
+  }
+
+  private selectDifficulty(d: Difficulty, user: boolean): void {
     this.difficulty = d;
     this.drawPickerBg(this.easyBtn, d === 'easy');
     this.drawPickerBg(this.hardBtn, d === 'hard');
-  }
-
-  private selectMode(m: GameMode): void {
-    this.gameMode = m;
-    this.drawPickerBg(this.bingModeBtn, m === 'bing');
-    this.drawPickerBg(this.animalModeBtn, m === 'animal');
-    this.heroBing.setVisible(m === 'bing');
-    this.heroAnimal.setVisible(m === 'animal');
-    if (m === 'bing') {
-      this.subtitleTxt.setText('Guess the Bing character\nfrom their shadow! 🌟');
-      this.drawHintChip(`${MODE.easy.rounds} mystery friends await 🕵️`);
-    } else {
-      // Pick a fresh animal preview each time Animal is tapped so the user
-      // gets a feel for the silhouette-guessing flow before starting.
-      const preview = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-      this.heroAnimal.setText(preview.emoji);
-      this.heroAnimal.setTint(0x2d1b3d).setTintMode(Phaser.TintModes.FILL);
-      this.subtitleTxt.setText('Guess the animal\nfrom its shadow! 🐾');
-      this.drawHintChip(`${MODE.easy.rounds} mystery critters await 🔍`);
+    if (user) {
+      this.bump(d === 'easy' ? this.easyBtn : this.hardBtn);
+      say(d === 'easy' ? 'Relaxed' : 'Quick');
     }
   }
-}
 
-interface PickerRefs {
-  bg: Phaser.GameObjects.Graphics;
-  titleTxt: Phaser.GameObjects.Text;
-  subTxt: Phaser.GameObjects.Text;
-  w: number; h: number;
+  private selectMode(m: GameMode, user: boolean): void {
+    const changed = m !== this.gameMode || !this.heroLoop;
+    this.gameMode = m;
+    this.drawModeBg(this.bingModeBtn, m === 'bing');
+    this.drawModeBg(this.animalModeBtn, m === 'animal');
+    if (changed) this.startHeroLoop();
+    if (user) {
+      this.bump(m === 'bing' ? this.bingModeBtn : this.animalModeBtn);
+      say(m === 'bing' ? 'Bing and friends!' : 'Animals!');
+    }
+  }
 }

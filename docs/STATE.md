@@ -30,11 +30,11 @@ public/                          ← bundled-as-is assets
 screenshot.mjs                   ← visual-regression workflow (Puppeteer)
 ```
 
-## Games (12 total, all live)
+## Games (13 total, all live)
 
 `flip-matching`, `tictactoe`, `whos-that`, `colour-match`, `colour-hunt`,
 `odd-one-out`, `connect-match`, `who-makes-sound`, `whats-next`, `pick-pop`,
-`crossword`, `shape-sorter`.
+`crossword`, `shape-sorter`, `sort-it` (Tidy Up!).
 
 ## Smoke-test recipe
 

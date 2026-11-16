@@ -109,6 +109,25 @@
       color: var(--plum-2); background: #f6ecf9; padding: 5px 8px; border-radius: 999px;
     }
 
+    /* ── Featured (newest) game: a wide card across the whole row ── */
+    .game.feature { grid-column: 1 / -1; flex-direction: row; align-items: stretch; }
+    .game.feature .shot { flex: 0 0 44%; aspect-ratio: auto; min-height: 190px; }
+    .game.feature .info { padding: 10px 10px 10px 16px; justify-content: center; gap: 10px; }
+    .game.feature h3 { font-size: clamp(1.25rem, 4.6vw, 2rem); }
+    .game.feature .desc { display: -webkit-box; -webkit-line-clamp: 4; font-size: clamp(0.85rem, 2.6vw, 1.02rem); }
+    .game.feature .tags { margin-top: 0; }
+    .cta {
+      align-self: flex-start; margin-top: 4px;
+      padding: 9px 18px; border-radius: 999px;
+      font-family: 'Fredoka One', cursive; font-size: 1rem; color: #fff;
+      background: linear-gradient(135deg, var(--pink), var(--lilac));
+      box-shadow: 0 6px 16px -6px rgba(240,98,146,0.7);
+    }
+    @media (min-width: 700px) {
+      .game.feature .shot { flex-basis: 36%; aspect-ratio: 400 / 330; }
+      .game.feature .info { padding: 18px 26px; }
+    }
+
     @media (hover: hover) {
       .game:hover { transform: translateY(-6px); box-shadow: 0 22px 40px -16px rgba(106,27,154,0.35); }
       .game:hover .shot img { transform: scale(1.05); }
@@ -130,6 +149,10 @@
       .desc { display: none; }
       .tag { font-size: 0.66rem; padding: 4px 7px; }
       .tags .tag:nth-child(n+2) { display: none; }
+      .game.feature .tags .tag:nth-child(2) { display: inline-block; }
+      .game.feature .desc { -webkit-line-clamp: 3; }
+      .game.feature .cta { font-size: 0.9rem; padding: 7px 14px; }
+      .game.feature .play { display: none; }
     }
 
     footer { margin-top: 48px; text-align: center; font-size: 0.85rem; font-weight: 800; color: var(--lilac); }
@@ -145,7 +168,7 @@
       <h1 class="logo">🌸 Aya's Mini Games</h1>
       <p class="tagline">Little games for a big girl, made by Papa 💖</p>
       <div class="bar">
-        <span class="pill">🎮 12 games</span>
+        <span class="pill">🎮 13 games</span>
         <span class="pill">🐢 No timers by default</span>
         <button type="button" class="pill voice-switch" id="voice-switch" aria-pressed="true">
           <span class="vs-icon">🗣️</span><span class="vs-text">Voice: <b>On</b></span>
@@ -162,6 +185,18 @@
         <p>2½ years · tap, listen, play</p>
       </div>
       <div class="grid">
+      <a class="game feature" href="./ayas-sort-it/" style="--accent:#e6f5b8">
+        <div class="shot">
+          <img src="./covers/sort-it.svg" width="400" height="460" alt="Tidy Up! cover art" />
+          <span class="play" aria-hidden="true">▶</span><span class="badge">✨ New game</span>
+        </div>
+        <div class="info">
+          <h3><span class="ico" aria-hidden="true">🧺</span>Tidy Up!</h3>
+          <p class="desc">Every toy has a basket! Sort by colour, by big and small, or by what it is. A first logic game: drag the toy or just tap its basket.</p>
+          <div class="tags"><span class="tag">Sorting logic</span><span class="tag">No timer</span><span class="tag">Spoken prompts</span><span class="tag">4 levels</span></div>
+          <span class="cta">Play now ▶</span>
+        </div>
+      </a>
       <a class="game" href="./ayas-pick-pop/" style="--accent:#ffd9e8">
         <div class="shot">
           <img src="./covers/pick-pop.svg" width="400" height="460" loading="lazy" alt="Pick &amp; Pop! cover art" />
@@ -176,7 +211,7 @@
       <a class="game" href="./ayas-shape-sorter/" style="--accent:#ffe6c7">
         <div class="shot">
           <img src="./covers/shape-sorter.svg" width="400" height="460" loading="lazy" alt="Shape Sorter cover art" />
-          <span class="play" aria-hidden="true">▶</span><span class="badge">✨ New</span>
+          <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
           <h3><span class="ico" aria-hidden="true">🧩</span>Shape Sorter</h3>

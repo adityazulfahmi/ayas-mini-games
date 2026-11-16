@@ -11,6 +11,18 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-17 — New game: Tidy Up! (sorting)
+
+- `ayas-sort-it/` / `src/sort-it/`: one toy at a time goes into the basket it
+  belongs in (drag or tap). Sorting by one attribute is the first logic skill,
+  before patterns and counting. Levels on picture tiles: Colours → Big & small →
+  What is it? (animals / food / things that go) → Three baskets. Baskets show
+  their rule with a paint splash / size icon / 🐶🍎🚗 badge and say it aloud;
+  wrong drops hop back with an explanation; idle 👆 hint; no timer.
+- Content rule: the basket badge emoji (🐶 🍎 🚗) never appear as items, and no
+  item may be ambiguous between kinds (no fish among "animals" vs "food").
+- Landing: Tidy Up! is the wide featured card at the top (13 games).
+
 ## 2026-11-17 — What Comes Next?: pattern path + adaptive levels
 
 - Patterns sit on coloured stepping stones grouped per repeat, a chick hops along

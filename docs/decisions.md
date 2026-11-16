@@ -303,6 +303,8 @@ in scene code.
 
 ## D-013 — Landing-page games sorted by 2yo suitability
 
+> Updated 2026-11-17 (later): Tidy Up! (sorting) added as the featured first card.
+>
 > Updated 2026-11-17: after the per-game rework most games have a no-timer
 > default and spoken prompts. "Perfect for Aya now": Pick & Pop, Shape Sorter,
 > Who Makes This Sound?, Colour Match, Flip & Match, Connect the Match, Who's

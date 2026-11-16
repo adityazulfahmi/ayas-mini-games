@@ -164,7 +164,7 @@ export function popShockwave(
   cx: number, cy: number,
   startR: number,
   endR: number,
-  color = C.mint,
+  color: number = C.mint,
 ): void {
   const ring = scene.add.graphics();
   ring.setPosition(cx, cy);
@@ -179,4 +179,38 @@ export function popShockwave(
     ease: 'Cubic.Out',
     onComplete: () => ring.destroy(),
   });
+}
+
+/**
+ * The bubble itself bursting: a ring of little droplets flies outward
+ * from the rim and fades. Positioned in world space.
+ */
+export function bubbleBurst(
+  scene: Phaser.Scene,
+  cx: number, cy: number,
+  radius: number,
+  color: number = C.lavender,
+  depth = 30,
+): void {
+  const n = 12;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + Math.random() * 0.25;
+    const r = 4 + Math.random() * 5;
+    const d = scene.add.graphics().setDepth(depth);
+    d.fillStyle(C.white, 0.95);
+    d.fillCircle(0, 0, r);
+    d.lineStyle(2, color, 0.8);
+    d.strokeCircle(0, 0, r);
+    d.setPosition(cx + Math.cos(a) * radius * 0.9, cy + Math.sin(a) * radius * 0.9);
+    scene.tweens.add({
+      targets: d,
+      x: cx + Math.cos(a) * (radius + 46 + Math.random() * 30),
+      y: cy + Math.sin(a) * (radius + 46 + Math.random() * 30) + 10,
+      alpha: 0,
+      scale: 0.4,
+      duration: 520 + Math.random() * 160,
+      ease: 'Cubic.Out',
+      onComplete: () => d.destroy(),
+    });
+  }
 }

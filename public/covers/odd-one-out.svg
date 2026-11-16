@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 460">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0.55" y2="1">
+<stop offset="0" stop-color="#a8f0d2"/><stop offset=".5" stop-color="#6fd98c"/><stop offset="1" stop-color="#b9ea4e"/>
+</linearGradient>
+<radialGradient id="glow" cx=".5" cy=".5" r=".5">
+<stop offset="0" stop-color="#fffde0" stop-opacity=".95"/><stop offset=".6" stop-color="#f6ffc4" stop-opacity=".55"/><stop offset="1" stop-color="#f6ffc4" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="chk" cx=".38" cy=".3" r=".8">
+<stop offset="0" stop-color="#fff59a"/><stop offset=".55" stop-color="#ffd83a"/><stop offset="1" stop-color="#f7a91c"/>
+</radialGradient>
+<radialGradient id="apl" cx=".36" cy=".28" r=".85">
+<stop offset="0" stop-color="#ff8a70"/><stop offset=".5" stop-color="#ee3b33"/><stop offset="1" stop-color="#b3152b"/>
+</radialGradient>
+<linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#8be05a"/><stop offset="1" stop-color="#2f9e4a"/>
+</linearGradient>
+<linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#4cc46a"/><stop offset="1" stop-color="#2f9f58"/>
+</linearGradient>
+<path id="spk" d="M0-10Q1.6-1.6 10 0Q1.6 1.6 0 10Q-1.6 1.6-10 0Q-1.6-1.6 0-10Z"/>
+<g id="chick">
+<path d="M-20 44l-8 12m8-12l1 13m-1-13l9 11M20 44l-9 11m9-11l-1 13m1-13l8 12" stroke="#f08a1d" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path d="M-4-46C-12-62 0-68 2-58C6-70 20-64 10-48Z" fill="#ffd83a"/>
+<ellipse cx="-49" cy="10" rx="13" ry="20" transform="rotate(18 -49 10)" fill="#f7b021"/>
+<ellipse cx="49" cy="10" rx="13" ry="20" transform="rotate(-18 49 10)" fill="#f7b021"/>
+<ellipse rx="52" ry="50" fill="url(#chk)"/>
+<ellipse cx="-18" cy="-24" rx="20" ry="12" transform="rotate(-24 -18 -24)" fill="#fff" opacity=".4"/>
+<circle cx="-31" cy="8" r="8.5" fill="#ff8f8f" opacity=".6"/>
+<circle cx="31" cy="8" r="8.5" fill="#ff8f8f" opacity=".6"/>
+<path d="M-10 2Q0-4 10 2L0 15Z" fill="#f58a1f" stroke="#f58a1f" stroke-width="4" stroke-linejoin="round"/>
+<path d="M-9 3Q0 0 9 3" stroke="#ffb65a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</g>
+<g id="eyes">
+<circle cx="-18" cy="-9" r="6.5" fill="#3a2414"/><circle cx="18" cy="-9" r="6.5" fill="#3a2414"/>
+<circle cx="-16" cy="-11.5" r="2.3" fill="#fff"/><circle cx="20" cy="-11.5" r="2.3" fill="#fff"/>
+</g>
+</defs>
+<style>
+.a{transform-box:fill-box;transform-origin:center}
+.bob{animation:bob 2.6s ease-in-out infinite}
+.b2{animation-delay:-.9s}.b3{animation-delay:-1.7s}
+.blink{animation:blink 4.2s infinite}
+.k2{animation-delay:-1.3s}.k3{animation-delay:-2.6s}
+.wig{animation:wig 3.2s ease-in-out infinite;transform-origin:50% 85%}
+.look{animation:look 6.4s ease-in-out infinite}
+.spin{animation:spin 26s linear infinite}
+.pulse{animation:pulse 3.2s ease-in-out infinite}
+.tw{animation:tw 2.4s ease-in-out infinite}
+.t2{animation-delay:-.8s}.t3{animation-delay:-1.5s}.t4{animation-delay:-2s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes blink{0%,91%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes wig{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(4deg)}}
+@keyframes look{0%,40%,100%{transform:translateX(0)}50%,90%{transform:translateX(-9px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.8}}
+@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.45);opacity:.35}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="400" height="460" fill="url(#bg)"/>
+<circle cx="70" cy="60" r="150" fill="#fff" opacity=".16"/>
+<circle cx="360" cy="150" r="110" fill="#fff" opacity=".12"/>
+<circle cx="40" cy="250" r="60" fill="#e9ff9c" opacity=".25"/>
+<g fill="#fff" opacity=".35"><circle cx="196" cy="52" r="5"/><circle cx="352" cy="232" r="4"/><circle cx="30" cy="200" r="4"/><circle cx="200" cy="214" r="3.5"/></g>
+<path d="M0 392Q110 350 215 384T400 372V460H0Z" fill="#59cf73" opacity=".7"/>
+<path d="M0 420Q120 384 235 412T400 404V460H0Z" fill="url(#hill)"/>
+<g transform="translate(372 30) rotate(28)"><path d="M0-52C34-30 34 30 0 54C-34 30-34-30 0-52Z" fill="url(#leaf)"/><path d="M0-40V44" stroke="#d9ffb0" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
+<g transform="translate(318 8) rotate(74)"><path d="M0-40C26-22 26 22 0 42C-26 22-26-22 0-40Z" fill="#3fb457"/></g>
+<g transform="translate(18 418) rotate(-38)"><path d="M0-46C30-26 30 26 0 48C-30 26-30-26 0-46Z" fill="url(#leaf)"/><path d="M0-34V38" stroke="#d9ffb0" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
+<!-- shadows -->
+<g fill="#1f7a3e" opacity=".22"><ellipse cx="118" cy="204" rx="44" ry="8"/><ellipse cx="276" cy="186" rx="40" ry="7"/><ellipse cx="96" cy="380" rx="42" ry="8"/><ellipse cx="250" cy="361" rx="46" ry="7"/></g>
+<!-- spotlight -->
+<g transform="translate(250 288)">
+<circle r="112" fill="url(#glow)"/>
+<g class="a pulse"><circle r="87" fill="#fffbd6" opacity=".5"/><circle r="87" fill="none" stroke="#fff" stroke-width="7" opacity=".55"/></g>
+<g class="a spin"><circle r="87" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 17.22"/><circle r="87" fill="none" stroke="#ff5a4d" stroke-width="7" stroke-linecap="round" stroke-dasharray="20 116.66" opacity=".9"/></g>
+</g>
+<!-- chicks -->
+<g transform="translate(118 144) rotate(-5) scale(.98)"><g class="a bob"><use xlink:href="#chick" href="#chick"/><g transform="translate(4 2)"><g class="a blink"><use xlink:href="#eyes" href="#eyes"/></g></g></g></g>
+<g transform="translate(276 128) rotate(6) scale(.9)"><g class="a bob b2"><use xlink:href="#chick" href="#chick"/><g transform="translate(-2 3)"><g class="a blink k2"><use xlink:href="#eyes" href="#eyes"/></g></g></g></g>
+<g transform="translate(96 322) rotate(-3) scale(.94)"><g class="a bob b3"><use xlink:href="#chick" href="#chick"/><g transform="translate(5 0)"><g class="a blink k3"><use xlink:href="#eyes" href="#eyes"/></g></g></g></g>
+<!-- apple in disguise -->
+<g transform="translate(250 293)"><g class="a wig">
+<path d="M2-46Q0-66 12-76" stroke="#7a4a22" stroke-width="7" stroke-linecap="round" fill="none"/>
+<path d="M10-66C24-90 54-88 62-78C50-58 26-54 10-66Z" fill="url(#leaf)"/>
+<path d="M14-67Q36-76 56-77" stroke="#d9ffb0" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".7"/>
+<path d="M0-46C-14-60-66-58-68-6C-70 40-36 68-14 62C-6 60 6 60 14 62C36 68 70 40 68-6C66-58 14-60 0-46Z" fill="url(#apl)"/>
+<path d="M-50-18C-48-38-34-48-20-48" stroke="#fff" stroke-width="9" stroke-linecap="round" fill="none" opacity=".5"/>
+<circle cx="-53" cy="-2" r="4.5" fill="#fff" opacity=".5"/>
+<!-- elastic of fake beak -->
+<path d="M-67 0Q-30 14 0 12Q32 14 67-2" stroke="#fff6c9" stroke-width="3" fill="none" opacity=".9"/>
+<circle cx="-36" cy="20" r="9" fill="#ff9d8a" opacity=".7"/><circle cx="36" cy="20" r="9" fill="#ff9d8a" opacity=".7"/>
+<circle cx="-21" cy="-8" r="13" fill="#fff"/><circle cx="21" cy="-8" r="13" fill="#fff"/>
+<g class="a look"><circle cx="-16" cy="-8" r="7" fill="#3a2414"/><circle cx="26" cy="-8" r="7" fill="#3a2414"/><circle cx="-14" cy="-11" r="2.4" fill="#fff"/><circle cx="28" cy="-11" r="2.4" fill="#fff"/></g>
+<path d="M-13 9Q0 2 13 9L0 27Z" fill="#ffb21f" stroke="#ffb21f" stroke-width="5" stroke-linejoin="round"/>
+<path d="M-12 10Q0 6 12 10" stroke="#ffe08a" stroke-width="3" stroke-linecap="round" fill="none"/>
+</g></g>
+<!-- sparkles -->
+<g fill="#fff">
+<g transform="translate(344 196) scale(1.5)"><use class="a tw" xlink:href="#spk" href="#spk"/></g>
+<g transform="translate(368 318)"><use class="a tw t2" xlink:href="#spk" href="#spk"/></g>
+<g transform="translate(196 78) scale(1.2)"><use class="a tw t3" xlink:href="#spk" href="#spk"/></g>
+<g transform="translate(40 232) scale(.9)"><use class="a tw t4" xlink:href="#spk" href="#spk"/></g>
+<g transform="translate(176 398) scale(.8)"><use class="a tw t2" xlink:href="#spk" href="#spk"/></g>
+</g>
+</svg>

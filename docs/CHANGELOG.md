@@ -11,6 +11,19 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-17 — Animated cover art for every game card
+
+- Each landing card now shows bespoke cover art: `public/covers/<game>.svg`,
+  a self-contained animated vector poster (400×460 viewBox, 8–14 KB, CSS
+  keyframes, no text/emoji/external assets, honours prefers-reduced-motion).
+  One colour world per game (bubblegum/aqua Pick & Pop, peach Shape Sorter,
+  sky-blue Who Makes This Sound?, butter-yellow Colour Match, indigo Flip &
+  Match, teal Connect the Match, plum theatre Who's That?, coral Colour Hunt,
+  violet What Comes Next?, mint Odd One Out, tangerine Tic-Tac-Toe,
+  cornflower Crossword). Who's That? uses an original bunny, not a TV character.
+- The screenshot thumbnails from earlier today are gone; `scripts/capture-thumbs.mjs`
+  stays for anyone who wants real screenshots again.
+
 ## 2026-11-17 — Landing page redesign with real screenshots
 
 - Cards now show a real gameplay screenshot (`public/thumbs/<game>.webp`,

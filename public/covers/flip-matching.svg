@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 460">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0.25" y2="1">
+<stop offset="0" stop-color="#1d1a66"/><stop offset=".45" stop-color="#4144c4"/><stop offset=".8" stop-color="#8a80ee"/><stop offset="1" stop-color="#c7a6f4"/>
+</linearGradient>
+<radialGradient id="glow" cx=".5" cy=".5" r=".5">
+<stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#b9b6ff" stop-opacity=".25"/><stop offset="1" stop-color="#b9b6ff" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="back" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#8f96ff"/><stop offset="1" stop-color="#4a43c8"/>
+</linearGradient>
+<linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#fff0f6"/><stop offset="1" stop-color="#ffc9df"/>
+</linearGradient>
+<linearGradient id="panelC" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#f3fff0"/><stop offset="1" stop-color="#c9f2d2"/>
+</linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#ffe680"/><stop offset="1" stop-color="#ffb52e"/>
+</linearGradient>
+<linearGradient id="heart" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#ff8fb5"/><stop offset="1" stop-color="#ee4f8b"/>
+</linearGradient>
+<path id="spark" d="M0,-10 C1.2,-3 3,-1.2 10,0 C3,1.2 1.2,3 0,10 C-1.2,3 -3,1.2 -10,0 C-3,-1.2 -1.2,-3 0,-10Z"/>
+<g id="cardBack">
+<rect x="-65" y="-77" width="130" height="170" rx="24" fill="#15124f" opacity=".28"/>
+<rect x="-65" y="-79" width="130" height="170" rx="24" fill="#2f2a9a"/>
+<rect x="-65" y="-85" width="130" height="170" rx="24" fill="#fff"/>
+<rect x="-58" y="-78" width="116" height="156" rx="18" fill="url(#back)"/>
+<rect x="-49" y="-69" width="98" height="138" rx="12" fill="none" stroke="#c9ccff" stroke-width="2.5" stroke-dasharray="1 9" stroke-linecap="round" opacity=".8"/>
+<path d="M-58,-40 V-60 a18,18 0 0 1 18,-18 H20 Z" fill="#fff" opacity=".16"/>
+<g>
+<path d="M0,-34 L8.8,-12.1 L32.3,-10.5 L14.3,4.6 L20,27.5 L0,15 L-20,27.5 L-14.3,4.6 L-32.3,-10.5 L-8.8,-12.1Z" fill="#d98a12" stroke="#d98a12" stroke-width="13" stroke-linejoin="round" transform="translate(0,4)"/>
+<path d="M0,-34 L8.8,-12.1 L32.3,-10.5 L14.3,4.6 L20,27.5 L0,15 L-20,27.5 L-14.3,4.6 L-32.3,-10.5 L-8.8,-12.1Z" fill="url(#gold)" stroke="url(#gold)" stroke-width="13" stroke-linejoin="round"/>
+<path d="M-4,-33 L-11,-15" stroke="#fff8d0" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+<circle cx="-9" cy="-2" r="3.4" fill="#5a3410"/><circle cx="9" cy="-2" r="3.4" fill="#5a3410"/>
+<path d="M-7,6 Q0,13 7,6" fill="none" stroke="#5a3410" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="-17" cy="6" rx="5" ry="3.2" fill="#ff8a5c" opacity=".7"/><ellipse cx="17" cy="6" rx="5" ry="3.2" fill="#ff8a5c" opacity=".7"/>
+</g>
+</g>
+<g id="faceBase">
+<rect x="-65" y="-77" width="130" height="170" rx="24" fill="#15124f" opacity=".28"/>
+<rect x="-65" y="-79" width="130" height="170" rx="24" fill="#b79be8"/>
+<rect x="-65" y="-85" width="130" height="170" rx="24" fill="#fff"/>
+</g>
+<g id="bunny">
+<ellipse cx="0" cy="58" rx="34" ry="6" fill="#e58bb0" opacity=".45"/>
+<g transform="rotate(-11 -16 -10)"><ellipse cx="-17" cy="-32" rx="12.5" ry="30" fill="#fff"/><ellipse cx="-17" cy="-30" rx="6" ry="21" fill="#ff9fc0"/></g>
+<g transform="rotate(13 16 -10)"><ellipse cx="17" cy="-32" rx="12.5" ry="30" fill="#fff"/><ellipse cx="17" cy="-30" rx="6" ry="21" fill="#ff9fc0"/></g>
+<ellipse cx="0" cy="22" rx="42" ry="35" fill="#fff"/>
+<path d="M-34,42 A42,35 0 0 0 34,42 A44,40 0 0 1 -34,42Z" fill="#f6e3ef"/>
+<ellipse cx="-27" cy="31" rx="8" ry="5" fill="#ff9fc0" opacity=".75"/><ellipse cx="27" cy="31" rx="8" ry="5" fill="#ff9fc0" opacity=".75"/>
+<g class="blink"><circle cx="-16" cy="19" r="5" fill="#2b2466"/><circle cx="16" cy="19" r="5" fill="#2b2466"/>
+<circle cx="-14.4" cy="17.2" r="1.7" fill="#fff"/><circle cx="17.6" cy="17.2" r="1.7" fill="#fff"/></g>
+<path d="M-4.5,27 h9 q1.5,0 .5,1.6 l-3.6,4 q-1.4,1.2 -2.8,0 l-3.6,-4 q-1,-1.6 .5,-1.6Z" fill="#f0508c"/>
+<path d="M-7,38 Q-3.5,42 0,37 Q3.5,42 7,38" fill="none" stroke="#2b2466" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<g id="cardBunny">
+<use xlink:href="#faceBase"/>
+<rect x="-56" y="-76" width="112" height="152" rx="17" fill="url(#panel)"/>
+<path d="M-56,-36 V-59 a17,17 0 0 1 17,-17 H18 Z" fill="#fff" opacity=".5"/>
+<use xlink:href="#bunny" transform="translate(0,4)"/>
+</g>
+<g id="cardCarrot">
+<use xlink:href="#faceBase"/>
+<rect x="-56" y="-76" width="112" height="152" rx="17" fill="url(#panelC)"/>
+<g transform="rotate(18)">
+<path d="M0,-22 C-10,-48 -26,-44 -22,-30 C-34,-36 -36,-18 -8,-16Z M0,-22 C10,-48 26,-44 22,-30 C34,-36 36,-18 8,-16Z M-7,-18 C-10,-56 10,-56 7,-18Z" fill="#4cc46a"/>
+<path d="M-22,-12 Q0,-28 22,-12 Q20,30 0,56 Q-20,30 -22,-12Z" fill="#ff8b2b"/>
+<path d="M-14,-6 Q-12,22 -3,40" stroke="#ffb866" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path d="M4,2 h12 M2,20 h10" stroke="#e06a10" stroke-width="3" stroke-linecap="round"/>
+</g>
+</g>
+</defs>
+<style>
+.a{transform-box:fill-box;transform-origin:center}
+.bobL{animation:bobL 5s ease-in-out infinite}
+.bobR{animation:bobR 5s ease-in-out infinite}
+.fl1{animation:fl 6s ease-in-out infinite}
+.fl2{animation:fl 7s ease-in-out -2.5s infinite}
+.fl3{animation:fl 6.5s ease-in-out -4s infinite}
+.heart{animation:beat 2.4s ease-in-out infinite}
+.tw{animation:tw 3s ease-in-out infinite}
+.tw2{animation:tw 3.6s ease-in-out -1.2s infinite}
+.tw3{animation:tw 4.2s ease-in-out -2.4s infinite}
+.blink{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+.fb{transform:scaleX(.5);animation:fb 8s ease-in-out infinite}
+.ff{transform:scaleX(0);animation:ff 8s ease-in-out infinite}
+@keyframes bobL{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.5deg)}}
+@keyframes bobR{0%,100%{transform:translateY(-4px) rotate(1deg)}50%{transform:translateY(2px) rotate(-.5deg)}}
+@keyframes fl{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(3deg)}}
+@keyframes beat{0%,100%{transform:scale(1)}18%{transform:scale(1.16)}36%{transform:scale(.98)}54%{transform:scale(1.1)}72%{transform:scale(1)}}
+@keyframes tw{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.5) rotate(45deg)}}
+@keyframes blink{0%,44%,50%,100%{transform:scaleY(1)}47%{transform:scaleY(.1)}}
+@keyframes fb{0%{transform:scaleX(.5)}7%,57%{transform:scaleX(0)}66%,93%{transform:scaleX(1)}100%{transform:scaleX(.5)}}
+@keyframes ff{0%,7%{transform:scaleX(0)}16%,48%{transform:scaleX(1)}57%,100%{transform:scaleX(0)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="400" height="460" fill="url(#bg)"/>
+<circle cx="350" cy="40" r="120" fill="#6f6cf0" opacity=".28"/>
+<circle cx="20" cy="330" r="130" fill="#b79bf5" opacity=".22"/>
+<path d="M0,400 Q110,360 220,398 T400,380 V460 H0Z" fill="#d9bcfa" opacity=".35"/>
+<path d="M0,428 Q120,396 250,430 T400,418 V460 H0Z" fill="#ecd6ff" opacity=".4"/>
+<circle cx="200" cy="215" r="190" fill="url(#glow)"/>
+<g fill="#fff" opacity=".7"><circle cx="40" cy="150" r="2"/><circle cx="372" cy="200" r="2.4"/><circle cx="150" cy="24" r="2"/><circle cx="250" cy="44" r="1.6"/><circle cx="28" cy="250" r="1.8"/><circle cx="380" cy="300" r="1.8"/><circle cx="330" cy="352" r="2"/><circle cx="64" cy="318" r="1.6"/></g>
+<!-- back row -->
+<g transform="translate(88,96) rotate(-17) scale(.8)"><g class="a fl1"><use xlink:href="#cardBack"/></g></g>
+<g transform="translate(316,92) rotate(15) scale(.8)"><g class="a fl2"><use xlink:href="#cardBack"/></g></g>
+<!-- bottom row -->
+<g transform="translate(258,372) rotate(-9) scale(.68)"><g class="a fl3"><use xlink:href="#cardBack"/></g></g>
+<g transform="translate(122,374) rotate(7) scale(.72)">
+<path d="M-52,-60 q-14,14 -10,34 M52,58 q14,-14 10,-34" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+<g class="a fb"><use xlink:href="#cardBack"/></g>
+<g class="a ff"><use xlink:href="#cardCarrot"/></g>
+</g>
+<!-- hero pair -->
+<g transform="translate(127,214) rotate(-9) scale(1.1)"><g class="a bobL"><use xlink:href="#cardBunny"/></g></g>
+<g transform="translate(273,214) rotate(9) scale(1.1)"><g class="a bobR"><use xlink:href="#cardBunny"/></g></g>
+<!-- heart -->
+<g transform="translate(200,128)"><g class="a heart">
+<path d="M0,14 C-22,-2 -18,-18 -8,-18 C-3,-18 0,-14 0,-11 C0,-14 3,-18 8,-18 C18,-18 22,-2 0,14Z" transform="scale(1.9)" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+<path d="M0,14 C-22,-2 -18,-18 -8,-18 C-3,-18 0,-14 0,-11 C0,-14 3,-18 8,-18 C18,-18 22,-2 0,14Z" transform="scale(1.9)" fill="url(#heart)"/>
+<path d="M-22,-20 q4,-9 12,-8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+</g></g>
+<!-- sparkles -->
+<g fill="url(#gold)">
+<g transform="translate(200,50) scale(1.9)"><use class="a tw" xlink:href="#spark"/></g>
+<g transform="translate(160,84) scale(.9)"><use class="a tw2" xlink:href="#spark"/></g>
+<g transform="translate(244,90) scale(.7)"><use class="a tw3" xlink:href="#spark"/></g>
+<g transform="translate(36,205) scale(1.2)"><use class="a tw2" xlink:href="#spark"/></g>
+<g transform="translate(366,250) scale(1.1)"><use class="a tw3" xlink:href="#spark"/></g>
+<g transform="translate(196,340) scale(1.3)"><use class="a tw" xlink:href="#spark"/></g>
+<g transform="translate(350,160) scale(.7)"><use class="a tw" xlink:href="#spark"/></g>
+</g>
+</svg>

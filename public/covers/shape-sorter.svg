@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 460">
+<defs>
+<radialGradient id="bg" cx="50%" cy="30%" r="85%">
+<stop offset="0" stop-color="#fff4dc"/><stop offset=".45" stop-color="#ffd3a0"/><stop offset="1" stop-color="#ff9d5c"/>
+</radialGradient>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb070"/><stop offset="1" stop-color="#ff8f52"/></linearGradient>
+<linearGradient id="lid" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#ffe9c6"/></linearGradient>
+<linearGradient id="lf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fdccb"/><stop offset="1" stop-color="#2bbdae"/></linearGradient>
+<linearGradient id="rf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22ab9d"/><stop offset="1" stop-color="#158a80"/></linearGradient>
+<linearGradient id="gStar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe45c"/><stop offset="1" stop-color="#ffc21f"/></linearGradient>
+<linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a6b"/><stop offset="1" stop-color="#f4473f"/></linearGradient>
+<linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6fb6ff"/><stop offset="1" stop-color="#3b82f0"/></linearGradient>
+<linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fe36a"/><stop offset="1" stop-color="#4fc04a"/></linearGradient>
+<linearGradient id="gPink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8fc0"/><stop offset="1" stop-color="#f0569a"/></linearGradient>
+<path id="star" d="M0,-50 L15.3,-21 L47.6,-15.5 L24.7,8 L29.4,40.5 L0,26 L-29.4,40.5 L-24.7,8 L-47.6,-15.5 L-15.3,-21Z"/>
+<path id="heart" d="M0,28 C-44,2 -36,-30 -15,-30 C-5,-30 0,-23 0,-18 C0,-23 5,-30 15,-30 C36,-30 44,2 0,28Z"/>
+<path id="tri" d="M0,-30 L33,25 L-33,25Z"/>
+<path id="hStar" transform="translate(-44,-44) rotate(-45) scale(.78)" d="M0,-50 L15.3,-21 L47.6,-15.5 L24.7,8 L29.4,40.5 L0,26 L-29.4,40.5 L-24.7,8 L-47.6,-15.5 L-15.3,-21Z"/>
+<circle id="hCirc" cx="48" cy="48" r="30"/>
+<path id="hHeart" transform="translate(46,-46) rotate(-45) scale(.92)" d="M0,28 C-44,2 -36,-30 -15,-30 C-5,-30 0,-23 0,-18 C0,-23 5,-30 15,-30 C36,-30 44,2 0,28Z"/>
+<rect id="hSq" x="-73" y="19" width="54" height="54" rx="9"/>
+<clipPath id="cStar"><use xlink:href="#hStar"/></clipPath>
+<clipPath id="cCirc"><use xlink:href="#hCirc"/></clipPath>
+<clipPath id="cHeart"><use xlink:href="#hHeart"/></clipPath>
+<clipPath id="cSq"><use xlink:href="#hSq"/></clipPath>
+<g id="face">
+<g class="blink"><circle cx="-11" cy="-2" r="4.3" fill="#3b2140"/><circle cx="11" cy="-2" r="4.3" fill="#3b2140"/><circle cx="-9.6" cy="-3.6" r="1.4" fill="#fff"/><circle cx="12.4" cy="-3.6" r="1.4" fill="#fff"/></g>
+<path d="M-6.5,6.5 Q0,13.5 6.5,6.5" fill="none" stroke="#3b2140" stroke-width="3" stroke-linecap="round"/>
+<ellipse cx="-19.5" cy="7" rx="5" ry="3.2" fill="#ff5d8f" opacity=".45"/><ellipse cx="19.5" cy="7" rx="5" ry="3.2" fill="#ff5d8f" opacity=".45"/>
+</g>
+<path id="spark" d="M0,-10 C1.5,-3 3,-1.5 10,0 C3,1.5 1.5,3 0,10 C-1.5,3 -3,1.5 -10,0 C-3,-1.5 -1.5,-3 0,-10Z"/>
+</defs>
+<style>
+.a{transform-box:fill-box;transform-origin:center}
+.rays{animation:spin 40s linear infinite}
+.starA{animation:drop 3.2s ease-in-out infinite}
+.circA{animation:hop 2.4s ease-in-out infinite}
+.sqA{animation:tumble 3.6s ease-in-out infinite}
+.triA{animation:hop2 2.8s ease-in-out infinite .4s}
+.heartA{animation:beat 2.6s ease-in-out infinite .2s}
+.tw{animation:tw 2.4s ease-in-out infinite}
+.tw2{animation-delay:.8s}.tw3{animation-delay:1.5s}
+.blink{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+.sh{animation:sh 3.2s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes drop{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(16px) rotate(5deg)}}
+@keyframes hop{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-12px) rotate(6deg)}}
+@keyframes hop2{0%,100%{transform:translateY(0) rotate(-10deg)}50%{transform:translateY(-10px) rotate(-2deg)}}
+@keyframes tumble{0%,100%{transform:translateY(0) rotate(12deg)}50%{transform:translateY(-9px) rotate(-4deg)}}
+@keyframes beat{0%,100%{transform:rotate(10deg) scale(1)}50%{transform:rotate(14deg) scale(1.08)}}
+@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.45);opacity:.35}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.12)}}
+@keyframes sh{0%,100%{opacity:.16}50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="400" height="460" fill="url(#bg)"/>
+<g class="a rays" opacity=".5">
+<g transform="translate(200,150)" fill="#fffaf0">
+<path d="M0,0 L-28,-330 L28,-330Z"/><path d="M0,0 L-28,-330 L28,-330Z" transform="rotate(45)"/><path d="M0,0 L-28,-330 L28,-330Z" transform="rotate(90)"/><path d="M0,0 L-28,-330 L28,-330Z" transform="rotate(135)"/><path d="M0,0 L-28,-330 L28,-330Z" transform="rotate(180)"/><path d="M0,0 L-28,-330 L28,-330Z" transform="rotate(225)"/><path d="M0,0 L-28,-330 L28,-330Z" transform="rotate(270)"/><path d="M0,0 L-28,-330 L28,-330Z" transform="rotate(315)"/>
+</g></g>
+<circle cx="200" cy="140" r="92" fill="#fffaf0" opacity=".55"/>
+<path d="M0,330 Q200,290 400,330 L400,460 L0,460Z" fill="url(#floor)"/>
+<circle cx="40" cy="420" r="60" fill="#ffc58f" opacity=".35"/>
+<ellipse cx="200" cy="398" rx="170" ry="26" fill="#c9521f" opacity=".28"/>
+<!-- box body -->
+<g stroke-linejoin="round" stroke-width="14">
+<path d="M58,252 L200,305 L200,402 L58,349Z" fill="url(#lf)" stroke="#3fd0c0"/>
+<path d="M200,305 L342,252 L342,349 L200,402Z" fill="url(#rf)" stroke="#1c9f92"/>
+</g>
+<path d="M200,300 L200,408" stroke="#5fe6d6" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+<!-- side holes -->
+<g transform="matrix(.72,.27,0,1,56,250)">
+<path d="M100,24 L136,82 L64,82Z" fill="#4a1f63" stroke="#8ff0e3" stroke-width="5" stroke-linejoin="round"/>
+<path d="M100,36 L125,78 L75,78Z" fill="#35134a"/>
+</g>
+<g transform="matrix(.72,-.27,0,1,200,304)">
+<path d="M100,20 L134,56 L100,92 L66,56Z" fill="#4a1f63" stroke="#4cc7ba" stroke-width="5" stroke-linejoin="round"/>
+<path d="M100,32 L124,58 L100,88 L76,58Z" fill="#35134a"/>
+</g>
+<!-- lid -->
+<g transform="matrix(.72,.27,-.72,.27,200,262)"><rect x="-106" y="-106" width="212" height="212" rx="20" fill="#eebf86"/></g>
+<g transform="matrix(.72,.27,-.72,.27,200,248)">
+<rect x="-106" y="-106" width="212" height="212" rx="20" fill="url(#lid)"/>
+<rect x="-94" y="-94" width="188" height="188" rx="14" fill="none" stroke="#f6d9ac" stroke-width="3"/>
+<g fill="#7a3f9e" stroke="#f1c995" stroke-width="5" stroke-linejoin="round">
+<use xlink:href="#hCirc"/><use xlink:href="#hHeart"/><use xlink:href="#hSq"/><use xlink:href="#hStar"/>
+</g>
+<g fill="#431a5c">
+<g clip-path="url(#cCirc)"><use xlink:href="#hCirc" transform="translate(7,7)"/></g>
+<g clip-path="url(#cHeart)"><use xlink:href="#hHeart" transform="translate(7,7)"/></g>
+<g clip-path="url(#cSq)"><use xlink:href="#hSq" transform="translate(7,7)"/></g>
+<g clip-path="url(#cStar)"><use xlink:href="#hStar" transform="translate(7,7)"/></g>
+</g>
+<g clip-path="url(#cStar)"><ellipse class="sh" cx="-44" cy="-44" rx="40" ry="40" fill="#ffd84a" opacity=".16"/></g>
+</g>
+<!-- sparkles -->
+<g fill="#fff">
+<g transform="translate(140,170)"><use class="a tw" xlink:href="#spark"/></g>
+<g transform="translate(262,182) scale(.7)"><use class="a tw tw2" xlink:href="#spark"/></g>
+<g transform="translate(200,42) scale(.8)"><use class="a tw tw3" xlink:href="#spark"/></g>
+<g transform="translate(360,250) scale(.6)"><use class="a tw tw2" xlink:href="#spark"/></g>
+<g transform="translate(36,250) scale(.55)"><use class="a tw tw3" xlink:href="#spark"/></g>
+</g>
+<!-- triangle -->
+<g transform="translate(104,84)"><g class="a triA">
+<use xlink:href="#tri" y="7" fill="#35a03a" stroke="#35a03a" stroke-width="14" stroke-linejoin="round"/>
+<use xlink:href="#tri" fill="url(#gGreen)" stroke="url(#gGreen)" stroke-width="14" stroke-linejoin="round"/>
+<path d="M-12,-14 L-2,-30" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+<use xlink:href="#face" y="12" transform="scale(.82)"/>
+</g></g>
+<!-- heart -->
+<g transform="translate(298,84)"><g class="a heartA">
+<use xlink:href="#heart" y="7" fill="#c93678" stroke="#c93678" stroke-width="8" stroke-linejoin="round"/>
+<use xlink:href="#heart" fill="url(#gPink)" stroke="url(#gPink)" stroke-width="8" stroke-linejoin="round"/>
+<path d="M-24,-14 Q-22,-24 -13,-25" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+<use xlink:href="#face" y="-4" transform="scale(.9)"/>
+</g></g>
+<!-- circle -->
+<g transform="translate(68,178)"><g class="a circA">
+<circle cy="7" r="36" fill="#c22e2c"/>
+<circle r="36" fill="url(#gRed)"/>
+<path d="M-24,-12 Q-20,-24 -8,-28" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+<use xlink:href="#face" y="2"/>
+</g></g>
+<!-- square -->
+<g transform="translate(334,172)"><g class="a sqA">
+<rect x="-31" y="-24" width="62" height="62" rx="15" fill="#2460c4"/>
+<rect x="-31" y="-31" width="62" height="62" rx="15" fill="url(#gBlue)"/>
+<path d="M-21,-12 Q-21,-22 -11,-22" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+<use xlink:href="#face" y="2"/>
+</g></g>
+<!-- hero star -->
+<g transform="translate(200,146)"><g class="a starA">
+<g transform="scale(1.22)">
+<use xlink:href="#star" y="6" fill="#e89a00" stroke="#e89a00" stroke-width="12" stroke-linejoin="round"/>
+<use xlink:href="#star" fill="url(#gStar)" stroke="url(#gStar)" stroke-width="12" stroke-linejoin="round"/>
+<path d="M-17,-26 L-8,-42" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+<use xlink:href="#face" y="2" transform="scale(1.05)"/>
+</g></g></g>
+</svg>

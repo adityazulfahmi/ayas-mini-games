@@ -57,7 +57,7 @@
     /* Three across from tablets up: 9 "now" games make a 3×3, 3 "later" games one row. */
     @media (min-width: 700px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; } }
 
-    /* ── Game card: a real screenshot in a coloured frame ── */
+    /* ── Game card: animated cover art (public/covers/*.svg) ── */
     .game {
       display: flex; flex-direction: column;
       background: var(--card); border-radius: 26px; padding: 8px;
@@ -67,23 +67,23 @@
     }
     .shot {
       position: relative; border-radius: 20px; overflow: hidden;
-      background: var(--accent); padding: 10px 10px 0;
-      aspect-ratio: 4 / 4.6;
+      background: var(--accent);
+      aspect-ratio: 400 / 460;
+      /* Safari: keep the rounded clip while the art scales on hover. */
+      isolation: isolate;
     }
     .shot img {
       display: block; width: 100%; height: 100%;
-      object-fit: cover; object-position: top;
-      border-radius: 14px 14px 0 0;
-      box-shadow: 0 6px 18px -8px rgba(106,27,154,0.35);
-      transition: transform .6s var(--ease);
+      object-fit: cover;
+      transition: transform .7s var(--ease);
     }
     .play {
       position: absolute; right: 12px; bottom: 12px;
       width: 42px; height: 42px; border-radius: 50%;
       display: grid; place-items: center; padding-left: 3px;
-      font-size: 0.95rem; color: #fff;
-      background: linear-gradient(135deg, var(--pink), var(--lilac));
-      box-shadow: 0 6px 16px -4px rgba(240,98,146,0.6), 0 0 0 3px rgba(255,255,255,0.9);
+      font-size: 0.95rem; color: var(--pink);
+      background: rgba(255,255,255,0.94);
+      box-shadow: 0 8px 18px -6px rgba(60,10,90,0.45);
       transition: transform .35s var(--ease);
     }
     .badge {
@@ -111,7 +111,7 @@
 
     @media (hover: hover) {
       .game:hover { transform: translateY(-6px); box-shadow: 0 22px 40px -16px rgba(106,27,154,0.35); }
-      .game:hover .shot img { transform: translateY(-4px); }
+      .game:hover .shot img { transform: scale(1.05); }
       .game:hover .play { transform: scale(1.12); }
     }
     .game:active { transform: scale(0.97); }
@@ -122,7 +122,7 @@
       body { padding-left: 12px; padding-right: 12px; }
       header { margin-bottom: 26px; }
       .game { border-radius: 22px; padding: 6px; }
-      .shot { border-radius: 17px; padding: 8px 8px 0; }
+      .shot { border-radius: 17px; }
       .play { width: 34px; height: 34px; font-size: 0.8rem; right: 9px; bottom: 9px; }
       .badge { left: 10px; top: 10px; font-size: 0.68rem; padding: 4px 8px; }
       .info { padding: 9px 6px 6px; gap: 6px; }
@@ -155,7 +155,7 @@
 
     <!-- Cards are ordered by suitability for Aya (most → least), split into
          "now" and "later". See docs/decisions.md D-013 before re-shuffling.
-         Screenshots: public/thumbs/*.webp, made by scripts/capture-thumbs.mjs. -->
+         Cover art: public/covers/<game>.svg (animated, self-contained vector). -->
     <section class="shelf" aria-labelledby="now-title">
       <div class="shelf-head">
         <h2 id="now-title">⭐ Perfect for Aya now</h2>
@@ -164,7 +164,7 @@
       <div class="grid">
       <a class="game" href="./ayas-pick-pop/" style="--accent:#ffd9e8">
         <div class="shot">
-          <img src="./thumbs/pick-pop.webp" width="360" height="540" loading="lazy" alt="Pick &amp; Pop! game screen" />
+          <img src="./covers/pick-pop.svg" width="400" height="460" loading="lazy" alt="Pick &amp; Pop! cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -175,7 +175,7 @@
       </a>
       <a class="game" href="./ayas-shape-sorter/" style="--accent:#ffe6c7">
         <div class="shot">
-          <img src="./thumbs/shape-sorter.webp" width="360" height="540" loading="lazy" alt="Shape Sorter game screen" />
+          <img src="./covers/shape-sorter.svg" width="400" height="460" loading="lazy" alt="Shape Sorter cover art" />
           <span class="play" aria-hidden="true">▶</span><span class="badge">✨ New</span>
         </div>
         <div class="info">
@@ -186,7 +186,7 @@
       </a>
       <a class="game" href="./ayas-who-makes-sound/" style="--accent:#d9f0fb">
         <div class="shot">
-          <img src="./thumbs/who-makes-sound.webp" width="360" height="540" loading="lazy" alt="Who Makes This Sound? game screen" />
+          <img src="./covers/who-makes-sound.svg" width="400" height="460" loading="lazy" alt="Who Makes This Sound? cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -197,7 +197,7 @@
       </a>
       <a class="game" href="./ayas-colour-match/" style="--accent:#fff3b8">
         <div class="shot">
-          <img src="./thumbs/colour-match.webp" width="360" height="540" loading="lazy" alt="Colour Match game screen" />
+          <img src="./covers/colour-match.svg" width="400" height="460" loading="lazy" alt="Colour Match cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -208,7 +208,7 @@
       </a>
       <a class="game" href="./ayas-flip-matching/" style="--accent:#e3e6fb">
         <div class="shot">
-          <img src="./thumbs/flip-matching.webp" width="360" height="540" loading="lazy" alt="Flip &amp; Match game screen" />
+          <img src="./covers/flip-matching.svg" width="400" height="460" loading="lazy" alt="Flip &amp; Match cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -219,7 +219,7 @@
       </a>
       <a class="game" href="./ayas-connect-match/" style="--accent:#d6f2ee">
         <div class="shot">
-          <img src="./thumbs/connect-match.webp" width="360" height="540" loading="lazy" alt="Connect the Match game screen" />
+          <img src="./covers/connect-match.svg" width="400" height="460" loading="lazy" alt="Connect the Match cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -230,7 +230,7 @@
       </a>
       <a class="game" href="./ayas-whos-that/" style="--accent:#f1e0f7">
         <div class="shot">
-          <img src="./thumbs/whos-that.webp" width="360" height="540" loading="lazy" alt="Who’s That, Aya? game screen" />
+          <img src="./covers/whos-that.svg" width="400" height="460" loading="lazy" alt="Who’s That, Aya? cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -241,7 +241,7 @@
       </a>
       <a class="game" href="./ayas-colour-hunt/" style="--accent:#ffe0e6">
         <div class="shot">
-          <img src="./thumbs/colour-hunt.webp" width="360" height="540" loading="lazy" alt="Colour Hunt game screen" />
+          <img src="./covers/colour-hunt.svg" width="400" height="460" loading="lazy" alt="Colour Hunt cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -252,7 +252,7 @@
       </a>
       <a class="game" href="./ayas-whats-next/" style="--accent:#e9e1fb">
         <div class="shot">
-          <img src="./thumbs/whats-next.webp" width="360" height="540" loading="lazy" alt="What Comes Next? game screen" />
+          <img src="./covers/whats-next.svg" width="400" height="460" loading="lazy" alt="What Comes Next? cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -272,7 +272,7 @@
       <div class="grid">
       <a class="game" href="./ayas-odd-one-out/" style="--accent:#e0f4e2">
         <div class="shot">
-          <img src="./thumbs/odd-one-out.webp" width="360" height="540" loading="lazy" alt="Odd One Out game screen" />
+          <img src="./covers/odd-one-out.svg" width="400" height="460" loading="lazy" alt="Odd One Out cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -283,7 +283,7 @@
       </a>
       <a class="game" href="./ayas-tictactoe/" style="--accent:#ffebd6">
         <div class="shot">
-          <img src="./thumbs/tictactoe.webp" width="360" height="540" loading="lazy" alt="Tic-Tac-Toe game screen" />
+          <img src="./covers/tictactoe.svg" width="400" height="460" loading="lazy" alt="Tic-Tac-Toe cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">
@@ -294,7 +294,7 @@
       </a>
       <a class="game" href="./ayas-crossword/" style="--accent:#dcecfc">
         <div class="shot">
-          <img src="./thumbs/crossword.webp" width="360" height="540" loading="lazy" alt="Aya’s Crossword game screen" />
+          <img src="./covers/crossword.svg" width="400" height="460" loading="lazy" alt="Aya’s Crossword cover art" />
           <span class="play" aria-hidden="true">▶</span>
         </div>
         <div class="info">

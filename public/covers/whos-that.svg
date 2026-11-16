@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 460">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c0a45"/><stop offset="1" stop-color="#5c1672"/></linearGradient>
+<radialGradient id="glow" cx="200" cy="235" r="185" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffe9a6"/><stop offset=".45" stop-color="#ffc24d" stop-opacity=".85"/><stop offset=".8" stop-color="#f0629a" stop-opacity=".3"/><stop offset="1" stop-color="#f0629a" stop-opacity="0"/></radialGradient>
+<linearGradient id="cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffdf8a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd76a" stop-opacity=".1"/></linearGradient>
+<linearGradient id="curt" x1="0" y1="0" x2="30" y2="0" gradientUnits="userSpaceOnUse" spreadMethod="reflect"><stop offset="0" stop-color="#9c1250"/><stop offset=".55" stop-color="#d42a70"/><stop offset="1" stop-color="#f0629a"/></linearGradient>
+<linearGradient id="curtShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a0638" stop-opacity=".55"/><stop offset=".35" stop-color="#3a0638" stop-opacity="0"/><stop offset="1" stop-color="#3a0638" stop-opacity=".35"/></linearGradient>
+<linearGradient id="val" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a0c44"/><stop offset="1" stop-color="#c81f68"/></linearGradient>
+<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a2360"/><stop offset="1" stop-color="#3a0d3c"/></linearGradient>
+<radialGradient id="pool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe08a" stop-opacity=".85"/><stop offset="1" stop-color="#ffc24d" stop-opacity="0"/></radialGradient>
+<radialGradient id="fur" cx="185" cy="200" r="210" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fffdf8"/><stop offset=".6" stop-color="#fff1e2"/><stop offset="1" stop-color="#f1cfc4"/></radialGradient>
+<linearGradient id="shine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fffbe0"/><stop offset="1" stop-color="#ffd54a" stop-opacity="0"/></linearGradient>
+<g id="shape">
+<ellipse cx="170" cy="137" rx="21" ry="58" transform="rotate(-8 170 137)"/>
+<ellipse cx="232" cy="137" rx="21" ry="58" transform="rotate(10 232 137)"/>
+<ellipse cx="149" cy="308" rx="16" ry="27" transform="rotate(18 149 308)"/>
+<ellipse cx="251" cy="308" rx="16" ry="27" transform="rotate(-18 251 308)"/>
+<ellipse cx="200" cy="320" rx="58" ry="58"/>
+<ellipse cx="166" cy="373" rx="29" ry="15"/>
+<ellipse cx="234" cy="373" rx="29" ry="15"/>
+<ellipse cx="200" cy="222" rx="70" ry="58"/>
+</g>
+<clipPath id="bun">
+<ellipse cx="170" cy="137" rx="21" ry="58" transform="rotate(-8 170 137)"/>
+<ellipse cx="232" cy="137" rx="21" ry="58" transform="rotate(10 232 137)"/>
+<ellipse cx="149" cy="308" rx="16" ry="27" transform="rotate(18 149 308)"/>
+<ellipse cx="251" cy="308" rx="16" ry="27" transform="rotate(-18 251 308)"/>
+<ellipse cx="200" cy="320" rx="58" ry="58"/>
+<ellipse cx="166" cy="373" rx="29" ry="15"/>
+<ellipse cx="234" cy="373" rx="29" ry="15"/>
+<ellipse cx="200" cy="222" rx="70" ry="58"/>
+</clipPath>
+<clipPath id="half"><rect x="-300" y="0" width="500" height="460"/></clipPath>
+<path id="star" d="M0-10Q1.6-1.6 10 0Q1.6 1.6 0 10Q-1.6 1.6-10 0Q-1.6-1.6 0-10Z"/>
+<g id="curtain">
+<path d="M-40 0H106C102 92 94 172 58 238C72 300 78 362 73 420Q36 432 0 420H-40Z" fill="url(#curt)"/>
+<path d="M-40 0H106C102 92 94 172 58 238C72 300 78 362 73 420Q36 432 0 420H-40Z" fill="url(#curtShade)"/>
+<path d="M78 40C74 120 64 190 44 236M48 40C46 120 40 180 28 232M40 250C50 310 52 370 50 424M22 250C26 310 26 370 24 424" fill="none" stroke="#7a0c44" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+<path d="M-40 418H0Q36 430 73 418" fill="none" stroke="#ffcf5a" stroke-width="5" stroke-linecap="round"/>
+<path d="M-40 226H-4Q30 246 60 232L62 246Q30 262-4 242H-40Z" fill="#ffcf5a"/>
+<path d="M-4 226Q30 246 60 232" fill="none" stroke="#fff3c4" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="60" cy="250" r="7" fill="#ffb52e"/><path d="M56 255l-3 18h14l-3-18z" fill="#ffcf5a"/>
+</g>
+</defs>
+<style>
+.a{transform-box:fill-box;transform-origin:center}
+.wo{animation:wo 9s ease-in-out infinite}
+.wi{animation:wi 9s ease-in-out infinite}
+@keyframes wo{0%,10%{transform:translateX(0)}30%,50%{transform:translateX(112px)}72%,84%{transform:translateX(-112px)}100%{transform:translateX(0)}}
+@keyframes wi{0%,10%{transform:translateX(0)}30%,50%{transform:translateX(-112px)}72%,84%{transform:translateX(112px)}100%{transform:translateX(0)}}
+.tw{animation:tw 2.6s ease-in-out infinite}
+@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.45) rotate(30deg);opacity:.35}}
+.bl{animation:bl 4.5s ease-in-out infinite}
+@keyframes bl{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.q{animation:q 3s ease-in-out infinite}
+@keyframes q{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-6px) rotate(6deg)}}
+.lt{animation:lt 4s ease-in-out infinite}
+@keyframes lt{0%,100%{opacity:1}50%{opacity:.72}}
+.sw{transform-box:fill-box;transform-origin:50% 0;animation:sw 6s ease-in-out infinite}
+@keyframes sw{0%,100%{transform:skewX(0)}50%{transform:skewX(1.6deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="400" height="460" fill="url(#wall)"/>
+<circle cx="200" cy="235" r="185" fill="url(#glow)"/>
+<path class="lt" d="M178 0H222L352 392H48Z" fill="url(#cone)"/>
+<path d="M0 372H400V460H0Z" fill="url(#floor)"/>
+<path d="M0 372H400" stroke="#a8418a" stroke-width="3"/>
+<ellipse class="lt" cx="200" cy="392" rx="165" ry="24" fill="url(#pool)"/>
+<rect y="432" width="400" height="28" fill="#2a0830"/>
+<rect y="430" width="400" height="4" fill="#ffcf5a" opacity=".8"/>
+<ellipse cx="200" cy="388" rx="84" ry="9" fill="#2a0830" opacity=".45"/>
+<!-- shadow bunny -->
+<use xlink:href="#shape" href="#shape" fill="#32104e" stroke="#32104e" stroke-width="7" stroke-linejoin="round"/>
+<g class="a q" fill="none" stroke="#c98be8" stroke-width="7" stroke-linecap="round"><path d="M226 212c0-15 22-15 22-1c0 10-11 10-11 21"/><circle cx="237" cy="246" r="1.5" stroke-width="6"/></g>
+<g class="a q" style="animation-delay:-1.5s" fill="none" stroke="#c98be8" stroke-width="6" stroke-linecap="round" opacity=".8"><path d="M218 310c0-12 17-12 17-1c0 8-8 8-8 16"/><circle cx="227" cy="336" r="1" stroke-width="5"/></g>
+<!-- colour bunny, revealed by the wipe -->
+<g class="wo" clip-path="url(#half)"><g class="wi">
+<use xlink:href="#shape" href="#shape" fill="url(#fur)"/>
+<ellipse cx="170" cy="142" rx="10" ry="40" transform="rotate(-8 170 142)" fill="#f8a0c0"/>
+<ellipse cx="232" cy="142" rx="10" ry="40" transform="rotate(10 232 142)" fill="#f8a0c0"/>
+<ellipse cx="200" cy="328" rx="36" ry="40" fill="#ffe1ea"/>
+<ellipse cx="164" cy="375" rx="13" ry="7" fill="#f8a0c0"/><ellipse cx="236" cy="375" rx="13" ry="7" fill="#f8a0c0"/>
+<path d="M200 278c-16-16-38-18-38-3c0 16 22 14 38 3zM200 278c16-16 38-18 38-3c0 16-22 14-38 3z" fill="#27c4c0"/>
+<path d="M200 278c-12-10-28-12-34-6" fill="none" stroke="#8ff0e6" stroke-width="3" stroke-linecap="round"/>
+<circle cx="200" cy="278" r="9" fill="#12a3a6"/>
+<ellipse cx="156" cy="240" rx="12" ry="8" fill="#ff8fb3" opacity=".75"/><ellipse cx="244" cy="240" rx="12" ry="8" fill="#ff8fb3" opacity=".75"/>
+<g class="a bl" fill="#3a1250"><circle cx="175" cy="218" r="8"/><circle cx="225" cy="218" r="8"/></g>
+<circle cx="178" cy="215" r="2.8" fill="#fff"/><circle cx="228" cy="215" r="2.8" fill="#fff"/>
+<path d="M194 233q6-4 12 0q-2 7-6 7q-4 0-6-7z" fill="#f06292"/>
+<path d="M200 240q-2 9-12 6M200 240q2 9 12 6" fill="none" stroke="#3a1250" stroke-width="2.6" stroke-linecap="round"/>
+<ellipse cx="172" cy="188" rx="22" ry="9" transform="rotate(-20 172 188)" fill="#fff" opacity=".8"/>
+</g></g>
+<!-- magic shine on the wipe edge -->
+<g clip-path="url(#bun)"><g class="wo"><rect x="191" y="60" width="18" height="340" fill="url(#shine)"/></g></g>
+<g class="wo"><g transform="translate(200 104)"><use class="a tw" xlink:href="#star" href="#star" transform="scale(1.9)" fill="#fff6c8"/></g></g>
+<!-- curtains -->
+<g class="sw"><use xlink:href="#curtain" href="#curtain"/></g>
+<g transform="translate(400 0) scale(-1 1)"><g class="sw" style="animation-delay:-3s"><use xlink:href="#curtain" href="#curtain"/></g></g>
+<path d="M0 0H400V38q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0Z" fill="url(#val)"/>
+<path d="M400 38q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0q-25 34-50 0" fill="none" stroke="#ffcf5a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<g fill="#ffb52e"><circle cx="50" cy="40" r="5"/><circle cx="100" cy="40" r="5"/><circle cx="150" cy="40" r="5"/><circle cx="200" cy="40" r="5"/><circle cx="250" cy="40" r="5"/><circle cx="300" cy="40" r="5"/><circle cx="350" cy="40" r="5"/></g>
+<!-- sparkles -->
+<g fill="#fff3b8">
+<g transform="translate(118 150)"><use class="a tw" xlink:href="#star" href="#star" transform="scale(1.3)"/></g>
+<g transform="translate(296 118)"><use class="a tw" style="animation-delay:-.9s" xlink:href="#star" href="#star" transform="scale(1.5)"/></g>
+<g transform="translate(308 262)"><use class="a tw" style="animation-delay:-1.7s" xlink:href="#star" href="#star"/></g>
+<g transform="translate(98 300)"><use class="a tw" style="animation-delay:-.4s" xlink:href="#star" href="#star" transform="scale(.9)"/></g>
+<circle cx="286" cy="170" r="3"/><circle cx="110" cy="210" r="2.5"/><circle cx="302" cy="330" r="2.5"/>
+</g>
+</svg>

@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#0c9fa9"/>
+      <stop offset="0.55" stop-color="#3ccfc0"/>
+      <stop offset="1" stop-color="#b4f3d8"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rope" gradientUnits="userSpaceOnUse" x1="150" y1="150" x2="300" y2="240">
+      <stop offset="0" stop-color="#ffe45c"/>
+      <stop offset="1" stop-color="#ffb72e"/>
+    </linearGradient>
+    <linearGradient id="rope2" gradientUnits="userSpaceOnUse" x1="130" y1="340" x2="240" y2="360">
+      <stop offset="0" stop-color="#ffb04a"/>
+      <stop offset="1" stop-color="#ff8a3d"/>
+    </linearGradient>
+    <radialGradient id="dogFur" cx="0.38" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#f7bd72"/>
+      <stop offset="1" stop-color="#e08f3e"/>
+    </radialGradient>
+    <linearGradient id="ear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9602a"/>
+      <stop offset="1" stop-color="#874619"/>
+    </linearGradient>
+    <radialGradient id="bunFur" cx="0.4" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f1e6ee"/>
+    </radialGradient>
+    <radialGradient id="tile" cx="0.4" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e2fbf3"/>
+    </radialGradient>
+    <linearGradient id="carrot" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffa63d"/>
+      <stop offset="1" stop-color="#f57a1f"/>
+    </linearGradient>
+    <path id="heart" d="M0 9C-17-3-10-16 0-6 10-16 17-3 0 9Z"/>
+    <path id="star" d="M0-10C1.5-3 3-1.5 10 0 3 1.5 1.5 3 0 10-1.5 3-3 1.5-10 0-3-1.5-1.5-3 0-10Z"/>
+    <path id="line1" pathLength="100" d="M150 172C215 148 292 188 281 222 272 250 228 246 230 212 232 176 262 168 284 148"/>
+    <path id="line2" d="M128 352C160 322 196 382 236 348"/>
+  </defs>
+  <style>
+    .a{transform-box:fill-box;transform-origin:center}
+    .draw{stroke-dasharray:100 200;animation:draw 7s linear infinite}
+    .pop{animation:pop 7s ease-in-out infinite}
+    .bob{animation:bob 3.2s ease-in-out infinite}
+    .bob2{animation:bob 3.6s ease-in-out -1.2s infinite}
+    .earL{transform-origin:70% 5%;animation:earL 3.2s ease-in-out infinite}
+    .earR{transform-origin:30% 5%;animation:earR 3.2s ease-in-out infinite}
+    .blink{animation:blink 4.5s ease-in-out infinite}
+    .wig{animation:wig 7s ease-in-out infinite}
+    .tw{animation:tw 2.6s ease-in-out infinite}
+    .tw.b{animation-delay:-0.9s}.tw.c{animation-delay:-1.7s}
+    .bunEar{transform-origin:50% 95%;animation:bunEar 3.6s ease-in-out infinite}
+    .beat{animation:beat 1.8s ease-in-out infinite}
+    @keyframes draw{0%,52%{stroke-dashoffset:0;opacity:1}57%{stroke-dashoffset:0;opacity:0}58%{stroke-dashoffset:100;opacity:0}60%{stroke-dashoffset:100;opacity:1}86%,100%{stroke-dashoffset:0;opacity:1}}
+    @keyframes pop{0%,52%{transform:scale(1)}57%,86%{transform:scale(0)}90%{transform:scale(1.35)}94%,100%{transform:scale(1)}}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes earL{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+    @keyframes earR{0%,100%{transform:rotate(0)}50%{transform:rotate(-7deg)}}
+    @keyframes blink{0%,44%,50%,100%{transform:scaleY(1)}47%{transform:scaleY(0.1)}}
+    @keyframes wig{0%,86%,100%{transform:rotate(0) scale(1)}89%{transform:rotate(-12deg) scale(1.1)}92%{transform:rotate(9deg) scale(1.1)}95%{transform:rotate(-5deg) scale(1.03)}}
+    @keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.45);opacity:0.35}}
+    @keyframes bunEar{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-9deg)}80%{transform:rotate(4deg)}}
+    @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  </style>
+
+  <!-- background -->
+  <rect width="400" height="460" fill="url(#bg)"/>
+  <circle cx="330" cy="70" r="170" fill="#fff" opacity="0.08"/>
+  <circle cx="30" cy="250" r="120" fill="#fff" opacity="0.07"/>
+  <path d="M0 395C70 360 150 375 210 400S340 430 400 385V460H0Z" fill="#d9fbe9" opacity="0.55"/>
+  <path d="M0 430C90 405 170 425 250 440S350 450 400 425V460H0Z" fill="#effff6" opacity="0.6"/>
+  <circle cx="108" cy="150" r="118" fill="url(#spot)"/>
+  <g fill="#fff" opacity="0.35">
+    <circle cx="208" cy="42" r="3"/><circle cx="372" cy="232" r="3.5"/><circle cx="26" cy="300" r="3"/>
+    <circle cx="182" cy="268" r="2.5"/><circle cx="346" cy="322" r="2.5"/><circle cx="238" cy="96" r="2"/>
+  </g>
+
+  <!-- second pair: bunny + carrot -->
+  <ellipse cx="96" cy="402" rx="40" ry="6" fill="#0b7f86" opacity="0.18"/>
+  <ellipse cx="276" cy="402" rx="36" ry="6" fill="#0b7f86" opacity="0.16"/>
+  <use href="#line2" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="18" stroke-linecap="round"/>
+  <use href="#line2" fill="none" stroke="url(#rope2)" stroke-width="9" stroke-linecap="round"/>
+  <use href="#line2" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="2.2" stroke-linecap="round" transform="translate(0 -2)"/>
+
+  <g class="a bob2">
+    <!-- carrot tile -->
+    <circle cx="276" cy="346" r="43" fill="#0b7f86" opacity="0.14" transform="translate(0 5)"/>
+    <circle cx="276" cy="346" r="43" fill="url(#tile)"/>
+    <g transform="translate(277 348) rotate(32)">
+      <g fill="#4cc46a">
+        <ellipse cx="-9" cy="-30" rx="5.5" ry="13" transform="rotate(-28 -9 -30)"/>
+        <ellipse cx="9" cy="-30" rx="5.5" ry="13" transform="rotate(28 9 -30)"/>
+        <ellipse cx="0" cy="-34" rx="6" ry="15" fill="#39b25c"/>
+      </g>
+      <path d="M-15-20Q0-30 15-20 13 10 0 34-13 10-15-20Z" fill="url(#carrot)"/>
+      <path d="M-11-17Q-6-23 0-24" fill="none" stroke="#ffd08a" stroke-width="3" stroke-linecap="round"/>
+      <path d="M-13-8h9M5 0h8M-8 10h7" stroke="#d9641a" stroke-width="2.2" stroke-linecap="round" opacity="0.7"/>
+    </g>
+  </g>
+  <g class="a bob2">
+    <!-- bunny -->
+    <g class="bunEar">
+      <ellipse cx="78" cy="298" rx="13" ry="34" fill="url(#bunFur)" transform="rotate(-10 78 298)"/>
+      <ellipse cx="78" cy="300" rx="6" ry="24" fill="#ffb3c9" transform="rotate(-10 78 300)"/>
+    </g>
+    <g>
+      <ellipse cx="114" cy="298" rx="13" ry="34" fill="url(#bunFur)" transform="rotate(12 114 298)"/>
+      <ellipse cx="114" cy="300" rx="6" ry="24" fill="#ffb3c9" transform="rotate(12 114 300)"/>
+    </g>
+    <ellipse cx="96" cy="352" rx="46" ry="41" fill="url(#bunFur)"/>
+    <circle cx="80" cy="348" r="5" fill="#3a2a3f"/><circle cx="112" cy="348" r="5" fill="#3a2a3f"/>
+    <circle cx="81.6" cy="346.2" r="1.7" fill="#fff"/><circle cx="113.6" cy="346.2" r="1.7" fill="#fff"/>
+    <ellipse cx="96" cy="358" rx="4.5" ry="3.2" fill="#ff7fa5"/>
+    <path d="M89 365Q92.5 369 96 364.5 99.5 369 103 365" fill="none" stroke="#3a2a3f" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="68" cy="362" rx="8" ry="5" fill="#ff9dbb" opacity="0.6"/><ellipse cx="124" cy="362" rx="8" ry="5" fill="#ff9dbb" opacity="0.6"/>
+  </g>
+  <g transform="translate(232 349)"><g class="a beat"><use href="#heart" fill="#ff5c8a" stroke="#fff" stroke-width="3" stroke-linejoin="round" transform="scale(0.85)"/></g></g>
+
+  <!-- hero pair: dog + bone -->
+  <ellipse cx="108" cy="232" rx="50" ry="7" fill="#0b7f86" opacity="0.2"/>
+  <g class="a wig">
+    <circle cx="318" cy="118" r="53" fill="#0b7f86" opacity="0.16" transform="translate(0 6)"/>
+    <circle cx="318" cy="118" r="53" fill="url(#tile)"/>
+    <g transform="translate(318 119) rotate(-28)">
+      <g fill="#dfc089" transform="translate(0 4)">
+        <rect x="-30" y="-9" width="60" height="18"/><circle cx="-30" cy="-10" r="12"/><circle cx="-30" cy="10" r="12"/><circle cx="30" cy="-10" r="12"/><circle cx="30" cy="10" r="12"/>
+      </g>
+      <g fill="#fff4d6">
+        <rect x="-30" y="-9" width="60" height="18"/><circle cx="-30" cy="-10" r="12"/><circle cx="-30" cy="10" r="12"/><circle cx="30" cy="-10" r="12"/><circle cx="30" cy="10" r="12"/>
+      </g>
+      <path d="M-22-4H18" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <g fill="none" stroke-linecap="round">
+    <use href="#line1" class="draw" stroke="#fff8c9" stroke-opacity="0.45" stroke-width="25"/>
+    <use href="#line1" class="draw" stroke="#e58a10" stroke-width="13" transform="translate(0 2.5)" opacity="0.55"/>
+    <use href="#line1" class="draw" stroke="url(#rope)" stroke-width="13"/>
+    <use href="#line1" class="draw" stroke="#fff" stroke-opacity="0.75" stroke-width="3" transform="translate(-1 -2.5)"/>
+  </g>
+
+  <g class="a bob">
+    <ellipse cx="108" cy="148" rx="66" ry="60" fill="url(#dogFur)"/>
+    <ellipse cx="133" cy="138" rx="23" ry="25" fill="#c9742c" opacity="0.75"/>
+    <ellipse cx="84" cy="112" rx="24" ry="11" fill="#fff" opacity="0.22" transform="rotate(-22 84 112)"/>
+    <ellipse cx="108" cy="172" rx="35" ry="26" fill="#fff3df"/>
+    <path d="M97 181Q108 178 119 181V190Q108 206 97 190Z" fill="#ff7f9f"/>
+    <path d="M108 184v9" stroke="#e8597f" stroke-width="2" stroke-linecap="round"/>
+    <path d="M108 164v10M90 176Q99 187 108 175 117 187 126 176" fill="none" stroke="#4a2a14" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="108" cy="160" rx="11.5" ry="8" fill="#3b2012"/>
+    <ellipse cx="105" cy="157.5" rx="4" ry="2" fill="#fff" opacity="0.7"/>
+    <g class="a blink">
+      <circle cx="85" cy="140" r="8" fill="#3b2012"/><circle cx="131" cy="140" r="8" fill="#3b2012"/>
+      <circle cx="87.5" cy="137.2" r="2.8" fill="#fff"/><circle cx="133.5" cy="137.2" r="2.8" fill="#fff"/>
+    </g>
+    <ellipse cx="64" cy="166" rx="10" ry="6.5" fill="#ff8fa8" opacity="0.6"/><ellipse cx="152" cy="166" rx="10" ry="6.5" fill="#ff8fa8" opacity="0.6"/>
+    <path class="a earL" d="M60 97C30 92 18 142 34 172 47 190 66 176 66 150 66 130 71 109 60 97Z" fill="url(#ear)"/>
+    <path class="a earR" d="M156 97C186 92 198 142 182 172 169 190 150 176 150 150 150 130 145 109 156 97Z" fill="url(#ear)"/>
+  </g>
+
+  <g transform="translate(281 151)"><g class="a pop"><use href="#heart" fill="#ff5c8a" stroke="#fff" stroke-width="3.5" stroke-linejoin="round" transform="scale(1.25)"/><ellipse cx="-6" cy="-6" rx="3.5" ry="2.2" fill="#fff" opacity="0.7" transform="rotate(-30 -6 -6)"/></g></g>
+
+  <!-- small hearts + sparkles -->
+  <g transform="translate(196 92) rotate(14)"><g class="a beat"><use href="#heart" fill="#ff8fb1" transform="scale(0.7)"/></g></g>
+  <g transform="translate(40 58)"><use class="a tw" href="#star" fill="#fff6b0" transform="scale(1.1)"/></g>
+  <g transform="translate(226 50)"><use class="a tw b" href="#star" fill="#fff"/></g>
+  <g transform="translate(350 258)"><use class="a tw c" href="#star" fill="#fff6b0" transform="scale(1.3)"/></g>
+  <g transform="translate(178 300)"><use class="a tw b" href="#star" fill="#fff" transform="scale(0.8)"/></g>
+  <g transform="translate(30 420)"><use class="a tw" href="#star" fill="#fff" transform="scale(0.7)"/></g>
+</svg>

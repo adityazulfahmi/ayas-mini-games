@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 460">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fb2f2"/><stop offset=".55" stop-color="#8fd8fb"/><stop offset="1" stop-color="#d8f4ff"/></linearGradient>
+<radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset=".6" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<linearGradient id="hillB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9ea7a"/><stop offset="1" stop-color="#8ed860"/></linearGradient>
+<linearGradient id="hillF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd650"/><stop offset="1" stop-color="#35a548"/></linearGradient>
+<linearGradient id="cowG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f1e9f4"/></linearGradient>
+<linearGradient id="muz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc6d6"/><stop offset="1" stop-color="#ff9dba"/></linearGradient>
+<radialGradient id="bellG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff3a6"/><stop offset=".5" stop-color="#ffd23f"/><stop offset="1" stop-color="#f2a61c"/></radialGradient>
+<radialGradient id="duckG" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#fff29a"/><stop offset="1" stop-color="#ffcc33"/></radialGradient>
+<radialGradient id="dogG" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#f0b97c"/><stop offset="1" stop-color="#d68f4f"/></radialGradient>
+<clipPath id="headC"><ellipse cx="200" cy="212" rx="98" ry="86"/></clipPath>
+<clipPath id="bodyC"><ellipse cx="200" cy="382" rx="88" ry="64"/></clipPath>
+<clipPath id="mouthC"><path d="M171,263 Q200,254 229,263 Q231,299 200,299 Q169,299 171,263Z"/></clipPath>
+<g id="n1"><rect x="7" y="-50" width="6" height="50" rx="3"/><path d="M10,-50 c5,11 21,11 18,29 c-3,-9 -11,-11 -18,-13z"/><ellipse rx="12" ry="9" transform="rotate(-20)"/></g>
+<g id="n2"><rect x="7" y="-48" width="6" height="48" rx="3"/><rect x="43" y="-56" width="6" height="48" rx="3"/><path d="M7,-50 L49,-58 V-44 L7,-36Z"/><ellipse rx="12" ry="9" transform="rotate(-20)"/><ellipse cx="36" cy="-8" rx="12" ry="9" transform="rotate(-20 36 -8)"/></g>
+<path id="spark" d="M0,-10 Q1.500,-1.500 10,0 Q1.500,1.500 0,10 Q-1.500,1.500 -10,0 Q-1.500,-1.500 0,-10Z"/>
+</defs>
+<style>
+.a{transform-box:fill-box;transform-origin:center}
+.head{transform-origin:50% 100%;animation:sway 2.6s ease-in-out infinite}
+.mouth{transform-origin:50% 20%;animation:sing 1.3s ease-in-out infinite}
+.eye{animation:blink 4.2s infinite}
+.w{animation:wave 1.8s ease-in-out infinite}
+.w2{animation-delay:.25s}.w3{animation-delay:.5s}
+.nA{animation:floatA 3.4s ease-in-out infinite}
+.nB{animation:floatB 4s ease-in-out infinite}
+.nC{animation:floatA 3s ease-in-out -1.2s infinite}
+.bob{transform-origin:50% 100%;animation:bob 1.9s ease-in-out infinite}
+.bob2{animation-delay:-.9s}
+.cl{animation:drift 14s ease-in-out infinite alternate}
+.cl2{animation-duration:18s;animation-direction:alternate-reverse}
+.bell{transform-origin:50% 0;animation:swing 1.3s ease-in-out infinite}
+.tw{animation:tw 2.4s ease-in-out infinite}.tw2{animation-delay:-.8s}.tw3{animation-delay:-1.6s}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@keyframes sing{0%,100%{transform:scale(1,1)}50%{transform:scale(.88,.72)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes wave{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.04)}}
+@keyframes floatA{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-10px) rotate(6deg)}}
+@keyframes floatB{0%,100%{transform:translateY(0) rotate(8deg)}50%{transform:translateY(-12px) rotate(-5deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes drift{from{transform:translateX(-8px)}to{transform:translateX(10px)}}
+@keyframes swing{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+@keyframes tw{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="400" height="460" fill="url(#sky)"/>
+<circle cx="200" cy="215" r="200" fill="url(#glow)"/>
+<!-- clouds -->
+<g class="a cl" fill="#fff"><ellipse cx="118" cy="66" rx="46" ry="20"/><circle cx="100" cy="54" r="20"/><circle cx="130" cy="46" r="24"/><ellipse cx="118" cy="74" rx="46" ry="10" fill="#e3f4ff"/><ellipse cx="118" cy="64" rx="46" ry="16"/></g>
+<g class="a cl cl2" fill="#fff" opacity=".95"><ellipse cx="372" cy="62" rx="40" ry="15"/><circle cx="356" cy="52" r="15"/><circle cx="380" cy="46" r="19"/></g>
+<!-- back hill -->
+<path d="M0,352 Q90,300 200,338 Q310,300 400,340 V460 H0Z" fill="url(#hillB)"/>
+<!-- duck -->
+<g class="a bob"><g transform="translate(0,5)">
+<ellipse cx="50" cy="366" rx="32" ry="28" fill="url(#duckG)"/>
+<path d="M80,322 L103,314 L84,330Z" fill="#ff9a2e"/><path d="M80,330 L100,338 L78,338Z" fill="#f47f16"/>
+<circle cx="60" cy="328" r="23" fill="url(#duckG)"/>
+<path d="M52,307 q4,-12 12,-6 q-6,2 -5,8z" fill="#ffcc33"/>
+<circle cx="67" cy="322" r="4.500" fill="#3b2a45"/><circle cx="68.500" cy="320.500" r="1.500" fill="#fff"/>
+<ellipse cx="56" cy="334" rx="6" ry="4" fill="#ff9ab5" opacity=".7"/>
+</g></g>
+<!-- puppy -->
+<g class="a bob bob2"><g transform="translate(-9,2)">
+<ellipse cx="340" cy="372" rx="28" ry="26" fill="url(#dogG)"/>
+<circle cx="338" cy="332" r="25" fill="url(#dogG)"/>
+<path d="M316,316 q-16,4 -12,30 q3,12 12,6 q4,-18 6,-32z" fill="#9c5a34"/>
+<path d="M360,316 q16,4 12,30 q-3,12 -12,6 q-4,-18 -6,-32z" fill="#9c5a34"/>
+<ellipse cx="338" cy="342" rx="15" ry="12" fill="#fff1dc"/>
+<path d="M330,343 Q338,340 346,343 Q346,355 338,355 Q330,355 330,343Z" fill="#7a2340"/>
+<ellipse cx="338" cy="353" rx="5" ry="3" fill="#ff6f91"/>
+<ellipse cx="338" cy="336" rx="5.500" ry="4" fill="#3b2a45"/>
+<circle cx="328" cy="326" r="3.800" fill="#3b2a45"/><circle cx="348" cy="326" r="3.800" fill="#3b2a45"/>
+<circle cx="329.200" cy="324.800" r="1.200" fill="#fff"/><circle cx="349.200" cy="324.800" r="1.200" fill="#fff"/>
+</g></g>
+<!-- front hill -->
+<path d="M0,374 Q200,316 400,374 V460 H0Z" fill="url(#hillF)"/>
+<path d="M0,374 Q200,316 400,374" fill="none" stroke="#a5ea6e" stroke-width="5" opacity=".8"/>
+<g fill="#fff"><circle cx="40" cy="412" r="5"/><circle cx="92" cy="436" r="4"/><circle cx="318" cy="400" r="4.500"/></g>
+<g fill="#ffd23f"><circle cx="40" cy="412" r="2"/><circle cx="92" cy="436" r="1.600"/><circle cx="318" cy="400" r="1.800"/></g>
+<g fill="#ff8fb3"><circle cx="70" cy="398" r="4"/><circle cx="296" cy="432" r="4.500"/></g>
+<ellipse cx="200" cy="442" rx="100" ry="12" fill="#1f7f3a" opacity=".35"/>
+<!-- cow body -->
+<ellipse cx="200" cy="382" rx="88" ry="64" fill="url(#cowG)"/>
+<g clip-path="url(#bodyC)"><path d="M250,350 q30,-10 44,20 q6,34 -22,44 q-30,2 -34,-28 q-2,-24 12,-36z" fill="#4b3b52"/><ellipse cx="200" cy="318" rx="62" ry="16" fill="#d9cfe0" opacity=".6"/></g>
+<rect x="160" y="398" width="30" height="48" rx="14" fill="#fff"/><rect x="210" y="398" width="30" height="48" rx="14" fill="#fff"/>
+<path d="M160,434 h30 v-2 a14,14 0 0 1 -30,0z" fill="#4b3b52" transform="translate(0,2)"/><path d="M160,432 h30 a0,0 0 0 1 0,0 v0 a15,14 0 0 1 -30,0z" fill="#4b3b52"/><path d="M210,432 h30 a15,14 0 0 1 -30,0z" fill="#4b3b52"/>
+<!-- sound waves -->
+<g fill="none" stroke-linecap="round" stroke-width="9">
+<path class="a w" d="M77,220 A128,128 0 0 0 77,290" stroke="#fff"/>
+<path class="a w" d="M323,220 A128,128 0 0 1 323,290" stroke="#fff"/>
+<path class="a w w2" d="M56,214 A150,150 0 0 0 56,296" stroke="#ffe066"/>
+<path class="a w w2" d="M344,214 A150,150 0 0 1 344,296" stroke="#ffe066"/>
+<path class="a w w3" d="M35,208 A172,172 0 0 0 35,302" stroke="#ff8fb3"/>
+<path class="a w w3" d="M365,208 A172,172 0 0 1 365,302" stroke="#ff8fb3"/>
+</g>
+<!-- cow head -->
+<g class="a head">
+<path d="M150,140 Q134,108 150,96 Q162,112 172,132Z" fill="#ffe2a8"/><path d="M250,140 Q266,108 250,96 Q238,112 228,132Z" fill="#ffe2a8"/>
+<g transform="rotate(-22 98 180)"><ellipse cx="98" cy="180" rx="32" ry="18" fill="#4b3b52"/><ellipse cx="96" cy="182" rx="20" ry="10" fill="#ff9dba"/></g>
+<g transform="rotate(22 302 180)"><ellipse cx="302" cy="180" rx="32" ry="18" fill="#e4d8ec"/><ellipse cx="304" cy="182" rx="20" ry="10" fill="#ff9dba"/></g>
+<ellipse cx="200" cy="212" rx="98" ry="86" fill="url(#cowG)"/>
+<g clip-path="url(#headC)">
+<path d="M95,120 h70 q14,22 -8,40 q-22,14 -40,40 q-14,10 -30,-6z" fill="#4b3b52"/>
+<path d="M300,200 q-26,4 -30,30 q0,24 22,34 q20,0 20,-30z" fill="#4b3b52"/>
+<ellipse cx="170" cy="150" rx="40" ry="14" fill="#fff" opacity=".0"/>
+</g>
+<circle cx="188" cy="130" r="13" fill="#fff"/><circle cx="206" cy="126" r="15" fill="#fff"/><circle cx="222" cy="132" r="11" fill="#fff"/>
+<ellipse cx="128" cy="234" rx="15" ry="10" fill="#ff8fb3" opacity=".75"/><ellipse cx="272" cy="234" rx="15" ry="10" fill="#ff8fb3" opacity=".75"/>
+<g class="a eye"><circle cx="160" cy="196" r="12" fill="#3b2a45"/><circle cx="164" cy="191" r="4.200" fill="#fff"/><circle cx="156" cy="200" r="2" fill="#fff" opacity=".8"/></g>
+<g class="a eye"><circle cx="240" cy="196" r="12" fill="#3b2a45"/><circle cx="244" cy="191" r="4.200" fill="#fff"/><circle cx="236" cy="200" r="2" fill="#fff" opacity=".8"/></g>
+<ellipse cx="200" cy="262" rx="72" ry="46" fill="url(#muz)"/>
+<ellipse cx="200" cy="236" rx="46" ry="12" fill="#fff" opacity=".35"/>
+<ellipse cx="176" cy="240" rx="5.500" ry="7.500" fill="#e56f95"/><ellipse cx="224" cy="240" rx="5.500" ry="7.500" fill="#e56f95"/>
+<g class="a mouth"><path d="M171,263 Q200,254 229,263 Q231,299 200,299 Q169,299 171,263Z" fill="#7a2340"/><ellipse cx="200" cy="297" rx="19" ry="13" fill="#ff6f91" clip-path="url(#mouthC)"/></g>
+</g>
+<!-- bell -->
+<g class="a bell"><rect x="194" y="306" width="12" height="10" rx="4" fill="#f06292"/><path d="M182,336 q0,-24 18,-24 q18,0 18,24 q0,4 -4,4 h-28 q-4,0 -4,-4z" fill="url(#bellG)"/><circle cx="200" cy="342" r="5" fill="#e0901a"/><path d="M190,330 q0,-10 6,-13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/></g>
+<!-- notes -->
+<g stroke="#fff" stroke-width="4" stroke-linejoin="round" paint-order="stroke">
+<g class="a nA"><use xlink:href="#n1" href="#n1" transform="translate(62,150) scale(1.050)" fill="#f06292"/></g>
+<g class="a nB"><use xlink:href="#n2" href="#n2" transform="translate(282,100) scale(1.100)" fill="#ffd23f"/></g>
+<g class="a nC"><use xlink:href="#n1" href="#n1" transform="translate(212,82) scale(.7)" fill="#ffd23f"/></g>
+<g class="a nA"><use xlink:href="#n1" href="#n1" transform="translate(352,196) scale(.6)" fill="#f06292"/></g>
+</g>
+<g fill="#fff"><g transform="translate(34,176)"><use class="a tw" xlink:href="#spark" href="#spark"/></g><g transform="translate(262,36) scale(.8)"><use class="a tw tw2" xlink:href="#spark" href="#spark"/></g><g transform="translate(372,128) scale(.75)"><use class="a tw tw3" xlink:href="#spark" href="#spark"/></g><g transform="translate(150,96) scale(.55)"><use class="a tw tw2" xlink:href="#spark" href="#spark"/></g></g>
+</svg>

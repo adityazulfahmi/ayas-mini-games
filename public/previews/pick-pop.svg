@@ -30,17 +30,19 @@
     <rect x="60" y="14" width="200" height="36" rx="18" fill="white" stroke="#ce93d8" stroke-width="2"/>
     <ellipse cx="160" cy="22" rx="78" ry="6" fill="white" opacity="0.6"/>
     <text x="78"  y="38" font-size="18" text-anchor="start">🍎</text>
-    <text x="170" y="38" font-family="Fredoka One, system-ui, sans-serif" font-size="14" fill="#6a1b9a" text-anchor="middle" font-weight="700">Find the FRUIT!</text>
+    <text x="162" y="38" font-family="Fredoka One, system-ui, sans-serif" font-size="14" fill="#6a1b9a" text-anchor="middle" font-weight="700">Find the FRUIT!</text>
+    <path d="M 226 28 h 4 l 6 -5 v 14 l -6 -5 h -4 z" fill="#ba68c8"/>
+    <path d="M 240 26 q 4 4 0 8 M 244 23 q 7 7 0 14" fill="none" stroke="#ba68c8" stroke-width="1.8" stroke-linecap="round"/>
     <path d="M 152 50 L 160 62 L 168 50 Z" fill="white" stroke="#ce93d8" stroke-width="2" stroke-linejoin="round"/>
     <line x1="153" y1="50" x2="167" y2="50" stroke="white" stroke-width="3"/>
   </g>
 
-  <!-- top-left bubble: drum -->
+  <!-- top-left bubble: pencil -->
   <g>
     <ellipse cx="60" cy="118" rx="30" ry="6" fill="#9c4dcc" opacity="0.10"/>
     <circle cx="60" cy="106" r="28" fill="url(#bub-idle)" stroke="#ce93d8" stroke-width="2"/>
     <ellipse cx="52" cy="96" rx="11" ry="5" fill="white" opacity="0.85"/>
-    <text x="60" y="116" font-size="28" text-anchor="middle">🥁</text>
+    <text x="60" y="116" font-size="28" text-anchor="middle">✏️</text>
   </g>
 
   <!-- center bubble: STRAWBERRY (correct) -->
@@ -50,7 +52,6 @@
     <circle cx="130" cy="100" r="32" fill="url(#bub-correct)" stroke="#80cbc4" stroke-width="2.5"/>
     <ellipse cx="120" cy="88" rx="13" ry="6" fill="white" opacity="0.9"/>
     <text x="130" y="112" font-size="32" text-anchor="middle">🍓</text>
-    <text x="130" y="62" font-size="20" text-anchor="middle">🎯</text>
   </g>
 
   <!-- right bubble: house -->

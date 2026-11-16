@@ -1,238 +1,136 @@
 import Phaser from 'phaser';
 import { drawBg } from '@shared/phaserUtils';
 import { C, T, F } from '@shared/theme';
-import { TARGETS, TOTAL_ROUNDS, type TargetCategory } from '../data';
-import { BUBBLE_STYLES, drawBubble, spawnBubbleField } from './bubbles';
+import { CATEGORY_ORDER, TARGETS, TOTAL_ROUNDS, type Mode } from '../data';
+import { BUBBLE_STYLES, bubbleBurst, drawBubble, popShockwave, spawnBubbleField } from './bubbles';
+import { popSound, say } from '../voice';
+
+const W = 420;
+const H = 780;
+
+const BUBBLE_R = 76;
+const COL_DX = 92;
+const ROW1_Y = 286;
+const ROW2_Y = 486;
+const MIX_Y = 676;
 
 /**
- * Cluster slot — one tappable category bubble. Position is pre-baked
- * (asymmetric, not a grid) so even the unselected bubbles feel
- * deliberately placed; the "selected" bubble gets a mint glow + pulse
- * ring + scale pulse on its emoji.
+ * One tap = play. Aya taps the bubble she wants (fruit / animals /
+ * vehicles / music, or "Mix"), it pops with a sound, the category is
+ * spoken, and the game starts. No separate select + "Go" step: two-step
+ * flows lose a 2½-year-old.
  */
-interface ClusterSlot {
-  category: TargetCategory;
-  cx: number;
-  cy: number;
-  r: number;
-  bg: Phaser.GameObjects.Graphics;
-  txt: Phaser.GameObjects.Text;
-  zone: Phaser.GameObjects.Zone;
-  ring?: Phaser.GameObjects.Graphics;
-  ringTween?: Phaser.Tweens.Tween;
-  pulseTween?: Phaser.Tweens.Tween;
-}
-
-const ORDER: TargetCategory[] = ['vehicle', 'animal', 'instrument', 'fruit'];
-
 export class TitleScene extends Phaser.Scene {
-  private hintTxt!: Phaser.GameObjects.Text;
-  private hintChip!: Phaser.GameObjects.Graphics;
-  private slots: ClusterSlot[] = [];
-  private selected: TargetCategory = 'fruit';
+  private starting = false;
 
   constructor() { super('TitleScene'); }
 
   create(): void {
-    const { width: W, height: H } = this.scale;
     drawBg(this);
     spawnBubbleField(this, W, H, 14);
+    this.starting = false;
 
-    // Phaser reuses scene instances across `scene.start` — reset arrays
-    // that get .push()'ed into. (See decisions.md D-005.)
-    this.slots = [];
-    this.selected = 'fruit';
-
-    this.add.text(W / 2, 96, '🎯 Pick & Pop!', {
-      fontFamily: F.head, fontSize: '34px', color: T.main, align: 'center',
+    const title = this.add.text(W / 2, 88, 'Pick & Pop!', {
+      fontFamily: F.head, fontSize: '44px', color: T.main, align: 'center',
       shadow: { offsetX: 2, offsetY: 3, color: '#f8bbd0', fill: true },
     }).setOrigin(0.5);
+    this.tweens.add({ targets: title, scale: 1.04, duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
 
-    this.add.text(W / 2, 144, 'Pick a category — then pop the matches!', {
-      fontFamily: F.body, fontSize: '14px', color: T.sub, fontStyle: 'bold',
+    this.add.text(W / 2, 142, 'Tap a bubble to play!', {
+      fontFamily: F.body, fontSize: '17px', color: T.sub, fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.buildClusterPicker(W, 322);
+    CATEGORY_ORDER.forEach((cat, i) => {
+      const cx = W / 2 + (i % 2 === 0 ? -COL_DX : COL_DX);
+      const cy = i < 2 ? ROW1_Y : ROW2_Y;
+      const t = TARGETS[cat];
+      this.buildCategoryBubble(cat, cx, cy, t.emoji, t.caption, t.tint, i);
+    });
 
-    this.buildBubbleCta(W / 2, H - 88);
+    this.buildMixBubble();
 
-    this.hintChip = this.add.graphics();
-    this.hintTxt = this.add.text(W / 2, H - 168, '', {
+    this.add.text(W / 2, H - 34, `${TOTAL_ROUNDS} little rounds · no timer`, {
       fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
+    }).setOrigin(0.5).setAlpha(0.8);
+  }
+
+  private buildCategoryBubble(
+    mode: Mode, cx: number, cy: number,
+    emoji: string, caption: string, tint: number, i: number,
+  ): void {
+    const g = this.add.graphics();
+    drawBubble(g, 0, 0, BUBBLE_R * 2, BUBBLE_R * 2, BUBBLE_R, { ...BUBBLE_STYLES.idle, fill: tint });
+    const txt = this.add.text(0, -4, emoji, { fontFamily: F.body, fontSize: '74px' }).setOrigin(0.5);
+    const body = this.add.container(cx, cy, [g, txt]);
+
+    const capTxt = this.add.text(cx, cy + BUBBLE_R + 26, caption, {
+      fontFamily: F.head, fontSize: '19px', color: T.main,
     }).setOrigin(0.5);
-    this.drawHintChip(`${TOTAL_ROUNDS} rounds of one category at a time`);
-  }
 
-  // ─── Cluster picker ────────────────────────────────────────────────────
-
-  private buildClusterPicker(W: number, cy: number): void {
-    // Asymmetric cluster — fruit at center is the default selection. The
-    // dx/dy values are hand-tuned to feel organic, not gridded.
-    const layout: { category: TargetCategory; dx: number; dy: number; r: number }[] = [
-      { category: 'vehicle',    dx: -94, dy: -68, r: 52 },
-      { category: 'animal',     dx:  92, dy: -54, r: 52 },
-      { category: 'instrument', dx:  76, dy:  82, r: 52 },
-      { category: 'fruit',      dx:   0, dy:  22, r: 64 }, // bigger — defaults selected
-    ];
-
-    layout.forEach(({ category, dx, dy, r }) => {
-      const cx = W / 2 + dx;
-      const ccy = cy + dy;
-      const size = r * 2;
-      const t = TARGETS[category];
-
-      const bg = this.add.graphics();
-      const txt = this.add.text(cx, ccy, t.emoji, {
-        fontFamily: F.body, fontSize: `${Math.round(r * 1.05)}px`,
-      }).setOrigin(0.5);
-      // The hit zone is a square that bounds the bubble — easy for a
-      // 2-year-old's tap (Phaser's circle shapes for hit zones are noticeably
-      // less forgiving on the corners than a slightly oversized square).
-      const zone = this.add.zone(cx, ccy, size + 12, size + 12).setInteractive({ cursor: 'pointer' });
-
-      const slot: ClusterSlot = { category, cx, cy: ccy, r, bg, txt, zone };
-      this.slots.push(slot);
-
-      zone.on('pointerdown', () => this.select(category));
-      zone.on('pointerover', () => {
-        if (this.selected === category) return;
-        this.tweens.add({ targets: txt, scale: 1.06, duration: 140 });
-      });
-      zone.on('pointerout', () => {
-        if (this.selected === category) return;
-        this.tweens.add({ targets: txt, scale: 1, duration: 140 });
-      });
-
-      // Continuous lazy bob — phase varies so the cluster feels alive.
-      const phase = ORDER.indexOf(category);
-      this.tweens.add({
-        targets: [bg, txt],
-        y: '+=8',
-        duration: 1900 + phase * 220,
-        delay: phase * 320,
-        ease: 'Sine.InOut',
-        yoyo: true,
-        repeat: -1,
-      });
+    // Lazy bob, phase-shifted per bubble so the grid feels alive.
+    this.tweens.add({
+      targets: body, y: cy + 8, duration: 1800 + i * 200, delay: i * 260,
+      ease: 'Sine.InOut', yoyo: true, repeat: -1,
     });
 
-    this.applySelectionVisuals();
+    const zone = this.add.zone(cx, cy + 14, BUBBLE_R * 2 + 24, BUBBLE_R * 2 + 52)
+      .setInteractive({ cursor: 'pointer' });
+    zone.on('pointerover', () => { if (!this.starting) this.tweens.add({ targets: txt, scale: 1.1, duration: 140 }); });
+    zone.on('pointerout', () => { if (!this.starting) this.tweens.add({ targets: txt, scale: 1, duration: 140 }); });
+    zone.on('pointerdown', () => this.start(mode, body, g, txt, capTxt, BUBBLE_R));
   }
 
-  private select(category: TargetCategory): void {
-    if (this.selected === category) return;
-    this.selected = category;
-    this.applySelectionVisuals();
-  }
-
-  /**
-   * Repaint each slot's bubble fill and start/stop the selection-only
-   * effects (mint pulse ring + scale pulse on the emoji).
-   */
-  private applySelectionVisuals(): void {
-    this.slots.forEach((slot) => {
-      const isSelected = slot.category === this.selected;
-      drawBubble(
-        slot.bg, slot.cx, slot.cy, slot.r * 2, slot.r * 2, slot.r,
-        isSelected ? BUBBLE_STYLES.correct : BUBBLE_STYLES.idle,
-      );
-
-      // Stop any prior selection effects and clean up the ring graphic.
-      slot.pulseTween?.stop();
-      slot.pulseTween = undefined;
-      slot.ringTween?.stop();
-      slot.ringTween = undefined;
-      slot.ring?.destroy();
-      slot.ring = undefined;
-      // Reset the emoji scale so a previously-selected bubble settles.
-      slot.txt.setScale(1);
-
-      if (isSelected) {
-        // Scale-pulse on the emoji — "this is the choice".
-        slot.pulseTween = this.tweens.add({
-          targets: slot.txt,
-          scale: 1.08,
-          duration: 1100,
-          ease: 'Sine.InOut',
-          yoyo: true,
-          repeat: -1,
-        });
-        // Mint pulse ring beneath — "tap Let's Pop!".
-        const ring = this.add.graphics();
-        ring.setPosition(slot.cx, slot.cy);
-        slot.ring = ring;
-        const pulse = () => {
-          ring.clear();
-          ring.lineStyle(3, C.mint, 0.55);
-          ring.strokeCircle(0, 0, slot.r + 6);
-          ring.setScale(1).setAlpha(1);
-          slot.ringTween = this.tweens.add({
-            targets: ring,
-            scale: 1.5,
-            alpha: 0,
-            duration: 1200,
-            ease: 'Cubic.Out',
-            onComplete: () => {
-              if (this.selected === slot.category) pulse();
-            },
-          });
-        };
-        pulse();
-      }
-    });
-  }
-
-  // ─── CTA bubble ────────────────────────────────────────────────────────
-
-  private buildBubbleCta(cx: number, cy: number): void {
-    const w = 320, h = 70, r = 36;
-    const bg = this.add.graphics();
-    const x = cx - w / 2, y = cy - h / 2;
-    // Outer glow
+  private buildMixBubble(): void {
+    const w = 300, h = 84;
+    const g = this.add.graphics();
+    const x = -w / 2, y = -h / 2, r = h / 2;
     for (let i = 4; i >= 1; i--) {
-      bg.fillStyle(C.pink, (0.18 * i) / 12);
-      bg.fillRoundedRect(x - i * 1.4, y - i * 1.4, w + i * 2.8, h + i * 2.8, r + i * 1.4);
+      g.fillStyle(C.pink, (0.18 * i) / 12);
+      g.fillRoundedRect(x - i * 1.4, y - i * 1.4, w + i * 2.8, h + i * 2.8, r + i * 1.4);
     }
-    bg.fillStyle(C.shadow, 0.22);
-    bg.fillRoundedRect(x + 2, y + 10, w, h, r);
-    bg.fillStyle(C.pink, 1);
-    bg.fillRoundedRect(x, y, w, h, r);
-    bg.fillStyle(C.white, 0.45);
-    bg.fillEllipse(x + w * 0.32, y + h * 0.22, w * 0.50, h * 0.32);
-    bg.fillStyle(C.white, 0.85);
-    bg.fillEllipse(x + w * 0.26, y + h * 0.19, w * 0.18, h * 0.13);
+    g.fillStyle(C.shadow, 0.22);
+    g.fillRoundedRect(x + 2, y + 10, w, h, r);
+    g.fillStyle(C.pink, 1);
+    g.fillRoundedRect(x, y, w, h, r);
+    g.fillStyle(C.white, 0.4);
+    g.fillEllipse(x + w * 0.34, y + h * 0.22, w * 0.5, h * 0.3);
+    g.fillStyle(C.white, 0.85);
+    g.fillEllipse(x + w * 0.27, y + h * 0.19, w * 0.16, h * 0.12);
 
-    const label = this.add.text(cx, cy, "Let's Pop! 🫧", {
-      fontFamily: F.head, fontSize: '26px', color: T.white,
+    const icons = this.add.text(-w / 2 + 74, 2, '🍓🐶', { fontFamily: F.body, fontSize: '30px' }).setOrigin(0.5);
+    const label = this.add.text(36, 0, 'Mix it up!', {
+      fontFamily: F.head, fontSize: '28px', color: T.white,
     }).setOrigin(0.5);
+    const body = this.add.container(W / 2, MIX_Y, [g, icons, label]);
 
-    const zone = this.add.zone(cx, cy, w, h).setInteractive({ cursor: 'pointer' });
-    zone.on('pointerover', () => {
-      this.tweens.add({ targets: [bg, label], y: '-=3', duration: 140 });
-    });
-    zone.on('pointerout', () => {
-      this.tweens.add({ targets: [bg, label], y: '+=3', duration: 140 });
-    });
-    zone.on('pointerdown', () => {
-      // Quick "press in" then start GameScene with the chosen category.
-      this.tweens.add({
-        targets: label, scale: 0.95, duration: 80, yoyo: true,
-        onComplete: () => this.scene.start('GameScene', { category: this.selected }),
-      });
-    });
+    const zone = this.add.zone(W / 2, MIX_Y, w + 20, h + 20).setInteractive({ cursor: 'pointer' });
+    zone.on('pointerover', () => { if (!this.starting) this.tweens.add({ targets: body, y: MIX_Y - 3, duration: 140 }); });
+    zone.on('pointerout', () => { if (!this.starting) this.tweens.add({ targets: body, y: MIX_Y, duration: 140 }); });
+    zone.on('pointerdown', () => this.start('mix', body, g, label, undefined, 70));
   }
 
-  // ─── Hint chip ─────────────────────────────────────────────────────────
+  /** Pop the tapped bubble, say the category, then go. */
+  private start(
+    mode: Mode,
+    body: Phaser.GameObjects.Container,
+    g: Phaser.GameObjects.Graphics,
+    content: Phaser.GameObjects.Text,
+    caption: Phaser.GameObjects.Text | undefined,
+    burstR: number,
+  ): void {
+    if (this.starting) return;
+    this.starting = true;
+    this.tweens.killTweensOf(body);
+    popSound();
+    say(mode === 'mix' ? 'Mix it up!' : `${TARGETS[mode].caption}!`);
 
-  private drawHintChip(text: string): void {
-    this.hintTxt.setText(text);
-    const chipPadX = 14, chipH = 28;
-    const w = this.hintTxt.width + chipPadX * 2;
-    const cx = this.hintTxt.x, cy = this.hintTxt.y;
-    this.hintChip.clear();
-    this.hintChip.fillStyle(C.white, 0.7);
-    this.hintChip.fillRoundedRect(cx - w / 2, cy - chipH / 2, w, chipH, chipH / 2);
-    this.hintChip.lineStyle(1.5, C.lavender, 0.5);
-    this.hintChip.strokeRoundedRect(cx - w / 2, cy - chipH / 2, w, chipH, chipH / 2);
+    bubbleBurst(this, body.x, body.y, burstR, mode === 'mix' ? C.pink : C.lavender);
+    popShockwave(this, body.x, body.y, burstR * 0.8, burstR * 1.6, mode === 'mix' ? C.pink : C.mint);
+    this.tweens.add({ targets: g, scale: 1.25, alpha: 0, duration: 180, ease: 'Cubic.Out' });
+    this.tweens.add({ targets: content, scale: 1.3, duration: 260, ease: 'Back.Out' });
+    if (caption) this.tweens.add({ targets: caption, alpha: 0, duration: 200 });
+    else this.tweens.add({ targets: body, alpha: 0, duration: 260, delay: 120 });
+
+    this.time.delayedCall(700, () => this.scene.start('GameScene', { mode }));
   }
 }

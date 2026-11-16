@@ -11,6 +11,16 @@ work — keep this file dense and fast to scan.
 
 ---
 
+## 2026-11-17 — What Comes Next?: pattern path + adaptive levels
+
+- Patterns sit on coloured stepping stones grouped per repeat, a chick hops along
+  on the beat and lands on the "?" when answered. Level ladder 1–4 (AB with
+  2 cards → AB with 3 → AAB/ABB → ABC), chosen on the title screen and adaptive
+  (two first-try answers step up, a miss steps down; stored in localStorage
+  `aya.whats-next.level`). Pattern kinds vary: things, colours, animal voices,
+  big/little, drum/clap/bell. Cards are inert until the question is asked.
+  Story mode starts with 2 endings and has two new everyday stories.
+
 ## 2026-11-17 — Animated cover art for every game card
 
 - Each landing card now shows bespoke cover art: `public/covers/<game>.svg`,

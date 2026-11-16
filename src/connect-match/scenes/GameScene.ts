@@ -132,7 +132,8 @@ export class GameScene extends Phaser.Scene {
   private buildPrompt(): void {
     this.promptTxt = this.add.text(W / 2, 128, 'Match the friends! 💕', {
       fontFamily: F.body, fontSize: '14px', color: T.sub,
-      fontStyle: 'bold', letterSpacing: 1,
+      // No letterSpacing: Phaser then draws per UTF-16 unit and splits emoji (💕 rendered as ��).
+      fontStyle: 'bold',
     }).setOrigin(0.5);
   }
 

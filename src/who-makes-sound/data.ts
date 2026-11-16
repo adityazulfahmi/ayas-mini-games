@@ -37,6 +37,23 @@ export const ANIMALS: Animal[] = [
 ];
 
 export const TOTAL_ROUNDS = 5;
-export const OPTIONS_PER_ROUND = 4;
+
+export interface Mode {
+  /** Answer cards per round. */
+  choices: 2 | 4;
+  label: string;
+  emoji: string;
+  blurb: string;
+}
+
+export const MODES: Mode[] = [
+  { choices: 2, label: 'Little Ears', emoji: '🐣', blurb: '2 animals to pick from' },
+  { choices: 4, label: 'Big Ears',    emoji: '🦉', blurb: '4 animals to pick from' },
+];
+
+/** "Who says moo?" — the animal's call, lower-cased for speech + caption. */
+export function callWord(a: Animal): string {
+  return a.says.toLowerCase();
+}
 
 export const CONFETTI_EMOJIS = ['🌸', '⭐', '🎀', '✨', '🌟', '💖', '🎊', '🎶'];

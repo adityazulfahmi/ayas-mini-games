@@ -19,7 +19,14 @@
   <circle cx="74" cy="90" r="56" fill="#9c4dcc" opacity="0.14"/>
   <circle cx="74" cy="90" r="48" fill="url(#ws-speaker)" stroke="white" stroke-width="4"/>
   <ellipse cx="62" cy="76" rx="14" ry="6" fill="white" opacity="0.55"/>
-  <text x="74" y="104" font-size="42" text-anchor="middle">🔊</text>
+  <!-- Drawn toy speaker (matches the in-game glyph) -->
+  <g transform="translate(74 90)">
+    <rect x="-27" y="-15" width="19" height="30" rx="5" fill="white"/>
+    <path d="M -9 -14 L -9 14 L 7 22 L 7 -22 Z" fill="white"/>
+    <path d="M 13 -8 A 10 10 0 0 1 13 8" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 17 -14 A 17 17 0 0 1 17 14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <path d="M 21 -20 A 24 24 0 0 1 21 20" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  </g>
 
   <!-- Sound ripples -->
   <path d="M 132 74 Q 148 90 132 106" fill="none" stroke="#f06292" stroke-width="4" stroke-linecap="round"/>

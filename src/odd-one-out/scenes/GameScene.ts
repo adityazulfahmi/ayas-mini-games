@@ -1,359 +1,501 @@
 import Phaser from 'phaser';
 import { drawBg, launchConfetti } from '@shared/phaserUtils';
 import { createEndPopup } from '@shared/endPopup';
-import { C, T, F, GAME_DURATION } from '@shared/theme';
+import { C, T, F } from '@shared/theme';
 import { sounds } from '@shared/audio';
-import { shuffle, randomOtherIdx } from '@shared/utils';
-import { CATEGORIES, CONFETTI_EMOJIS, type Difficulty } from '../data';
+import { shuffle } from '@shared/utils';
+import {
+  CATEGORIES, CONFETTI_EMOJIS, GRID, ROUNDS, TIMED_SECONDS, oddCandidates, settings,
+  type Category, type Difficulty, type Item, type PlayMode,
+} from '../data';
+import { say, hush, softNope, drawSpeakerBtn } from '../speech';
 
 const W = 420, H = 780;
-const TIERS = { gold: 60, silver: 40, bronze: 20 };
 
-// Grid layout per difficulty
+/** Prompt card that holds the spoken question. */
+const CARD = { x: 18, y: 92, w: W - 36, h: 150 };
+const SPEAKER = { x: CARD.x + 52, y: CARD.y + CARD.h / 2, r: 30 };
+const TEXT_X = CARD.x + 100;
+const TEXT_W = CARD.w - 116;
+
+/** Grid cells: big, forgiving targets. */
 const LAYOUT = {
-  easy: { rows: 2, cols: 2, cell: 164, gap: 14, emoji: '64px', top: 300 },
-  hard: { rows: 3, cols: 3, cell: 106, gap: 10, emoji: '44px', top: 300 },
+  easy: { cell: 184, gap: 14, emoji: 108, top: 266 },
+  hard: { cell: 120, gap: 12, emoji: 70, top: 270 },
 } as const;
+const FOOTER_Y = 706;
+const IDLE_HINT_MS = 8000;
+
+type CellState = 'idle' | 'correct' | 'nope';
 
 interface Cell {
+  x: number;
+  y: number;
   bg: Phaser.GameObjects.Graphics;
   txt: Phaser.GameObjects.Text;
   zone: Phaser.GameObjects.Zone;
-  emoji: string;
+  item?: Item;
+  odd: boolean;
+  tried: boolean;
 }
 
 export class GameScene extends Phaser.Scene {
   private difficulty: Difficulty = 'easy';
-  private score = 0;
-  private streak = 0;
-  private timeLeft = GAME_DURATION;
-  private answering = false;
-  private lastGroupIdx = -1;
-  private correctEmoji = '';
+  private mode: PlayMode = 'relaxed';
 
-  private scoreTxt!: Phaser.GameObjects.Text;
-  private timerTxt!: Phaser.GameObjects.Text;
-  private progressFill!: Phaser.GameObjects.Graphics;
-  private streakTxt!: Phaser.GameObjects.Text;
-  private hintTxt?: Phaser.GameObjects.Text;
-  private hintBg?: Phaser.GameObjects.Graphics;
+  private round = 0;
+  private solved = 0;
+  private firstTry = 0;
+  private missesThisRound = 0;
+  private busy = true;
+  private over = false;
+  private roundToken = 0;
+  private timeLeft = TIMED_SECONDS;
+
+  private majorityQueue: Category[] = [];
+  private majority!: Category;
+  private oddCat!: Category;
+  private oddItem!: Item;
+  private lastOddId = '';
+
   private cells: Cell[] = [];
+  private dots: Phaser.GameObjects.Graphics[] = [];
+  private starTxt!: Phaser.GameObjects.Text;
+  private timerTxt?: Phaser.GameObjects.Text;
+  private timerBar?: Phaser.GameObjects.Graphics;
+  private headTxt!: Phaser.GameObjects.Text;
+  private questionTxt!: Phaser.GameObjects.Text;
+  private speaker!: Phaser.GameObjects.Container;
+  private footer!: Phaser.GameObjects.Text;
+  private hand?: Phaser.GameObjects.Text;
+  private idleTimer?: Phaser.Time.TimerEvent;
+  private clock?: Phaser.Time.TimerEvent;
   private endOverlay!: ReturnType<typeof createEndPopup>;
-  private timerEvent!: Phaser.Time.TimerEvent;
 
   constructor() { super('GameScene'); }
 
-  init(data: { difficulty?: Difficulty }): void {
-    this.difficulty = data?.difficulty ?? 'easy';
+  init(data: { difficulty?: Difficulty; mode?: PlayMode }): void {
+    this.difficulty = data?.difficulty ?? settings.difficulty;
+    this.mode = data?.mode ?? settings.mode;
   }
 
   create(): void {
     drawBg(this);
-    this.score = 0;
-    this.streak = 0;
-    this.timeLeft = GAME_DURATION;
-    this.answering = false;
-    this.lastGroupIdx = -1;
+    // D-005: scene instances are reused, so reset everything here.
+    this.cells = [];
+    this.dots = [];
+    this.round = 0;
+    this.solved = 0;
+    this.firstTry = 0;
+    this.busy = true;
+    this.over = false;
+    this.roundToken = 0;
+    this.lastOddId = '';
+    this.timeLeft = TIMED_SECONDS;
+    this.hand = undefined;
+    this.timerTxt = undefined;
+    this.timerBar = undefined;
+    this.clock = undefined;
+
+    const sameCount = GRID[this.difficulty].cols * GRID[this.difficulty].rows - 1;
+    this.majorityQueue = this.buildMajorityQueue(sameCount);
 
     this.buildHeader();
-    this.buildHint();
-    this.buildStreakLine();
+    this.buildPromptCard();
     this.buildGrid();
-    this.buildEndOverlay();
+    this.footer = this.add.text(W / 2, FOOTER_Y, '', {
+      fontFamily: F.body, fontSize: '15px', color: T.sub, fontStyle: 'bold', align: 'center',
+      wordWrap: { width: W - 60 },
+    }).setOrigin(0.5).setAlpha(0.9);
 
-    this.timerEvent = this.time.addEvent({
-      delay: 1000, callback: this.tick, callbackScope: this,
-      repeat: GAME_DURATION - 1,
+    this.endOverlay = createEndPopup(this, W, H, {
+      onPlayAgain: () => this.scene.restart({ difficulty: this.difficulty, mode: this.mode }),
+      onHome:      () => this.scene.start('TitleScene'),
+      onAllGames:  () => { window.location.href = '../'; },
     });
 
-    this.nextQuestion();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => hush());
+
+    if (this.mode === 'timed') {
+      this.clock = this.time.addEvent({ delay: 1000, loop: true, callback: this.tick, callbackScope: this });
+    }
+    this.time.delayedCall(250, () => this.startRound());
   }
 
-  // ─── Header ─────────────────────────────────────────────────────────────
+  // ─── Round planning ────────────────────────────────────────────────────
+
+  /**
+   * D-006: shuffle the majority groups up front so a game cycles through
+   * different groups instead of repeating one. Long enough for a fast
+   * timed run too; never the same group twice in a row.
+   */
+  private buildMajorityQueue(sameCount: number): Category[] {
+    const pool = CATEGORIES.filter(c => c.items.length >= sameCount);
+    const queue: Category[] = [];
+    while (queue.length < 40) {
+      let batch = shuffle(pool);
+      if (queue.length && batch[0] === queue[queue.length - 1]) batch = [...batch.slice(1), batch[0]];
+      queue.push(...batch);
+    }
+    return queue;
+  }
+
+  // ─── Header ────────────────────────────────────────────────────────────
 
   private buildHeader(): void {
-    const modeDot = this.difficulty === 'hard' ? '🔥' : '🌱';
-    this.add.text(24, 34, `🤔 Odd One Out ${modeDot}`, {
-      fontFamily: F.head, fontSize: '18px', color: T.main,
-    }).setOrigin(0, 0.5);
+    this.add.text(20, 34, '🤔 Odd One Out', { fontFamily: F.head, fontSize: '18px', color: T.main }).setOrigin(0, 0.5);
 
-    this.pill(W - 178, 34, 88, 34);
-    this.scoreTxt = this.add.text(W - 178, 34, '⭐ 0', {
-      fontFamily: F.head, fontSize: '16px', color: T.main,
-    }).setOrigin(0.5);
-
-    this.pill(W - 74, 34, 100, 34);
-    this.timerTxt = this.add.text(W - 74, 34, `⏱ ${GAME_DURATION}s`, {
-      fontFamily: F.head, fontSize: '16px', color: T.main,
-    }).setOrigin(0.5);
-
-    const track = this.add.graphics();
-    track.fillStyle(0xce93d8, 0.25);
-    track.fillRoundedRect(24, 62, W - 48, 6, 3);
-    this.progressFill = this.add.graphics();
-    this.drawProgress(1);
+    if (this.mode === 'timed') {
+      this.pill(W - 160, 34, 76);
+      this.starTxt = this.add.text(W - 160, 34, '', { fontFamily: F.head, fontSize: '16px', color: T.main }).setOrigin(0.5);
+      this.pill(W - 66, 34, 92);
+      this.timerTxt = this.add.text(W - 66, 34, `⏱ ${TIMED_SECONDS}s`, { fontFamily: F.head, fontSize: '16px', color: T.main }).setOrigin(0.5);
+      const track = this.add.graphics();
+      track.fillStyle(C.lavender, 0.25);
+      track.fillRoundedRect(20, 66, W - 40, 8, 4);
+      this.timerBar = this.add.graphics();
+      this.drawTimerBar();
+    } else {
+      this.pill(W - 62, 34, 92);
+      this.starTxt = this.add.text(W - 62, 34, '', { fontFamily: F.head, fontSize: '16px', color: T.main }).setOrigin(0.5);
+      const gap = 24;
+      const startX = W / 2 - ((ROUNDS - 1) * gap) / 2;
+      this.dots = Array.from({ length: ROUNDS }, (_, i) => this.add.graphics().setPosition(startX + i * gap, 70));
+      this.renderDots();
+    }
+    this.updateStars();
   }
 
-  private pill(cx: number, cy: number, w: number, h: number): void {
+  private pill(cx: number, cy: number, w: number): void {
+    const h = 34;
     const g = this.add.graphics();
-    g.fillStyle(0xffffff, 1);
+    g.fillStyle(C.white, 1);
     g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
-    g.lineStyle(1.5, C.lavender, 0.35);
+    g.lineStyle(1.5, C.lavender, 0.4);
     g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, h / 2);
   }
 
-  private drawProgress(ratio: number): void {
-    this.progressFill.clear();
-    this.progressFill.fillStyle(C.pink, 1);
-    this.progressFill.fillRoundedRect(24, 62, Math.max(0, (W - 48) * ratio), 6, 3);
+  private updateStars(): void {
+    this.starTxt.setText(`⭐ ${this.mode === 'timed' ? this.solved : this.firstTry}`);
   }
 
-  // ─── Hint card (easy mode only) ────────────────────────────────────────
+  private renderDots(): void {
+    this.dots.forEach((g, i) => {
+      g.clear();
+      if (i < this.round) { g.fillStyle(C.pink, 1); g.fillCircle(0, 0, 6); }
+      else if (i === this.round) { g.fillStyle(C.pink, 0.22); g.fillCircle(0, 0, 11); g.fillStyle(C.pink, 1); g.fillCircle(0, 0, 6); }
+      else { g.fillStyle(0xe1bee7, 1); g.fillCircle(0, 0, 6); }
+    });
+  }
 
-  private buildHint(): void {
-    if (this.difficulty === 'hard') {
-      // Hard mode: single centred question, no category hint
-      this.add.text(W / 2, 150, "Spot the odd one out! 🔍", {
-        fontFamily: F.head, fontSize: '22px', color: T.main,
-      }).setOrigin(0.5);
-      this.add.text(W / 2, 186, "Which one doesn't fit with the rest?", {
-        fontFamily: F.body, fontSize: '13px', color: T.sub, fontStyle: 'bold',
-      }).setOrigin(0.5);
-      return;
+  private drawTimerBar(): void {
+    if (!this.timerBar) return;
+    const ratio = Math.max(0, this.timeLeft / TIMED_SECONDS);
+    this.timerBar.clear();
+    this.timerBar.fillStyle(this.timeLeft <= 10 ? 0xffb74d : C.pink, 1);
+    if (ratio > 0) this.timerBar.fillRoundedRect(20, 66, Math.max(8, (W - 40) * ratio), 8, 4);
+  }
+
+  // ─── Prompt card ───────────────────────────────────────────────────────
+
+  private buildPromptCard(): void {
+    const g = this.add.graphics();
+    g.fillStyle(C.shadow, 0.1);
+    g.fillRoundedRect(CARD.x + 3, CARD.y + 7, CARD.w, CARD.h, 26);
+    g.fillStyle(C.white, 1);
+    g.fillRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, 26);
+    g.lineStyle(2, C.lavender, 0.45);
+    g.strokeRoundedRect(CARD.x, CARD.y, CARD.w, CARD.h, 26);
+
+    const sg = this.add.graphics();
+    drawSpeakerBtn(sg, SPEAKER.r);
+    this.speaker = this.add.container(SPEAKER.x, SPEAKER.y, [sg]);
+    this.speaker.setSize(SPEAKER.r * 2 + 24, SPEAKER.r * 2 + 24).setInteractive({ cursor: 'pointer' });
+    this.speaker.on('pointerdown', () => {
+      this.tweens.add({ targets: this.speaker, scale: { from: 0.88, to: 1 }, duration: 220, ease: 'Back.Out' });
+      if (!this.busy) { say(this.spokenQuestion()); this.armIdleHint(); }
+    });
+
+    this.headTxt = this.add.text(TEXT_X, CARD.y + 42, '', {
+      fontFamily: F.body, fontSize: '15px', color: T.sub, fontStyle: 'bold',
+    }).setOrigin(0, 0.5);
+    this.questionTxt = this.add.text(TEXT_X, CARD.y + 94, '', {
+      fontFamily: F.head, fontSize: '25px', color: T.main,
+      wordWrap: { width: TEXT_W }, lineSpacing: 2,
+    }).setOrigin(0, 0.5);
+  }
+
+  private spokenQuestion(): string {
+    return this.difficulty === 'easy' ? this.majority.question : "Which one doesn't belong?";
+  }
+
+  private setPrompt(head: string, question: string, color: string = T.main): void {
+    this.headTxt.setText(head);
+    this.questionTxt.setText(question).setColor(color);
+    // Shrink long sentences so they always fit two lines inside the card.
+    for (const size of [25, 23, 21, 19]) {
+      this.questionTxt.setFontSize(size);
+      if (this.questionTxt.height <= 72) break;
     }
-
-    const cardX = 24, cardY = 90, cardW = W - 48, cardH = 170;
-    this.hintBg = this.add.graphics();
-    this.hintBg.fillStyle(C.white, 1);
-    this.hintBg.fillRoundedRect(cardX, cardY, cardW, cardH, 22);
-
-    this.add.text(W / 2, cardY + 30, 'LOOK FOR THE THEME', {
-      fontFamily: F.body, fontSize: '11px', color: T.sub,
-      fontStyle: 'bold', letterSpacing: 1.5,
-    }).setOrigin(0.5);
-
-    this.hintTxt = this.add.text(W / 2, cardY + 70, '', {
-      fontFamily: F.head, fontSize: '22px', color: T.main,
-    }).setOrigin(0.5);
-
-    // Mnemonic row (static emojis) rebuilt every question via setText
-    this.mnemonicTxt = this.add.text(W / 2, cardY + 112, '', {
-      fontFamily: F.body, fontSize: '32px',
-    }).setOrigin(0.5);
-
-    this.add.text(W / 2, cardY + 150, '… one of them is sneaking in!', {
-      fontFamily: F.body, fontSize: '12px', color: T.sub, fontStyle: 'bold',
-    }).setOrigin(0.5);
-  }
-  private mnemonicTxt?: Phaser.GameObjects.Text;
-
-  // ─── Streak line ───────────────────────────────────────────────────────
-
-  private buildStreakLine(): void {
-    const y = this.difficulty === 'hard' ? 218 : 278;
-    this.streakTxt = this.add.text(W / 2, y, '', {
-      fontFamily: F.head, fontSize: '14px', color: T.sub,
-    }).setOrigin(0.5);
   }
 
   // ─── Grid ──────────────────────────────────────────────────────────────
 
   private buildGrid(): void {
-    const layout = LAYOUT[this.difficulty];
-    const gridW = layout.cols * layout.cell + (layout.cols - 1) * layout.gap;
-    const startX = W / 2 - gridW / 2 + layout.cell / 2;
-    const startY = layout.top + layout.cell / 2;
-    const total = layout.rows * layout.cols;
+    const { cols, rows } = GRID[this.difficulty];
+    const L = LAYOUT[this.difficulty];
+    const gridW = cols * L.cell + (cols - 1) * L.gap;
+    const startX = W / 2 - gridW / 2 + L.cell / 2;
+    const startY = L.top + L.cell / 2;
 
-    this.cells = Array.from({ length: total }, (_, i) => {
-      const col = i % layout.cols;
-      const row = Math.floor(i / layout.cols);
-      const cx = startX + col * (layout.cell + layout.gap);
-      const cy = startY + row * (layout.cell + layout.gap);
-
-      const bg = this.add.graphics().setPosition(cx, cy);
-      this.drawCellBg(bg, 'idle', layout.cell);
-
-      const txt = this.add.text(cx, cy, '', { fontSize: layout.emoji }).setOrigin(0.5);
-
-      const zone = this.add.zone(cx, cy, layout.cell, layout.cell).setInteractive({ cursor: 'pointer' });
-      zone.on('pointerdown', () => this.onAnswer(i));
-      zone.on('pointerover', () => {
-        if (!this.answering) this.drawCellBg(bg, 'hover', layout.cell);
-      });
-      zone.on('pointerout', () => {
-        if (!this.answering) this.drawCellBg(bg, 'idle', layout.cell);
-      });
-
-      return { bg, txt, zone, emoji: '' };
-    });
+    for (let i = 0; i < cols * rows; i++) {
+      const x = startX + (i % cols) * (L.cell + L.gap);
+      const y = startY + Math.floor(i / cols) * (L.cell + L.gap);
+      const bg = this.add.graphics().setPosition(x, y);
+      const txt = this.add.text(x, y + 2, '', {
+        fontFamily: F.body, fontSize: `${L.emoji}px`, padding: { x: 6, y: 10 },
+      }).setOrigin(0.5);
+      // Hit zone covers the gutter too: toddler taps land near edges.
+      const zone = this.add.zone(x, y, L.cell + L.gap, L.cell + L.gap).setInteractive({ cursor: 'pointer' });
+      const cell: Cell = { x, y, bg, txt, zone, odd: false, tried: false };
+      zone.on('pointerdown', () => this.onTap(cell));
+      this.drawCell(cell, 'idle');
+      this.cells.push(cell);
+    }
   }
 
-  private drawCellBg(
-    g: Phaser.GameObjects.Graphics,
-    state: 'idle' | 'hover' | 'correct' | 'wrong',
-    size: number,
-  ): void {
+  private drawCell(cell: Cell, state: CellState): void {
+    const s = LAYOUT[this.difficulty].cell;
+    const r = s >= 150 ? 30 : 22;
+    const g = cell.bg;
     g.clear();
-    const radius = size >= 140 ? 20 : 14;
-    switch (state) {
-      case 'idle':
-        g.fillStyle(C.white, 1);
-        g.lineStyle(3, 0xce93d8, 0.35);
-        break;
-      case 'hover':
-        g.fillStyle(0xfff0f7, 1);
-        g.lineStyle(3, C.pink, 0.85);
-        break;
-      case 'correct':
-        g.fillStyle(C.mintBg, 1);
-        g.lineStyle(3.5, C.mint, 1);
-        break;
-      case 'wrong':
-        g.fillStyle(0xffebee, 1);
-        g.lineStyle(3.5, 0xef5350, 1);
-        break;
+    g.fillStyle(C.shadow, state === 'nope' ? 0.05 : 0.12);
+    g.fillRoundedRect(-s / 2 + 2, -s / 2 + 6, s, s, r);
+    if (state === 'correct') {
+      g.fillStyle(C.mintBg, 1);
+      g.fillRoundedRect(-s / 2, -s / 2, s, s, r);
+      g.lineStyle(5, C.mint, 1);
+    } else if (state === 'nope') {
+      g.fillStyle(0xf6f0fa, 1);
+      g.fillRoundedRect(-s / 2, -s / 2, s, s, r);
+      g.lineStyle(2, C.lavender, 0.3);
+    } else {
+      g.fillStyle(C.white, 1);
+      g.fillRoundedRect(-s / 2, -s / 2, s, s, r);
+      g.lineStyle(3, C.lavender, 0.45);
     }
-    g.fillRoundedRect(-size / 2, -size / 2, size, size, radius);
-    g.strokeRoundedRect(-size / 2, -size / 2, size, size, radius);
+    g.strokeRoundedRect(-s / 2, -s / 2, s, s, r);
   }
 
-  /**
-   * Return a category that has at least `minSize` unique emojis. Walks the
-   * list from `startIdx` onward so we don't silently duplicate emojis inside
-   * a single round when hard mode needs 8 picks from a short category.
-   */
-  private pickCategoryWithSize(startIdx: number, minSize: number) {
-    for (let i = 0; i < CATEGORIES.length; i++) {
-      const idx = (startIdx + i) % CATEGORIES.length;
-      if (CATEGORIES[idx].emojis.length >= minSize) {
-        this.lastGroupIdx = idx;
-        return CATEGORIES[idx];
-      }
-    }
-    return CATEGORIES[startIdx]; // fallback — shouldn't happen in practice
-  }
+  // ─── Round flow ────────────────────────────────────────────────────────
 
-  // ─── Round logic ───────────────────────────────────────────────────────
+  private startRound(): void {
+    if (this.over) return;
+    const token = ++this.roundToken;
+    this.busy = true;
+    this.missesThisRound = 0;
+    this.hideHand();
+    this.renderDots();
 
-  private nextQuestion(): void {
-    this.answering = false;
-    const layout = LAYOUT[this.difficulty];
-    const total = layout.rows * layout.cols;
+    const { cols, rows } = GRID[this.difficulty];
+    const total = cols * rows;
+    this.majority = this.majorityQueue[this.round % this.majorityQueue.length];
+    let cands = oddCandidates(this.majority, this.difficulty);
+    const fresh = cands.filter(c => c.id !== this.lastOddId);
+    if (fresh.length) cands = fresh;
+    this.oddCat = cands[Math.floor(Math.random() * cands.length)];
+    this.lastOddId = this.oddCat.id;
+    this.oddItem = this.oddCat.items[Math.floor(Math.random() * this.oddCat.items.length)];
 
-    // Pick a category, avoiding immediate repeat
-    let groupIdx: number;
-    do { groupIdx = Math.floor(Math.random() * CATEGORIES.length); }
-    while (groupIdx === this.lastGroupIdx);
-    this.lastGroupIdx = groupIdx;
+    const sames = shuffle(this.majority.items).slice(0, total - 1);
+    const items = shuffle([...sames, this.oddItem]);
 
-    const sameCount = total - 1;
-    const group = this.pickCategoryWithSize(groupIdx, sameCount);
-    const sames = shuffle([...group.emojis]).slice(0, sameCount);
-
-    const oddIdx = randomOtherIdx(groupIdx, CATEGORIES.length);
-    const oddGroup = CATEGORIES[oddIdx];
-    const odd = oddGroup.emojis[Math.floor(Math.random() * oddGroup.emojis.length)];
-
-    this.correctEmoji = odd;
-    const ordered = shuffle([...sames, odd]);
-
-    this.cells.forEach((c, i) => {
-      c.emoji = ordered[i];
-      c.txt.setText(ordered[i]).setScale(1);
-      this.drawCellBg(c.bg, 'idle', layout.cell);
-      c.zone.setInteractive({ cursor: 'pointer' });
+    this.cells.forEach((cell, i) => {
+      this.tweens.killTweensOf([cell.bg, cell.txt]);
+      cell.item = items[i];
+      cell.odd = items[i] === this.oddItem;
+      cell.tried = false;
+      this.drawCell(cell, 'idle');
+      cell.bg.setScale(1);
+      cell.txt.setText(items[i].emoji).setPosition(cell.x, cell.y + 2).setAlpha(1).setAngle(0).setScale(0);
+      this.tweens.add({ targets: cell.txt, scale: 1, duration: 340, delay: 60 * i, ease: 'Back.Out' });
     });
 
-    // Easy-mode hint
     if (this.difficulty === 'easy') {
-      this.hintTxt?.setText(group.prompt);
-      this.mnemonicTxt?.setText(group.mnemonic);
+      this.setPrompt(`Three are ${this.majority.plural}`, this.majority.question);
+      this.footer.setText('Tap the one that is different 👆');
+    } else {
+      this.setPrompt('Eight go together…', "Which one doesn't belong?");
+      this.footer.setText('Look closely! One is not like the others 🔍');
     }
+    this.tweens.add({ targets: this.questionTxt, scale: { from: 0.9, to: 1 }, duration: 260, ease: 'Back.Out' });
+
+    say(this.spokenQuestion());
+    this.time.delayedCall(60 * total + 200, () => {
+      if (token !== this.roundToken || this.over) return;
+      this.busy = false;
+      this.armIdleHint();
+    });
   }
 
-  private onAnswer(idx: number): void {
-    if (this.answering) return;
-    this.answering = true;
-    const layout = LAYOUT[this.difficulty];
+  private onTap(cell: Cell): void {
+    if (this.busy || this.over || cell.tried || !cell.item) return;
+    if (cell.odd) this.onCorrect(cell);
+    else this.onNope(cell);
+  }
 
-    const cell = this.cells[idx];
-    const isCorrect = cell.emoji === this.correctEmoji;
-    this.cells.forEach(c => c.zone.disableInteractive());
+  private onCorrect(cell: Cell): void {
+    this.busy = true;
+    this.idleTimer?.remove();
+    this.hideHand();
+    const token = this.roundToken;
+    const clean = this.missesThisRound === 0;
+    this.solved++;
+    if (clean) this.firstTry++;
+    this.updateStars();
 
-    if (isCorrect) {
-      this.drawCellBg(cell.bg, 'correct', layout.cell);
-      this.tweens.add({
-        targets: cell.bg, scale: { from: 1, to: 1.07 },
-        yoyo: true, duration: 180, ease: 'Sine.InOut',
-      });
-      this.streak++;
-      this.score += this.streak >= 3 ? 15 : 10;
-      this.scoreTxt.setText(`⭐ ${this.score}`);
+    this.drawCell(cell, 'correct');
+    this.tweens.killTweensOf(cell.txt);
+    cell.txt.setScale(1).setAngle(0);
+    this.tweens.add({ targets: cell.txt, scale: { from: 1, to: 1.22 }, yoyo: true, duration: 220, ease: 'Sine.Out' });
+    this.tweens.add({ targets: cell.bg, scale: { from: 1, to: 1.05 }, yoyo: true, duration: 220, ease: 'Sine.Out' });
+    this.sparkles(cell.x, cell.y);
+    this.ring(cell.x, cell.y);
+    // The ones that belong together do a little happy hop.
+    this.cells.filter(c => !c.odd).forEach((c, i) => {
+      this.tweens.add({ targets: c.txt, alpha: 1, duration: 200 });
+      this.tweens.add({ targets: c.txt, y: c.y - 8, yoyo: true, duration: 180, delay: 80 + i * 40, ease: 'Sine.Out' });
+    });
+    if (this.solved % 3 === 0) sounds.streak(); else sounds.correct();
 
-      if (this.streak >= 3) {
-        sounds.streak();
-        this.streakTxt.setText(`🔥 ${this.streak} in a row!  +15`).setColor('#f06292');
-      } else if (this.streak === 2) {
-        sounds.correct();
-        this.streakTxt.setText('✨ One more for a streak!').setColor(T.sub);
-      } else {
-        sounds.correct();
-        this.streakTxt.setText('').setColor(T.sub);
-      }
+    const answer = this.oddCat.about(this.oddItem.name);
+    this.setPrompt(
+      this.difficulty === 'easy' ? 'Yes! You found it! 🎉' : `The others are ${this.majority.plural}`,
+      answer, T.mint,
+    );
+    this.footer.setText('');
 
-      this.time.delayedCall(700, () => this.nextQuestion());
-    } else {
-      this.drawCellBg(cell.bg, 'wrong', layout.cell);
-      this.streak = 0;
-      sounds.wrong();
-      this.streakTxt.setText('').setColor(T.sub);
+    const isLast = this.mode === 'relaxed' && this.round + 1 >= ROUNDS;
+    const minWait = this.mode === 'timed' ? 900 : 1800;
+    let spoken = false, waited = false;
+    const advance = () => {
+      if (!spoken || !waited || token !== this.roundToken || this.over) return;
+      this.roundToken++;
+      this.round++;
+      if (isLast) this.endGame(); else this.startRound();
+    };
+    say(`Yes! ${answer}`, () => { spoken = true; this.time.delayedCall(250, advance); });
+    this.time.delayedCall(minWait, () => { waited = true; advance(); });
+    // Safety net in case speech never reports that it ended.
+    this.time.delayedCall(minWait + 4000, () => { spoken = true; advance(); });
+  }
 
-      // Highlight the correct cell(s)
-      this.cells.forEach(c => {
-        if (c.emoji === this.correctEmoji) this.drawCellBg(c.bg, 'correct', layout.cell);
-      });
-      this.tweens.add({ targets: cell.bg, x: cell.bg.x - 6, yoyo: true, repeat: 3, duration: 55 });
+  private onNope(cell: Cell): void {
+    cell.tried = true;
+    this.missesThisRound++;
+    softNope();
+    this.drawCell(cell, 'nope');
+    this.tweens.add({
+      targets: cell.txt, angle: { from: -9, to: 9 }, yoyo: true, repeat: 1, duration: 110,
+      onComplete: () => { cell.txt.setAngle(0); this.tweens.add({ targets: cell.txt, alpha: 0.45, duration: 250 }); },
+    });
+    const name = cell.item!.name;
+    say(`That's the ${name}. ${this.majority.about(name)} Try another one.`);
+    this.footer.setText(`${this.majority.about(name)} Try another 💕`);
+    if (this.missesThisRound >= 2) this.showHand();
+    else this.armIdleHint();
+  }
 
-      this.time.delayedCall(1000, () => this.nextQuestion());
+  // ─── Hints & effects ───────────────────────────────────────────────────
+
+  private armIdleHint(): void {
+    this.idleTimer?.remove();
+    this.idleTimer = this.time.delayedCall(IDLE_HINT_MS, () => this.showHand());
+  }
+
+  /** A little hand bobs next to the odd one, after a pause or two misses. */
+  private showHand(): void {
+    if (this.busy || this.over || this.hand) return;
+    const target = this.cells.find(c => c.odd);
+    if (!target) return;
+    const off = LAYOUT[this.difficulty].cell * 0.36;
+    this.hand = this.add.text(target.x + off, target.y + off + 10, '👆', { fontFamily: F.body, fontSize: '46px' })
+      .setOrigin(0.5).setDepth(20);
+    this.tweens.add({ targets: this.hand, y: target.y + off - 6, yoyo: true, repeat: -1, duration: 420, ease: 'Sine.InOut' });
+    this.tweens.add({ targets: target.txt, scale: { from: 1, to: 1.12 }, yoyo: true, repeat: 2, duration: 300, ease: 'Sine.InOut' });
+  }
+
+  private hideHand(): void {
+    this.hand?.destroy();
+    this.hand = undefined;
+  }
+
+  private ring(x: number, y: number): void {
+    const g = this.add.graphics().setDepth(5);
+    const base = LAYOUT[this.difficulty].cell / 2;
+    const s = { r: base * 0.7, a: 0.8 };
+    this.tweens.add({
+      targets: s, r: base * 1.35, a: 0, duration: 600, ease: 'Sine.Out',
+      onUpdate: () => { g.clear(); g.lineStyle(5, C.mint, s.a); g.strokeCircle(x, y, s.r); },
+      onComplete: () => g.destroy(),
+    });
+  }
+
+  private sparkles(x: number, y: number): void {
+    const emojis = ['✨', '⭐', '🌟', '💖'];
+    for (let i = 0; i < 7; i++) {
+      const a = (Math.PI * 2 * i) / 7 + Math.random() * 0.4;
+      const d = LAYOUT[this.difficulty].cell * 0.55 + Math.random() * 24;
+      const e = this.add.text(x, y, emojis[i % emojis.length], { fontFamily: F.body, fontSize: '24px' }).setOrigin(0.5).setDepth(15);
+      this.tweens.add({ targets: e, x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, alpha: 0, duration: 700, ease: 'Sine.Out',
+        onComplete: () => e.destroy() });
     }
   }
 
   // ─── Timer / end ───────────────────────────────────────────────────────
 
   private tick(): void {
+    if (this.over) return;
     this.timeLeft--;
-    this.timerTxt.setText(`⏱ ${this.timeLeft}s`);
-    if (this.timeLeft <= 10) this.timerTxt.setColor(T.red);
-    this.drawProgress(this.timeLeft / GAME_DURATION);
+    this.timerTxt?.setText(`⏱ ${Math.max(0, this.timeLeft)}s`);
+    this.drawTimerBar();
     if (this.timeLeft <= 0) this.endGame();
   }
 
-  private buildEndOverlay(): void {
-    this.endOverlay = createEndPopup(this, W, H, {
-      onPlayAgain: () => this.scene.restart({ difficulty: this.difficulty }),
-      onHome:      () => this.scene.start('TitleScene'),
-      onAllGames:  () => { window.location.href = '../'; },
-    });
-  }
-
   private endGame(): void {
-    this.timerEvent.remove();
+    if (this.over) return;
+    this.over = true;
+    this.busy = true;
+    this.clock?.remove();
+    this.idleTimer?.remove();
+    this.hideHand();
+    this.renderDots();
     this.cells.forEach(c => c.zone.disableInteractive());
     sounds.end();
 
-    const s = this.score;
-    let emoji: string, title: string, subtitle: string, stars: number;
-    if (s >= TIERS.gold)        { emoji = '🏆'; title = 'Super Spotter!';  subtitle = 'Aya finds every odd one out! 🌈✨'; stars = 3; }
-    else if (s >= TIERS.silver) { emoji = '🌟'; title = 'Brilliant, Aya!'; subtitle = "You've got a great eye! 🔍";        stars = 3; }
-    else if (s >= TIERS.bronze) { emoji = '🎀'; title = 'Well done, Aya!'; subtitle = 'Great spotting! 💖';                 stars = 2; }
-    else                        { emoji = '🌸'; title = 'Nice try, Aya!';  subtitle = "Let's play again! 🌺";               stars = 1; }
-
+    let stars: number, scoreValue: string, scoreLabel: string, subtitle: string;
+    if (this.mode === 'timed') {
+      const n = this.solved;
+      const [three, two] = this.difficulty === 'easy' ? [6, 3] : [5, 2];
+      stars = n >= three ? 3 : n >= two ? 2 : 1;
+      scoreValue = `${n}`;
+      scoreLabel = `Found in ${TIMED_SECONDS}s · ${this.difficulty}`;
+      subtitle = n === 1 ? 'You found 1 odd one out! 💖' : `You found ${n} odd ones out! 💖`;
+      say(n > 0 ? `Time's up! You found ${n}!` : "Time's up! Let's play again!");
+    } else {
+      const ratio = this.firstTry / ROUNDS;
+      stars = ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1;
+      scoreValue = `${this.firstTry}/${ROUNDS}`;
+      scoreLabel = `First-try finds · ${this.difficulty}`;
+      subtitle = 'You found every odd one out! 💖';
+      say('You did it, Aya! Super spotting!');
+    }
+    const title = stars === 3 ? 'Super Spotter!' : stars === 2 ? 'Great spotting!' : 'Well done, Aya!';
     this.endOverlay.show({
-      emoji, title, subtitle,
-      score: { value: s, label: `Points · ${this.difficulty}` },
-      stars: { earned: stars },
+      emoji: stars === 3 ? '🏆' : '🌟', title, subtitle,
+      score: { value: scoreValue, label: scoreLabel },
+      stars: { earned: stars, total: 3 },
     });
-    if (s >= TIERS.silver) launchConfetti(this, CONFETTI_EMOJIS);
+    if (this.mode === 'relaxed' || stars >= 2) launchConfetti(this, CONFETTI_EMOJIS);
   }
 }

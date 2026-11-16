@@ -1,69 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="320" height="180">
   <defs>
-    <linearGradient id="cw-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="cw-bg" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#fce4ec"/>
       <stop offset="100%" style="stop-color:#ede7f6"/>
     </linearGradient>
     <linearGradient id="cw-tile" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#f06292"/>
-      <stop offset="100%" style="stop-color:#ce93d8"/>
+      <stop offset="0%" style="stop-color:#f48fb1"/>
+      <stop offset="100%" style="stop-color:#f06292"/>
     </linearGradient>
     <filter id="cw-shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#9c4dcc" flood-opacity="0.22"/>
+      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#9c4dcc" flood-opacity="0.2"/>
     </filter>
   </defs>
   <rect width="320" height="180" fill="url(#cw-bg)"/>
 
-  <!-- Decorative sparkles -->
-  <text x="20"  y="30"  font-size="14" fill="#9c4dcc" opacity="0.7">✨</text>
-  <text x="298" y="40"  font-size="13" fill="#ce93d8" opacity="0.7">✨</text>
-  <text x="14"  y="150" font-size="12" fill="#ce93d8" opacity="0.6">✨</text>
-  <text x="296" y="160" font-size="13" fill="#9c4dcc" opacity="0.55">✨</text>
+  <text x="300" y="24" font-size="12" opacity="0.7">✨</text>
+  <text x="10"  y="170" font-size="11" opacity="0.6">✨</text>
 
-  <!-- Hint chip on the left -->
+  <!-- Hint card: picture + Bahasa word + speaker + answer slots -->
   <g filter="url(#cw-shadow)">
-    <rect x="14" y="58" width="118" height="64" rx="16" fill="white"/>
-    <rect x="14" y="58" width="118" height="18" rx="9" fill="#fce4ec"/>
-    <text x="73" y="71" font-size="9" fill="#9c4dcc" font-family="Fredoka One, system-ui, sans-serif" text-anchor="middle">PETUNJUK</text>
-    <text x="30" y="106" font-size="22" text-anchor="middle">🐱</text>
-    <text x="48" y="103" font-size="14" fill="#6a1b9a" font-family="Fredoka One, system-ui, sans-serif">kucing</text>
-    <text x="48" y="116" font-size="9"  fill="#9c4dcc" font-weight="700" font-family="Nunito, system-ui, sans-serif">3 huruf · English</text>
+    <rect x="12" y="34" width="134" height="112" rx="20" fill="white" stroke="#f06292" stroke-width="2.5"/>
+  </g>
+  <circle cx="46" cy="72" r="24" fill="#fce4ec" stroke="#ce93d8" stroke-opacity="0.5" stroke-width="1.5"/>
+  <text x="46" y="81" font-size="26" text-anchor="middle">🐱</text>
+  <circle cx="118" cy="72" r="16" fill="#f06292"/>
+  <text x="118" y="78" font-size="15" text-anchor="middle">🔊</text>
+  <text x="24" y="118" font-size="20" fill="#6a1b9a" font-family="Fredoka One, system-ui, sans-serif">kucing</text>
+  <g font-family="Fredoka One, system-ui, sans-serif" font-size="10" text-anchor="middle" fill="#6a1b9a">
+    <rect x="24"  y="126" width="14" height="14" rx="4" fill="white" stroke="#ce93d8" stroke-width="1.5"/>
+    <text x="31" y="137">C</text>
+    <rect x="41"  y="126" width="14" height="14" rx="4" fill="white" stroke="#ce93d8" stroke-width="1.5"/>
+    <text x="48" y="137">A</text>
+    <rect x="58"  y="126" width="14" height="14" rx="4" fill="#fce4ec" stroke="#ce93d8" stroke-width="1.5"/>
   </g>
 
-  <!-- Mini crossword grid: CAT across + CAR down, sharing C -->
-  <!-- Grid origin -->
-  <g transform="translate(160, 32)">
-    <!-- C (intersection, solved-style mint) -->
-    <rect x="0"  y="0"  width="36" height="36" rx="9" fill="#e0f7fa" stroke="#80cbc4" stroke-width="2.5" filter="url(#cw-shadow)"/>
-    <text x="18" y="26" font-size="20" font-family="Fredoka One, system-ui, sans-serif" fill="#6a1b9a" text-anchor="middle">C</text>
-
-    <!-- A (active row — pink border) -->
-    <rect x="40" y="0"  width="36" height="36" rx="9" fill="#fce4ec" stroke="#f06292" stroke-width="3" filter="url(#cw-shadow)"/>
-    <text x="58" y="26" font-size="20" font-family="Fredoka One, system-ui, sans-serif" fill="#6a1b9a" text-anchor="middle">A</text>
-
-    <!-- T (next-cell — empty + pink ring) -->
-    <rect x="80" y="0"  width="36" height="36" rx="9" fill="#fff8fc" stroke="#f06292" stroke-width="3" filter="url(#cw-shadow)"/>
-    <circle cx="98" cy="18" r="6" fill="none" stroke="#80cbc4" stroke-width="2" opacity="0.85"/>
-
-    <!-- A (down word, partially filled) -->
-    <rect x="0" y="40" width="36" height="36" rx="9" fill="#fff8fc" stroke="#ce93d8" stroke-width="2" filter="url(#cw-shadow)"/>
-    <text x="18" y="66" font-size="20" font-family="Fredoka One, system-ui, sans-serif" fill="#6a1b9a" text-anchor="middle">A</text>
-
-    <!-- R (down word, empty) -->
-    <rect x="0" y="80" width="36" height="36" rx="9" fill="#fff8fc" stroke="#ce93d8" stroke-width="2" filter="url(#cw-shadow)"/>
+  <!-- Grid: CAT across (active, pink band) crossing CAR down -->
+  <g transform="translate(166, 22)" font-family="Fredoka One, system-ui, sans-serif" font-size="20" text-anchor="middle" fill="#6a1b9a">
+    <rect x="-5" y="-5" width="126" height="46" rx="13" fill="#f06292" fill-opacity="0.22" stroke="#f06292" stroke-opacity="0.55" stroke-width="1.5"/>
+    <rect x="0"  y="0" width="36" height="36" rx="9" fill="white" stroke="#f06292" stroke-width="2.5" filter="url(#cw-shadow)"/>
+    <text x="18" y="26">C</text>
+    <text x="5" y="10" font-size="8" fill="#f06292" text-anchor="start">1</text>
+    <rect x="40" y="0" width="36" height="36" rx="9" fill="white" stroke="#f06292" stroke-width="2.5" filter="url(#cw-shadow)"/>
+    <text x="58" y="26">A</text>
+    <rect x="80" y="0" width="36" height="36" rx="9" fill="white" stroke="#f06292" stroke-width="3.5" filter="url(#cw-shadow)"/>
+    <text x="98" y="26" fill="#9c4dcc" opacity="0.3">T</text>
+    <rect x="90" y="29" width="16" height="3" rx="1.5" fill="#f06292"/>
+    <rect x="0" y="42" width="36" height="36" rx="9" fill="#fff8fc" stroke="#ce93d8" stroke-width="1.8" filter="url(#cw-shadow)"/>
+    <rect x="0" y="84" width="36" height="36" rx="9" fill="#fff8fc" stroke="#ce93d8" stroke-width="1.8" filter="url(#cw-shadow)"/>
   </g>
 
-  <!-- Letter bank pills along the bottom -->
-  <g transform="translate(140, 142)">
+  <!-- Letter tiles: the right one glows -->
+  <g transform="translate(212, 106)" font-family="Fredoka One, system-ui, sans-serif" font-size="20" text-anchor="middle" fill="white">
+    <rect x="-4" y="-4" width="38" height="46" rx="12" fill="#ffd54f" fill-opacity="0.65"/>
     <g filter="url(#cw-shadow)">
-      <rect x="0"  y="0" width="30" height="30" rx="9" fill="url(#cw-tile)"/>
-      <rect x="0"  y="0" width="30" height="14" rx="9" fill="white" opacity="0.28"/>
-      <text x="15" y="22" font-size="17" font-family="Fredoka One, system-ui, sans-serif" fill="white" text-anchor="middle">T</text>
-    </g>
-    <g filter="url(#cw-shadow)">
-      <rect x="38" y="0" width="30" height="30" rx="9" fill="url(#cw-tile)"/>
-      <rect x="38" y="0" width="30" height="14" rx="9" fill="white" opacity="0.28"/>
-      <text x="53" y="22" font-size="17" font-family="Fredoka One, system-ui, sans-serif" fill="white" text-anchor="middle">R</text>
+      <rect x="0"  y="0" width="30" height="38" rx="9" fill="url(#cw-tile)"/>
+      <text x="15" y="26">T</text>
+      <rect x="36" y="0" width="30" height="38" rx="9" fill="url(#cw-tile)"/>
+      <text x="51" y="26">R</text>
+      <rect x="72" y="0" width="30" height="38" rx="9" fill="url(#cw-tile)"/>
+      <text x="87" y="26">S</text>
     </g>
   </g>
 </svg>
